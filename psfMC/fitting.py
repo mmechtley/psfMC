@@ -15,8 +15,7 @@ except ImportError:
 def model_psf_mcmc(obs_file, subIVM_file, psf_file, psfIVM_file,
                    fit_components=None, mag_zeropoint=0,
                    mask_file=None, db_name=None,
-                   write_fits=True, write_plots=False,
-                   **kwargs):
+                   write_fits=True, **kwargs):
     if fit_components is None:
         raise ValueError('No fitting components specified. Please supply at ' +
                          'least one component.')
@@ -24,8 +23,8 @@ def model_psf_mcmc(obs_file, subIVM_file, psf_file, psfIVM_file,
         db_name = obs_file.replace('.fits','_db')
 
     # TODO: Set these based on total number of unknown components
-    kwargs.setdefault('iter', 6000)
-    kwargs.setdefault('burn', 3000)
+    kwargs.setdefault('iter', 1000)
+    kwargs.setdefault('burn', 500)
     kwargs.setdefault('tune_interval', 25)
     kwargs.setdefault('thin', 5)
 
@@ -51,11 +50,10 @@ def model_psf_mcmc(obs_file, subIVM_file, psf_file, psfIVM_file,
     psfData *= psfScale
     psfDataIVM /= psfScale**2
 
-    sampler = MCMC(multicomponent_model(subData, subDataIVM,
-                                        psfData, psfDataIVM,
-                                        components=fit_components,
-                                        magZP=mag_zeropoint),
-                   db='pickle', name=db_name)
+    mc_model = multicomponent_model(subData, subDataIVM, psfData, psfDataIVM,
+                                    components=fit_components,
+                                    magZP=mag_zeropoint)
+    sampler = MCMC(mc_model, db='pickle', name=db_name)
     sampler.sample(**kwargs)
 
     ## Saves out to pickle file
@@ -68,9 +66,6 @@ def model_psf_mcmc(obs_file, subIVM_file, psf_file, psfIVM_file,
             print '{}: mean: {} std: {} final: {}'.format(
                 stoch, stats[stoch]['mean'], stats[stoch]['standard deviation'],
                 sampler.db.trace(stoch)[-1])
-
-            if write_plots:
-                plot(sampler, name=stoch)
 
     if write_fits:
         # TODO: Add fit information to fits headers

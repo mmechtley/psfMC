@@ -1,19 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="f550eb5d-d804-46be-8e18-060ec19e5881" name="Default" comment="Changed pyregion not-found logic.">
+    <list default="true" id="f550eb5d-d804-46be-8e18-060ec19e5881" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/psfMC/fitting.py" afterPath="$PROJECT_DIR$/psfMC/fitting.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/psfMC/models.py" afterPath="$PROJECT_DIR$/psfMC/models.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tests.py" afterPath="$PROJECT_DIR$/tests.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="psfMC.iws" />
     <ignored path=".idea/workspace.xml" />
-    <file path="/fitting.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368559772560" ignored="false" />
+    <file path="/fitting.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368560192911" ignored="false" />
     <file path="/models.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368559602474" ignored="false" />
     <file path="/__init__.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368425731561" ignored="false" />
     <file path="/tests.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368559550187" ignored="false" />
-    <file path="/Dummy.txt" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368559615744" ignored="false" />
+    <file path="/Dummy.txt" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368559863165" ignored="false" />
     <file path="/a.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368499802072" ignored="false" />
     <file path="/start_script.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368499810666" ignored="false" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -49,7 +47,7 @@
       <file leaf-file-name="fitting.py" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/psfMC/fitting.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="18" column="29" selection-start="572" selection-end="572" vertical-scroll-proportion="0.42993632">
+            <state line="17" column="36" selection-start="524" selection-end="524" vertical-scroll-proportion="-0.38375795">
               <folding>
                 <element signature="e#0#31#0" expanded="true" />
               </folding>
@@ -326,7 +324,11 @@
       <created>1368522472202</created>
       <updated>1368522472202</updated>
     </task>
-    <option name="localTasksCounter" value="11" />
+    <task id="LOCAL-00011" summary="Added plotting flag">
+      <created>1368559868990</created>
+      <updated>1368559868991</updated>
+    </task>
+    <option name="localTasksCounter" value="12" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -396,7 +398,7 @@
     <option name="WRAP_WHEN_TYPING_REACHES_RIGHT_MARGIN" value="false" />
     <option name="FORCE_NON_EMPTY_COMMENT" value="false" />
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="false" />
-    <option name="LAST_COMMIT_MESSAGE" value="Changed pyregion not-found logic." />
+    <option name="LAST_COMMIT_MESSAGE" value="Added plotting flag" />
     <option name="MAKE_NEW_CHANGELIST_ACTIVE" value="true" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_FILES_UP_TO_DATE_BEFORE_COMMIT" value="false" />
@@ -420,6 +422,7 @@
     <MESSAGE value="Output residual and model files. Fixed shift bug in convolution. Replaced M_rot_inv with M_rot.T, since it's a rotation matrix." />
     <MESSAGE value="Added several keyword options to fitting. Components must now be specified via keyword. Properly handle case when pyregion is not installed. FITS output is now optional." />
     <MESSAGE value="Changed pyregion not-found logic." />
+    <MESSAGE value="Added plotting flag" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager />
@@ -453,15 +456,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/psfMC/models.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="51" column="18" selection-start="1550" selection-end="1550" vertical-scroll-proportion="0.0">
-          <folding>
-            <element signature="e#0#31#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/tests.py">
       <provider selected="true" editor-type-id="text-editor">
         <state line="28" column="36" selection-start="861" selection-end="861" vertical-scroll-proportion="0.0">
@@ -471,9 +465,18 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/psfMC/models.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="51" column="18" selection-start="1550" selection-end="1550" vertical-scroll-proportion="0.0">
+          <folding>
+            <element signature="e#0#31#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/psfMC/fitting.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="18" column="29" selection-start="572" selection-end="572" vertical-scroll-proportion="0.42993632">
+        <state line="17" column="36" selection-start="524" selection-end="524" vertical-scroll-proportion="-0.38375795">
           <folding>
             <element signature="e#0#31#0" expanded="true" />
           </folding>
