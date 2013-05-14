@@ -25,7 +25,8 @@ for subfile in subfiles:
     dbfile = subfile.replace('sci', 'db').replace('.fits', '')
     model_psf_mcmc(subfile, subIVMfile, psffile, psfIVMfile,
                    fit_components=fit_components,
-                   db_name=dbfile, mag_zeropoint=26.2303)
+                   db_name=dbfile, mag_zeropoint=26.2303,
+                   write_plots=True)
 
     db = pymc.database.pickle.load(dbfile+'.pickle')
     pp.hist(db.trace('0_psf_mag')[:], bins=20)

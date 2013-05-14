@@ -1,7 +1,9 @@
+from __future__ import division
 import pyfits
 import numpy as np
 from warnings import warn
 from pymc.MCMC import MCMC
+from pymc.Matplot import plot
 from .models import multicomponent_model
 try:
     import pyregion
@@ -12,11 +14,14 @@ except ImportError:
 # TODO: Friendlier interface for supplying components. File?
 def model_psf_mcmc(obs_file, subIVM_file, psf_file, psfIVM_file,
                    fit_components=None, mag_zeropoint=0,
-                   mask_file=None, db_name='./psffit', write_fits=True,
+                   mask_file=None, db_name=None,
+                   write_fits=True, write_plots=False,
                    **kwargs):
     if fit_components is None:
         raise ValueError('No fitting components specified. Please supply at ' +
                          'least one component.')
+    if db_name is None:
+        db_name = obs_file.replace('.fits','_db')
 
     # TODO: Set these based on total number of unknown components
     kwargs.setdefault('iter', 6000)
@@ -64,8 +69,12 @@ def model_psf_mcmc(obs_file, subIVM_file, psf_file, psfIVM_file,
                 stoch, stats[stoch]['mean'], stats[stoch]['standard deviation'],
                 sampler.db.trace(stoch)[-1])
 
+            if write_plots:
+                plot(sampler, name=stoch)
+
     if write_fits:
         # TODO: Add fit information to fits headers
+        # TODO: Don't use replace here
         resid_file = obs_file.replace('sci', 'resid')
         model_file = obs_file.replace('sci', 'model')
         modelIVM_file = obs_file.replace('sci', 'residivm')

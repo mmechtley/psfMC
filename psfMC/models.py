@@ -34,8 +34,9 @@ def _convolve(img, kernel):
     FFT-based convolution, using the Convolution Theorem. This is about 100x
     faster than using scipy.ndimage.convolve. But it effectively forces the
     boundary mode to be wrap.
-    TODO: consider zero-padding inputs to make sizes power-of-two
     """
+    #TODO: consider zero-padding inputs to make sizes power-of-two
+    #TODO: pad with white noise instead of zeros
     pad = np.asarray(img.shape) - np.asarray(kernel.shape)
     kernel_pad = np.zeros_like(img)
     kernel_pad[pad[0]//2:pad[0]//2+pad[0],
@@ -131,10 +132,9 @@ def multicomponent_model(subData, subDataIVM, psf, psfIVM,
             warn('Unrecognized component: {}'.format(name))
 
 
-    @deterministic(plot=False)
+    @deterministic(plot=False, trace=False)
     def raw_model(model_comps=model_comps):
         _debug_timer('start')
-        # TODO: shouldn't have to make this writeable every time
         modelpx = np.zeros_like(subData)
         for comp in model_comps:
             if comp[0] == 'psf':
