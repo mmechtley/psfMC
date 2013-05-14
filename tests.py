@@ -1,9 +1,15 @@
 from psfMC import model_psf_mcmc
 import glob, sys
 
-subfiles = glob.glob(sys.argv[1])
+try:
+    subfiles = glob.glob(sys.argv[1])
+except IndexError:
+    subfiles = ['testdata/sci_J0005-0006.fits']
+try:
+    psffile = sys.argv[2]
+except IndexError:
+    psffile = 'testdata/sci_psf.fits'
 
-psffile = sys.argv[2]
 psfIVMfile = psffile.replace('sci', 'ivm')
 
 for subfile in subfiles:

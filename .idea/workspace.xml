@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="f550eb5d-d804-46be-8e18-060ec19e5881" name="Default" comment="Unified debug timer">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.gitignore" />
+    <list default="true" id="f550eb5d-d804-46be-8e18-060ec19e5881" name="Default" comment="">
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tests.py" afterPath="$PROJECT_DIR$/tests.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="psfMC.iws" />
@@ -10,8 +10,8 @@
     <file path="/fitting.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368491275537" ignored="false" />
     <file path="/models.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368492874358" ignored="false" />
     <file path="/__init__.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368425731561" ignored="false" />
-    <file path="/tests.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368482763221" ignored="false" />
-    <file path="/Dummy.txt" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368493001729" ignored="false" />
+    <file path="/tests.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368493175094" ignored="false" />
+    <file path="/Dummy.txt" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368493019685" ignored="false" />
     <option name="TRACKING_ENABLED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -34,7 +34,7 @@
       <file leaf-file-name="tests.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/tests.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="10" column="58" selection-start="282" selection-end="282" vertical-scroll-proportion="0.0">
+            <state line="11" column="0" selection-start="249" selection-end="249" vertical-scroll-proportion="0.0">
               <folding>
                 <element signature="e#0#32#0" expanded="true" />
               </folding>
@@ -56,7 +56,7 @@
       <file leaf-file-name="models.py" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/psfMC/models.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="147" column="57" selection-start="5502" selection-end="5502" vertical-scroll-proportion="0.91448516">
+            <state line="17" column="43" selection-start="567" selection-end="567" vertical-scroll-proportion="0.4450262">
               <folding>
                 <element signature="e#0#31#0" expanded="true" />
               </folding>
@@ -85,9 +85,9 @@
         <option value="$PROJECT_DIR$/__init__.py" />
         <option value="$PROJECT_DIR$/models.py" />
         <option value="$PROJECT_DIR$/fitting.py" />
-        <option value="$PROJECT_DIR$/tests.py" />
         <option value="$PROJECT_DIR$/psfMC/fitting.py" />
         <option value="$PROJECT_DIR$/psfMC/models.py" />
+        <option value="$PROJECT_DIR$/tests.py" />
       </list>
     </option>
   </component>
@@ -271,7 +271,11 @@
       <created>1368492963189</created>
       <updated>1368492963189</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="Added gitignore">
+      <created>1368493022294</created>
+      <updated>1368493022294</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -341,7 +345,7 @@
     <option name="WRAP_WHEN_TYPING_REACHES_RIGHT_MARGIN" value="false" />
     <option name="FORCE_NON_EMPTY_COMMENT" value="false" />
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="false" />
-    <option name="LAST_COMMIT_MESSAGE" value="Unified debug timer" />
+    <option name="LAST_COMMIT_MESSAGE" value="Added gitignore" />
     <option name="MAKE_NEW_CHANGELIST_ACTIVE" value="true" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_FILES_UP_TO_DATE_BEFORE_COMMIT" value="false" />
@@ -357,6 +361,7 @@
     <option name="FILE_HISTORY_SPLITTER_PROPORTION" value="0.6" />
     <MESSAGE value="Model creation speed optimizations. Biggie: swapped to fft-based convolution instead of scipy.ndimage.convolve. About 100x speedup." />
     <MESSAGE value="Unified debug timer" />
+    <MESSAGE value="Added gitignore" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager />
@@ -376,19 +381,19 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/tests.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="10" column="58" selection-start="282" selection-end="282" vertical-scroll-proportion="0.0">
-          <folding>
-            <element signature="e#0#32#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file:///usr/local/scisoft/packages/python/lib/python2.7/site-packages/scipy/ndimage/filters.py">
       <provider selected="true" editor-type-id="text-editor">
         <state line="496" column="72" selection-start="17435" selection-end="17435" vertical-scroll-proportion="0.5316456">
           <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tests.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="11" column="0" selection-start="249" selection-end="249" vertical-scroll-proportion="0.0">
+          <folding>
+            <element signature="e#0#32#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -403,7 +408,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/psfMC/models.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="147" column="57" selection-start="5502" selection-end="5502" vertical-scroll-proportion="0.91448516">
+        <state line="17" column="43" selection-start="567" selection-end="567" vertical-scroll-proportion="0.4450262">
           <folding>
             <element signature="e#0#31#0" expanded="true" />
           </folding>
