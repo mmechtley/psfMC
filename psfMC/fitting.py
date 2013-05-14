@@ -23,8 +23,8 @@ def model_psf_mcmc(obs_file, subIVM_file, psf_file, psfIVM_file,
         db_name = obs_file.replace('.fits','_db')
 
     # TODO: Set these based on total number of unknown components
-    kwargs.setdefault('iter', 1000)
-    kwargs.setdefault('burn', 500)
+    kwargs.setdefault('iter', 6000)
+    kwargs.setdefault('burn', 3000)
     kwargs.setdefault('tune_interval', 25)
     kwargs.setdefault('thin', 5)
 

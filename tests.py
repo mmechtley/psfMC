@@ -25,16 +25,13 @@ for subfile in subfiles:
     dbfile = subfile.replace('sci', 'db').replace('.fits', '')
     model_psf_mcmc(subfile, subIVMfile, psffile, psfIVMfile,
                    fit_components=fit_components,
-                   db_name=dbfile, mag_zeropoint=26.2303,
-                   write_plots=True)
+                   db_name=dbfile, mag_zeropoint=26.2303)
 
     db = pymc.database.pickle.load(dbfile+'.pickle')
-    pp.hist(db.trace('0_psf_mag')[:], bins=20)
-    pp.title('PSF mag')
-    pp.show()
-    pp.hist(db.trace('1_sersic_mag')[:], bins=20)
-    pp.title('Sersic mag')
-    pp.show()
+    for trace_name in ('0_psf_mag', '1_sersic_mag'):
+        pp.hist(db.trace(trace_name)[:], bins=20)
+        pp.title(trace_name)
+        pp.show()
 
     runok = subprocess.call(['ds9', subfile.replace('sci','resid'),
                              subfile.replace('sci','model')])
