@@ -5,23 +5,19 @@ from scipy.special import gamma
 from pymc import Uniform, Normal, deterministic
 import time
 
-# Pixels that have zero weight will be replaced with a very small weight
 # TODO: Is there a way to use masked arrays to skip bad pixels instead?
+# Pixels that have zero weight will be replaced with a very small weight
 _zero_weight = 1e-20
 
-_show_debug_output = False
+_show_timing_info = False
 
 np.seterr(divide='ignore')
 
-# components is a list of tuples. first element is type (psf, sersic)
-# further elements are min and max of uniform search regions
-# [('psf', 120, 136, 120, 136, 1e-14, 1e4)]
-# type xmin xmax ymin ymax p1min p1max etc
 
 _t_in = 0.0
 def _debug_timer(step, name=''):
     global _t_in
-    if not _show_debug_output:
+    if not _show_timing_info:
         return
     if step == 'start':
         _t_in = time.time()
@@ -75,7 +71,15 @@ def _add_point_source(arr, magZP, xy, mag):
 
 
 def multicomponent_model(subData, subDataIVM, psf, psfIVM,
-                         components=[], magZP=0):
+                         components=None, magZP=0):
+    """
+    Multi-component model for MCMC psf fitting.
+    Components is a list of tuples. First element is type (psf, sersic).
+    Further elements are min and max of uniform search regions, e.g.
+    type xmin xmax ymin ymax p1min p1max etc
+    [('psf', 120, 136, 120, 136, 17, 20),
+     ('sersic', 120, 136, 120, 136, 21, 28, 1.5, 3.5, 0.5, 8, 0.1, 1.0, 0, 360)]
+    """
     model_comps = []
     modelpx = np.zeros_like(subData)
 
