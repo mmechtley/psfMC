@@ -2,16 +2,18 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="f550eb5d-d804-46be-8e18-060ec19e5881" name="Default" comment="">
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/psfMC/fitting.py" afterPath="$PROJECT_DIR$/psfMC/fitting.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/psfMC/models.py" afterPath="$PROJECT_DIR$/psfMC/models.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tests.py" afterPath="$PROJECT_DIR$/tests.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="psfMC.iws" />
     <ignored path=".idea/workspace.xml" />
-    <file path="/fitting.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368491275537" ignored="false" />
-    <file path="/models.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368492874358" ignored="false" />
+    <file path="/fitting.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368498243253" ignored="false" />
+    <file path="/models.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368498341503" ignored="false" />
     <file path="/__init__.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368425731561" ignored="false" />
-    <file path="/tests.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368493175094" ignored="false" />
-    <file path="/Dummy.txt" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368493019685" ignored="false" />
+    <file path="/tests.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368497979544" ignored="false" />
+    <file path="/Dummy.txt" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368493201496" ignored="false" />
     <option name="TRACKING_ENABLED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -34,7 +36,7 @@
       <file leaf-file-name="tests.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/tests.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="11" column="0" selection-start="249" selection-end="249" vertical-scroll-proportion="0.0">
+            <state line="16" column="74" selection-start="440" selection-end="440" vertical-scroll-proportion="0.0">
               <folding>
                 <element signature="e#0#32#0" expanded="true" />
               </folding>
@@ -45,7 +47,7 @@
       <file leaf-file-name="fitting.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/psfMC/fitting.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="54" column="73" selection-start="2119" selection-end="2119" vertical-scroll-proportion="0.0">
+            <state line="42" column="40" selection-start="1742" selection-end="1742" vertical-scroll-proportion="0.0">
               <folding>
                 <element signature="e#0#13#0" expanded="true" />
               </folding>
@@ -56,7 +58,7 @@
       <file leaf-file-name="models.py" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/psfMC/models.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="17" column="43" selection-start="567" selection-end="567" vertical-scroll-proportion="0.4450262">
+            <state line="68" column="38" selection-start="2284" selection-end="2284" vertical-scroll-proportion="1.1204189">
               <folding>
                 <element signature="e#0#31#0" expanded="true" />
               </folding>
@@ -85,9 +87,9 @@
         <option value="$PROJECT_DIR$/__init__.py" />
         <option value="$PROJECT_DIR$/models.py" />
         <option value="$PROJECT_DIR$/fitting.py" />
+        <option value="$PROJECT_DIR$/tests.py" />
         <option value="$PROJECT_DIR$/psfMC/fitting.py" />
         <option value="$PROJECT_DIR$/psfMC/models.py" />
-        <option value="$PROJECT_DIR$/tests.py" />
       </list>
     </option>
   </component>
@@ -275,7 +277,11 @@
       <created>1368493022294</created>
       <updated>1368493022294</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="Updated tests">
+      <created>1368493207013</created>
+      <updated>1368493207013</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -345,7 +351,7 @@
     <option name="WRAP_WHEN_TYPING_REACHES_RIGHT_MARGIN" value="false" />
     <option name="FORCE_NON_EMPTY_COMMENT" value="false" />
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="false" />
-    <option name="LAST_COMMIT_MESSAGE" value="Added gitignore" />
+    <option name="LAST_COMMIT_MESSAGE" value="Updated tests" />
     <option name="MAKE_NEW_CHANGELIST_ACTIVE" value="true" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_FILES_UP_TO_DATE_BEFORE_COMMIT" value="false" />
@@ -362,6 +368,7 @@
     <MESSAGE value="Model creation speed optimizations. Biggie: swapped to fft-based convolution instead of scipy.ndimage.convolve. About 100x speedup." />
     <MESSAGE value="Unified debug timer" />
     <MESSAGE value="Added gitignore" />
+    <MESSAGE value="Updated tests" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager />
@@ -390,7 +397,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/tests.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="11" column="0" selection-start="249" selection-end="249" vertical-scroll-proportion="0.0">
+        <state line="16" column="74" selection-start="440" selection-end="440" vertical-scroll-proportion="0.0">
           <folding>
             <element signature="e#0#32#0" expanded="true" />
           </folding>
@@ -399,7 +406,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/psfMC/fitting.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="54" column="73" selection-start="2119" selection-end="2119" vertical-scroll-proportion="0.0">
+        <state line="42" column="40" selection-start="1742" selection-end="1742" vertical-scroll-proportion="0.0">
           <folding>
             <element signature="e#0#13#0" expanded="true" />
           </folding>
@@ -408,7 +415,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/psfMC/models.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="17" column="43" selection-start="567" selection-end="567" vertical-scroll-proportion="0.4450262">
+        <state line="68" column="38" selection-start="2284" selection-end="2284" vertical-scroll-proportion="1.1204189">
           <folding>
             <element signature="e#0#31#0" expanded="true" />
           </folding>

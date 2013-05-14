@@ -6,7 +6,7 @@ from .models import multicomponent_model
 
 # TODO: Better interface for supplying components. File? As param?
 def model_psf_mcmc(subfile, subIVMfile, psffile, psfIVMfile,
-                    maskRegionFile=None, outfile=None, **kwargs):
+                    maskRegionFile=None, outfile=None, magZP=0, **kwargs):
     # TODO: Don't hardcode these!
     components = [('psf', 60, 70, 60, 70, 18, 23),
                   ('sersic', 60, 70, 60, 70, 22, 26,
@@ -39,7 +39,9 @@ def model_psf_mcmc(subfile, subIVMfile, psffile, psfIVMfile,
 
     sampler = MCMC(multicomponent_model(subData, subDataIVM,
                                         psfData, psfDataIVM,
-                                        components=components))
+                                        components=components,
+                                        magZP=magZP),
+                   db='pickle')
     # TODO: Set these based on total number of unknown components
     kwargs.setdefault('iter', 2500)
     kwargs.setdefault('burn', 1800)

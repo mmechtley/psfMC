@@ -35,12 +35,12 @@ def _convolve(img, kernel):
     return np.fft.irfft2(np.fft.rfft2(img) * np.fft.rfft2(kernel, img.shape))
 
 
-def _add_sersic(arr, xy, mag, reff, index, axis_ratio, angle):
+def _add_sersic(arr, magZP, xy, mag, reff, index, axis_ratio, angle):
     """
     Add Sersic profile with supplied parameters to a numpy array
     """
     kappa = 1.9992*index - 0.3271
-    fluxtot = 10 ** (mag / -2.5)
+    fluxtot = 10 ** ((mag - magZP)/ -2.5)
     sbeff = fluxtot / (2 * np.pi * reff**2 * axis_ratio * np.exp(kappa) *
                        index * np.power(kappa, -2*index) * gamma(2*index))
     angle = np.deg2rad(angle)
@@ -62,11 +62,11 @@ def _add_sersic(arr, xy, mag, reff, index, axis_ratio, angle):
     return arr
 
 
-def _add_point_source(arr, xy, mag):
+def _add_point_source(arr, magZP, xy, mag):
     """
     Add point source with supplied parameters to a numpy array
     """
-    flux = 10 ** (mag / -2.5)
+    flux = 10 ** ((mag - magZP)/ -2.5)
     xint, xfrac = xy[0] // 1, xy[0] % 1
     yint, yfrac = xy[1] // 1, xy[1] % 1
     arr[yint:yint+2, xint:xint+2] += flux * np.outer((yfrac, 1-yfrac),
@@ -75,7 +75,7 @@ def _add_point_source(arr, xy, mag):
 
 
 def multicomponent_model(subData, subDataIVM, psf, psfIVM,
-                         components=[]):
+                         components=[], magZP=0):
     model_comps = []
     modelpx = np.zeros_like(subData)
 
@@ -123,9 +123,9 @@ def multicomponent_model(subData, subDataIVM, psf, psfIVM,
         modelpx[:,:] = 0
         for comp in model_comps:
             if comp[0] == 'psf':
-                _add_point_source(modelpx, *comp[1:])
+                _add_point_source(modelpx, magZP, *comp[1:])
             elif comp[0] == 'sersic':
-                _add_sersic(modelpx, *comp[1:])
+                _add_sersic(modelpx, magZP, *comp[1:])
             else:
                 warn('Skipping unrecognized component {}'.format(comp[0]))
         _debug_timer('stop', name='Model')

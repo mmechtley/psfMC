@@ -14,4 +14,4 @@ psfIVMfile = psffile.replace('sci', 'ivm')
 
 for subfile in subfiles:
     subIVMfile = subfile.replace('sci', 'ivm')
-    model_psf_mcmc(subfile, subIVMfile, psffile, psfIVMfile)
+    model_psf_mcmc(subfile, subIVMfile, psffile, psfIVMfile, magZP=26.2303)
