@@ -1,18 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="f550eb5d-d804-46be-8e18-060ec19e5881" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/misc.xml" afterPath="$PROJECT_DIR$/.idea/misc.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/vcs.xml" afterPath="$PROJECT_DIR$/.idea/vcs.xml" />
+    <list default="true" id="f550eb5d-d804-46be-8e18-060ec19e5881" name="Default" comment="Swapped to fft-based convolution instead of scipy.ndimage.convolve. About 100x speedup.">
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/psfMC/fitting.py" afterPath="$PROJECT_DIR$/psfMC/fitting.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/testdata/ivm_psf.fits" afterPath="$PROJECT_DIR$/testdata/ivm_psf.fits" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/psfMC/models.py" afterPath="$PROJECT_DIR$/psfMC/models.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/testdata/sci_psf.fits" afterPath="$PROJECT_DIR$/testdata/sci_psf.fits" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="psfMC.iws" />
     <ignored path=".idea/workspace.xml" />
-    <file path="/fitting.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368483158686" ignored="false" />
-    <file path="/models.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368483325366" ignored="false" />
+    <file path="/fitting.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368491275537" ignored="false" />
+    <file path="/models.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368491089793" ignored="false" />
     <file path="/__init__.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368425731561" ignored="false" />
     <file path="/tests.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368482763221" ignored="false" />
-    <file path="/Dummy.txt" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368483548077" ignored="false" />
+    <file path="/Dummy.txt" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368491785230" ignored="false" />
     <option name="TRACKING_ENABLED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -43,10 +45,10 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="fitting.py" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="fitting.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/psfMC/fitting.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="14" column="23" selection-start="517" selection-end="517" vertical-scroll-proportion="0.24165708">
+            <state line="54" column="73" selection-start="2119" selection-end="2119" vertical-scroll-proportion="0.0">
               <folding>
                 <element signature="e#0#13#0" expanded="true" />
               </folding>
@@ -54,10 +56,10 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="models.py" pinned="false" current="false" current-in-tab="false">
+      <file leaf-file-name="models.py" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/psfMC/models.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="107" column="22" selection-start="4351" selection-end="4351" vertical-scroll-proportion="0.0">
+            <state line="103" column="36" selection-start="4246" selection-end="4246" vertical-scroll-proportion="0.23385689">
               <folding>
                 <element signature="e#0#31#0" expanded="true" />
               </folding>
@@ -87,8 +89,8 @@
         <option value="$PROJECT_DIR$/models.py" />
         <option value="$PROJECT_DIR$/fitting.py" />
         <option value="$PROJECT_DIR$/tests.py" />
-        <option value="$PROJECT_DIR$/psfMC/models.py" />
         <option value="$PROJECT_DIR$/psfMC/fitting.py" />
+        <option value="$PROJECT_DIR$/psfMC/models.py" />
       </list>
     </option>
   </component>
@@ -178,6 +180,46 @@
     </option>
   </component>
   <component name="RunManager">
+    <configuration default="true" type="PythonConfigurationType" factoryName="Python">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="psfMC" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" enabled="false" sample_coverage="true" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="" />
+      <option name="PARAMETERS" value="" />
+      <method />
+    </configuration>
+    <configuration default="true" type="tests" factoryName="Unittests">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="psfMC" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" enabled="false" sample_coverage="true" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="" />
+      <option name="CLASS_NAME" value="" />
+      <option name="METHOD_NAME" value="" />
+      <option name="FOLDER_NAME" value="" />
+      <option name="TEST_TYPE" value="TEST_SCRIPT" />
+      <option name="PATTERN" value="" />
+      <option name="USE_PATTERN" value="false" />
+      <option name="PUREUNITTEST" value="true" />
+      <option name="PARAMS" value="" />
+      <option name="USE_PARAM" value="false" />
+      <method />
+    </configuration>
     <configuration default="true" type="tests" factoryName="Doctests">
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -230,13 +272,13 @@
     <frame x="3" y="22" width="975" height="965" extended-state="0" />
     <editor active="false" />
     <layout>
-      <window_info id="Documentation" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32703003" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" x="142" y="111" width="761" height="482" />
-      <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Documentation" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32664436" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" x="142" y="111" width="761" height="482" />
+      <window_info id="Changes" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.32998884" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32925472" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32887402" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.24918033" sideWeight="0.495114" order="2" side_tool="true" content_ui="tabs" />
-      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.26049516" sideWeight="0.67074525" order="1" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.26049516" sideWeight="0.67001116" order="1" side_tool="false" content_ui="combo" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="true" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="1" side_tool="true" content_ui="tabs" />
@@ -334,20 +376,27 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/psfMC/models.py">
+    <entry file="file:///usr/local/scisoft/packages/python/lib/python2.7/site-packages/scipy/ndimage/filters.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="107" column="22" selection-start="4351" selection-end="4351" vertical-scroll-proportion="0.0">
-          <folding>
-            <element signature="e#0#31#0" expanded="true" />
-          </folding>
+        <state line="496" column="72" selection-start="17435" selection-end="17435" vertical-scroll-proportion="0.5316456">
+          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/psfMC/fitting.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="14" column="23" selection-start="517" selection-end="517" vertical-scroll-proportion="0.24165708">
+        <state line="54" column="73" selection-start="2119" selection-end="2119" vertical-scroll-proportion="0.0">
           <folding>
             <element signature="e#0#13#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/psfMC/models.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="103" column="36" selection-start="4246" selection-end="4246" vertical-scroll-proportion="0.23385689">
+          <folding>
+            <element signature="e#0#31#0" expanded="true" />
           </folding>
         </state>
       </provider>

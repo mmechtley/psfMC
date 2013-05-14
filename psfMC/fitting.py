@@ -25,16 +25,12 @@ def model_psf_mcmc(subfile, subIVMfile, psffile, psfIVMfile,
         regfilt = pyregion.open(maskRegionFile).as_imagecoord(hdr).get_filter()
         mask = regfilt.mask(subData.shape)
         subData = np.ma.masked_array(subData, mask=~mask)
-        psfData = np.ma.masked_array(psfData, mask=~mask)
         subDataIVM[~mask] = 0
-        psfDataIVM[~mask] = 0
         maskInd = np.where(mask)
         fitslice = (slice(maskInd[0].min(), maskInd[0].max() + 1),
                     slice(maskInd[1].min(), maskInd[1].max() + 1))
         subData = subData[fitslice]
         subDataIVM = subDataIVM[fitslice]
-        psfData = psfData[fitslice]
-        psfDataIVM = psfDataIVM[fitslice]
 
     # Normalize the PSF kernel
     psfScale = 1 / psfData.sum()
@@ -56,7 +52,8 @@ def model_psf_mcmc(subfile, subIVMfile, psffile, psfIVMfile,
 
     stats = sampler.stats()
     for stoch in stats:
-        print '{}: mean: {} std: {}'.format(stoch, stats[stoch]['mean'],
+        if stoch.startswith(tuple(str(i) for i in range(len(components)))):
+            print '{}: mean: {} std: {}'.format(stoch, stats[stoch]['mean'],
                                             stats[stoch]['standard deviation'])
 
     # TODO: Write out copies of subtracted data file, and IVM to go with it

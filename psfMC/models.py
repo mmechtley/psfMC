@@ -1,10 +1,9 @@
 from __future__ import division
 from warnings import warn
 import numpy as np
-from scipy.ndimage import convolve
 from scipy.special import gamma
 from pymc import Uniform, Normal, deterministic
-# import matplotlib.pyplot as pp
+import time
 
 # Pixels that have zero weight will be replaced with a very small weight
 # TODO: Is there a way to use masked arrays to skip them instead?
@@ -17,6 +16,9 @@ np.seterr(divide='ignore')
 # [('psf', 120, 136, 120, 136, 1e-14, 1e4)]
 # type xmin xmax ymin ymax p1min p1max etc
 
+def _convolve(img, kernel):
+    return np.fft.irfft2(np.fft.rfft2(img) * np.fft.rfft2(kernel, img.shape))
+
 
 def _add_sersic(arr, xy, mag, reff, index, axis_ratio, angle):
     """
@@ -27,16 +29,18 @@ def _add_sersic(arr, xy, mag, reff, index, axis_ratio, angle):
     sbeff = fluxtot / (2 * np.pi * reff**2 * axis_ratio * np.exp(kappa) *
                        index * np.power(kappa, -2*index) * gamma(2*index))
     angle = np.deg2rad(angle)
-    scaleM = np.diag((reff, reff*axis_ratio)) ** 2
-    rotM = np.asarray([[np.cos(angle), -np.sin(angle)],
-                       [np.sin(angle), np.cos(angle)]])
-    xform = np.dot(np.dot(rotM, scaleM), np.linalg.inv(rotM))
+    sin_ang, cos_ang = np.sin(angle), np.cos(angle)
+    M_inv_scale = np.diag((1/reff, 1/(reff*axis_ratio))) ** 2
+    M_rot = np.asarray((cos_ang, -sin_ang, sin_ang, cos_ang)).reshape(2,2)
+    M_inv_rot = np.asarray((cos_ang, sin_ang, -sin_ang, cos_ang)).reshape(2,2)
+    M_inv_xform = np.dot(np.dot(M_rot, M_inv_scale), M_inv_rot)
+
     coords = [np.arange(arr.size) % arr.shape[1],
               np.arange(arr.size) // arr.shape[1]]
     coords = np.transpose(coords).astype(arr.dtype)
     coords -= xy
     radii = np.sqrt(np.sum(
-        (coords.T * np.dot(np.linalg.inv(xform), coords.T)),
+        (coords.T * np.dot(M_inv_xform, coords.T)),
         axis=0))
     radii = radii.reshape(arr.shape)
     arr += sbeff * np.exp(-kappa * (np.power(radii, 1/index) - 1))
@@ -55,6 +59,8 @@ def _add_point_source(arr, xy, mag):
     return arr
 
 
+# TODO: Speed of the model generation is limited by the speed of
+# scipy.ndimage._convolve. Seek a way to speed it up.
 def multicomponent_model(subData, subDataIVM, psf, psfIVM,
                          components=[]):
     model_comps = []
@@ -65,7 +71,7 @@ def multicomponent_model(subData, subDataIVM, psf, psfIVM,
         if name == 'psf':
             xy = Uniform('{}_{}_xy'.format(count, name),
                          lower=np.min(xy, axis=1), upper=np.max(xy, axis=1))
-            mag = Uniform('{}_{}_scale'.format(count, name),
+            mag = Uniform('{}_{}_mag'.format(count, name),
                           lower=min(component[5:7]),
                           upper=max(component[5:7]))
             model_comps += [('psf', xy, mag)]
@@ -94,10 +100,15 @@ def multicomponent_model(subData, subDataIVM, psf, psfIVM,
         else:
             warn('Unrecognized component: {}'.format(name))
 
+    print 'Allocating pixels'
+    modelpx = np.zeros_like(subData)
 
     @deterministic(plot=False)
     def raw_model(model_comps=model_comps):
-        modelpx = np.zeros_like(subData)
+        t_in = time.time()
+        # TODO: shouldn't have to make this writeable every time
+        modelpx.flags.writeable = True
+        modelpx[:,:] = 0
         for comp in model_comps:
             if comp[0] == 'psf':
                 _add_point_source(modelpx, *comp[1:])
@@ -105,23 +116,32 @@ def multicomponent_model(subData, subDataIVM, psf, psfIVM,
                 _add_sersic(modelpx, *comp[1:])
             else:
                 warn('Skipping unrecognized component {}'.format(comp[0]))
+        print 'Model: {:.2e}'.format(time.time() - t_in),
         return modelpx
 
 
     @deterministic(plot=False)
     def convolved_model(psf=psf, rawmodel=raw_model):
-        return convolve(rawmodel, psf, mode='reflect')
+        t_in = time.time()
+        cmodel = _convolve(rawmodel, psf)
+        print 'Convolve: {:.2e}'.format(time.time() - t_in),
+        return cmodel
 
 
     @deterministic(plot=False)
     def composite_IVM(subDataIVM=subDataIVM, psfIVM=psfIVM,
                       rawmodel=raw_model):
+        t_in = time.time()
         # TODO: Ensure math here is correct
-        modelRMS = convolve(rawmodel, 1/np.sqrt(psfIVM), mode='reflect')
+        modelRMS = _convolve(rawmodel, 1/np.sqrt(psfIVM))
         # Set zero-weight pixels to very small number instead
-        zerowts = (modelRMS <= 0) | (subDataIVM <= 0)
-        return np.where(zerowts, _zero_weight,
-                        1 / (modelRMS**2 + 1 / subDataIVM))
+        badpx = (modelRMS <= 0) | (subDataIVM <= 0)
+        badpx |= ~np.isfinite(modelRMS) | ~np.isfinite(subDataIVM)
+        compIVM = np.where(badpx, _zero_weight,
+                           1 / (modelRMS**2 + 1 / subDataIVM))
+        # assert np.all(compIVM > 0)
+        print 'IVM: {:.2e}'.format(time.time() - t_in)
+        return compIVM
 
     # TODO: Use skellam distribution instead of Normal for discrete data
     data = Normal('data', value=subData, observed=True,
