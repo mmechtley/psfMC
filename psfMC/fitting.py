@@ -73,7 +73,7 @@ def model_psf_mcmc(obs_file, subIVM_file, psf_file, psfIVM_file,
         # TODO: Don't use replace here
         resid_file = obs_file.replace('sci', 'resid')
         model_file = obs_file.replace('sci', 'model')
-        modelIVM_file = obs_file.replace('sci', 'residivm')
+        modelIVM_file = obs_file.replace('sci', 'modelivm')
 
         # TODO: Is this the best way to get at non-traced model data?
         with pyfits.open(obs_file) as f:

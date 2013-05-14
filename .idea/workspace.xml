@@ -3,17 +3,15 @@
   <component name="ChangeListManager">
     <list default="true" id="f550eb5d-d804-46be-8e18-060ec19e5881" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/psfMC/fitting.py" afterPath="$PROJECT_DIR$/psfMC/fitting.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/psfMC/models.py" afterPath="$PROJECT_DIR$/psfMC/models.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tests.py" afterPath="$PROJECT_DIR$/tests.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="psfMC.iws" />
     <ignored path=".idea/workspace.xml" />
-    <file path="/fitting.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368568323931" ignored="false" />
+    <file path="/fitting.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368568751487" ignored="false" />
     <file path="/models.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368563879447" ignored="false" />
     <file path="/__init__.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368425731561" ignored="false" />
     <file path="/tests.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368568110609" ignored="false" />
-    <file path="/Dummy.txt" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368562419649" ignored="false" />
+    <file path="/Dummy.txt" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368568360257" ignored="false" />
     <file path="/a.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368499802072" ignored="false" />
     <file path="/start_script.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368499810666" ignored="false" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -49,7 +47,7 @@
       <file leaf-file-name="fitting.py" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/psfMC/fitting.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="77" column="69" selection-start="3021" selection-end="3021" vertical-scroll-proportion="1.0015924">
+            <state line="75" column="54" selection-start="2945" selection-end="2945" vertical-scroll-proportion="0.9299363">
               <folding>
                 <element signature="e#0#31#0" expanded="true" />
               </folding>
@@ -60,7 +58,7 @@
       <file leaf-file-name="models.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/psfMC/models.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="170" column="22" selection-start="6571" selection-end="6571" vertical-scroll-proportion="0.0">
+            <state line="153" column="45" selection-start="5882" selection-end="5882" vertical-scroll-proportion="0.0">
               <folding>
                 <element signature="e#0#31#0" expanded="true" />
               </folding>
@@ -342,7 +340,11 @@
       <created>1368562421197</created>
       <updated>1368562421197</updated>
     </task>
-    <option name="localTasksCounter" value="15" />
+    <task id="LOCAL-00015" summary="Removed image data from MCMC traces. Significantly reduces the size of the pickle database">
+      <created>1368568364224</created>
+      <updated>1368568364224</updated>
+    </task>
+    <option name="localTasksCounter" value="16" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -412,7 +414,7 @@
     <option name="WRAP_WHEN_TYPING_REACHES_RIGHT_MARGIN" value="false" />
     <option name="FORCE_NON_EMPTY_COMMENT" value="false" />
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="false" />
-    <option name="LAST_COMMIT_MESSAGE" value="Renaming. ds9 call in tests also displays original file now." />
+    <option name="LAST_COMMIT_MESSAGE" value="Removed image data from MCMC traces. Significantly reduces the size of the pickle database" />
     <option name="MAKE_NEW_CHANGELIST_ACTIVE" value="true" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_FILES_UP_TO_DATE_BEFORE_COMMIT" value="false" />
@@ -440,6 +442,7 @@
     <MESSAGE value="Removed plotting flag" />
     <MESSAGE value="Fixed default iter/burn values" />
     <MESSAGE value="Renaming. ds9 call in tests also displays original file now." />
+    <MESSAGE value="Removed image data from MCMC traces. Significantly reduces the size of the pickle database" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager />
@@ -473,15 +476,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/psfMC/models.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="170" column="22" selection-start="6571" selection-end="6571" vertical-scroll-proportion="0.0">
-          <folding>
-            <element signature="e#0#31#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/tests.py">
       <provider selected="true" editor-type-id="text-editor">
         <state line="24" column="67" selection-start="660" selection-end="660" vertical-scroll-proportion="0.0">
@@ -491,9 +485,18 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/psfMC/models.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="153" column="45" selection-start="5882" selection-end="5882" vertical-scroll-proportion="0.0">
+          <folding>
+            <element signature="e#0#31#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/psfMC/fitting.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="77" column="69" selection-start="3021" selection-end="3021" vertical-scroll-proportion="1.0015924">
+        <state line="75" column="54" selection-start="2945" selection-end="2945" vertical-scroll-proportion="0.9299363">
           <folding>
             <element signature="e#0#31#0" expanded="true" />
           </folding>
