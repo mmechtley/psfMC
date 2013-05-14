@@ -1,17 +1,15 @@
 from __future__ import division
-from warnings import warn
+import time
 import numpy as np
+from warnings import warn
 from scipy.special import gamma
 from pymc import Uniform, Normal, deterministic
-import time
 
 # TODO: Is there a way to use masked arrays to skip bad pixels instead?
 # Pixels that have zero weight will be replaced with a very small weight
 _zero_weight = 1e-20
 
 _show_timing_info = False
-
-np.seterr(divide='ignore')
 
 _t_in = 0.0
 
@@ -94,6 +92,7 @@ def multicomponent_model(subData, subDataIVM, psf, psfIVM,
     [('psf', 120, 136, 120, 136, 17, 20),
      ('sersic', 120, 136, 120, 136, 21, 28, 1.5, 3.5, 0.5, 8, 0.1, 1.0, 0, 360)]
     """
+    np.seterr(divide='ignore')
     model_comps = []
 
     for count, component in enumerate(components):
