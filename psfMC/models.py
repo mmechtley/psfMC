@@ -13,9 +13,13 @@ _show_timing_info = False
 
 np.seterr(divide='ignore')
 
-
 _t_in = 0.0
+
+
 def _debug_timer(step, name=''):
+    """
+    Hacky lightweight timer, for profiling model creation
+    """
     global _t_in
     if not _show_timing_info:
         return
@@ -28,6 +32,12 @@ def _debug_timer(step, name=''):
 
 
 def _convolve(img, kernel):
+    """
+    FFT-based convolution, using the Convolution Theorem. This is about 100x
+    faster than using scipy.ndimage.convolve. But it effectively forces the
+    boundary mode to be wrap.
+    TODO: consider zero-padding inputs to make sizes power-of-two
+    """
     return np.fft.irfft2(np.fft.rfft2(img) * np.fft.rfft2(kernel, img.shape))
 
 
@@ -36,14 +46,14 @@ def _add_sersic(arr, magZP, xy, mag, reff, index, axis_ratio, angle):
     Add Sersic profile with supplied parameters to a numpy array
     """
     kappa = 1.9992*index - 0.3271
-    fluxtot = 10 ** ((mag - magZP)/ -2.5)
+    fluxtot = 10 ** ((mag - magZP) / -2.5)
     sbeff = fluxtot / (2 * np.pi * reff**2 * axis_ratio * np.exp(kappa) *
                        index * np.power(kappa, -2*index) * gamma(2*index))
     angle = np.deg2rad(angle)
     sin_ang, cos_ang = np.sin(angle), np.cos(angle)
     M_inv_scale = np.diag((1/reff, 1/(reff*axis_ratio))) ** 2
-    M_rot = np.asarray((cos_ang, -sin_ang, sin_ang, cos_ang)).reshape(2,2)
-    M_inv_rot = np.asarray((cos_ang, sin_ang, -sin_ang, cos_ang)).reshape(2,2)
+    M_rot = np.asarray((cos_ang, -sin_ang, sin_ang, cos_ang)).reshape(2, 2)
+    M_inv_rot = np.asarray((cos_ang, sin_ang, -sin_ang, cos_ang)).reshape(2, 2)
     M_inv_xform = np.dot(np.dot(M_rot, M_inv_scale), M_inv_rot)
 
     coords = [np.arange(arr.size) % arr.shape[1],
@@ -62,7 +72,7 @@ def _add_point_source(arr, magZP, xy, mag):
     """
     Add point source with supplied parameters to a numpy array
     """
-    flux = 10 ** ((mag - magZP)/ -2.5)
+    flux = 10 ** ((mag - magZP) / -2.5)
     xint, xfrac = xy[0] // 1, xy[0] % 1
     yint, yfrac = xy[1] // 1, xy[1] % 1
     arr[yint:yint+2, xint:xint+2] += flux * np.outer((yfrac, 1-yfrac),
