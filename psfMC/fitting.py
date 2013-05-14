@@ -6,7 +6,8 @@ from .models import multicomponent_model
 try:
     import pyregion
 except ImportError:
-    pass
+    pyregion = None
+
 
 # TODO: Friendlier interface for supplying components. File?
 def model_psf_mcmc(obs_file, subIVM_file, psf_file, psfIVM_file,
@@ -29,14 +30,14 @@ def model_psf_mcmc(obs_file, subIVM_file, psf_file, psfIVM_file,
     psfDataIVM = pyfits.getdata(psfIVM_file, ignore_missing_end=True)
 
     if mask_file is not None:
-        try:
+        if pyregion is not None:
             hdr = pyfits.getheader(obs_file)
             regfilt = pyregion.open(mask_file).as_imagecoord(hdr).get_filter()
             mask = regfilt.mask(subData.shape)
             subData = np.ma.masked_array(subData, mask=~mask)
             subDataIVM[~mask] = 0
             # TODO: Use slice to fit only the masked area. But messes up xy pos.
-        except NameError:
+        else:
             warn('pyregion could not be imported. mask_file will be ignored.')
 
     # Normalize the PSF kernel
