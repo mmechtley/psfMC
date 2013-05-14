@@ -1,17 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="f550eb5d-d804-46be-8e18-060ec19e5881" name="Default" comment="">
+    <list default="true" id="f550eb5d-d804-46be-8e18-060ec19e5881" name="Default" comment="Output residual and model files. Fixed shift bug in convolution.">
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/psfMC/fitting.py" afterPath="$PROJECT_DIR$/psfMC/fitting.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/psfMC/models.py" afterPath="$PROJECT_DIR$/psfMC/models.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tests.py" afterPath="$PROJECT_DIR$/tests.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="psfMC.iws" />
     <ignored path=".idea/workspace.xml" />
-    <file path="/fitting.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368498243253" ignored="false" />
-    <file path="/models.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368499761684" ignored="false" />
+    <file path="/fitting.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368505735900" ignored="false" />
+    <file path="/models.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368513496152" ignored="false" />
     <file path="/__init__.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368425731561" ignored="false" />
-    <file path="/tests.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368497979544" ignored="false" />
-    <file path="/Dummy.txt" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368499327672" ignored="false" />
+    <file path="/tests.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368503721113" ignored="false" />
+    <file path="/Dummy.txt" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368513908347" ignored="false" />
     <file path="/a.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368499802072" ignored="false" />
     <file path="/start_script.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368499810666" ignored="false" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -36,7 +38,7 @@
       <file leaf-file-name="tests.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/tests.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="16" column="74" selection-start="440" selection-end="440" vertical-scroll-proportion="0.0">
+            <state line="18" column="37" selection-start="417" selection-end="417" vertical-scroll-proportion="0.0">
               <folding>
                 <element signature="e#0#32#0" expanded="true" />
               </folding>
@@ -47,7 +49,7 @@
       <file leaf-file-name="fitting.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/psfMC/fitting.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="42" column="40" selection-start="1742" selection-end="1742" vertical-scroll-proportion="0.0">
+            <state line="50" column="0" selection-start="2001" selection-end="2001" vertical-scroll-proportion="0.0">
               <folding>
                 <element signature="e#0#13#0" expanded="true" />
               </folding>
@@ -58,10 +60,19 @@
       <file leaf-file-name="models.py" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/psfMC/models.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="63" column="51" selection-start="2107" selection-end="2107" vertical-scroll-proportion="1.6492146">
+            <state line="13" column="26" selection-start="390" selection-end="390" vertical-scroll-proportion="-0.60209423">
               <folding>
                 <element signature="e#0#31#0" expanded="true" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="fftpack.py" pinned="false" current="false" current-in-tab="false">
+        <entry file="file:///System/Library/Frameworks/Python.framework/Versions/2.7/Extras/lib/python/numpy/fft/fftpack.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="504" column="35" selection-start="16806" selection-end="16806" vertical-scroll-proportion="0.0">
+              <folding />
             </state>
           </provider>
         </entry>
@@ -88,8 +99,8 @@
         <option value="$PROJECT_DIR$/models.py" />
         <option value="$PROJECT_DIR$/fitting.py" />
         <option value="$PROJECT_DIR$/tests.py" />
-        <option value="$PROJECT_DIR$/psfMC/fitting.py" />
         <option value="$PROJECT_DIR$/psfMC/models.py" />
+        <option value="$PROJECT_DIR$/psfMC/fitting.py" />
       </list>
     </option>
   </component>
@@ -308,15 +319,19 @@
       <created>1368499331196</created>
       <updated>1368499331196</updated>
     </task>
-    <option name="localTasksCounter" value="7" />
+    <task id="LOCAL-00007" summary="readability cleanup, comments">
+      <created>1368500793323</created>
+      <updated>1368500793323</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="ToolWindowManager">
     <frame x="3" y="22" width="975" height="965" extended-state="0" />
-    <editor active="false" />
+    <editor active="true" />
     <layout>
       <window_info id="Documentation" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32664436" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" x="142" y="111" width="761" height="482" />
-      <window_info id="Changes" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.32998884" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.32998884" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32887402" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
@@ -378,7 +393,7 @@
     <option name="WRAP_WHEN_TYPING_REACHES_RIGHT_MARGIN" value="false" />
     <option name="FORCE_NON_EMPTY_COMMENT" value="false" />
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="false" />
-    <option name="LAST_COMMIT_MESSAGE" value="comment cleanup" />
+    <option name="LAST_COMMIT_MESSAGE" value="readability cleanup, comments" />
     <option name="MAKE_NEW_CHANGELIST_ACTIVE" value="true" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_FILES_UP_TO_DATE_BEFORE_COMMIT" value="false" />
@@ -398,6 +413,7 @@
     <MESSAGE value="Updated tests" />
     <MESSAGE value="Added ability to include magnitude zeropoint" />
     <MESSAGE value="comment cleanup" />
+    <MESSAGE value="readability cleanup, comments" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager />
@@ -424,9 +440,16 @@
         </state>
       </provider>
     </entry>
+    <entry file="file:///System/Library/Frameworks/Python.framework/Versions/2.7/Extras/lib/python/numpy/fft/fftpack.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="504" column="35" selection-start="16806" selection-end="16806" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/tests.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="16" column="74" selection-start="440" selection-end="440" vertical-scroll-proportion="0.0">
+        <state line="18" column="37" selection-start="417" selection-end="417" vertical-scroll-proportion="0.0">
           <folding>
             <element signature="e#0#32#0" expanded="true" />
           </folding>
@@ -435,7 +458,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/psfMC/fitting.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="42" column="40" selection-start="1742" selection-end="1742" vertical-scroll-proportion="0.0">
+        <state line="50" column="0" selection-start="2001" selection-end="2001" vertical-scroll-proportion="0.0">
           <folding>
             <element signature="e#0#13#0" expanded="true" />
           </folding>
@@ -444,7 +467,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/psfMC/models.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="63" column="51" selection-start="2107" selection-end="2107" vertical-scroll-proportion="1.6492146">
+        <state line="13" column="26" selection-start="390" selection-end="390" vertical-scroll-proportion="-0.60209423">
           <folding>
             <element signature="e#0#31#0" expanded="true" />
           </folding>

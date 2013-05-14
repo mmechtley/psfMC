@@ -38,7 +38,12 @@ def _convolve(img, kernel):
     boundary mode to be wrap.
     TODO: consider zero-padding inputs to make sizes power-of-two
     """
-    return np.fft.irfft2(np.fft.rfft2(img) * np.fft.rfft2(kernel, img.shape))
+    pad = np.asarray(img.shape) - np.asarray(kernel.shape)
+    kernel_pad = np.zeros_like(img)
+    kernel_pad[pad[0]//2:pad[0]//2+pad[0],
+               pad[1]//2:pad[1]//2+pad[1]] = kernel
+    return np.fft.ifftshift(np.fft.irfft2(np.fft.rfft2(img) *
+                                          np.fft.rfft2(kernel_pad)))
 
 
 def _add_sersic(arr, magZP, xy, mag, reff, index, axis_ratio, angle):
@@ -53,8 +58,7 @@ def _add_sersic(arr, magZP, xy, mag, reff, index, axis_ratio, angle):
     sin_ang, cos_ang = np.sin(angle), np.cos(angle)
     M_inv_scale = np.diag((1/reff, 1/(reff*axis_ratio))) ** 2
     M_rot = np.asarray((cos_ang, -sin_ang, sin_ang, cos_ang)).reshape(2, 2)
-    M_inv_rot = np.asarray((cos_ang, sin_ang, -sin_ang, cos_ang)).reshape(2, 2)
-    M_inv_xform = np.dot(np.dot(M_rot, M_inv_scale), M_inv_rot)
+    M_inv_xform = np.dot(np.dot(M_rot, M_inv_scale), M_rot.T)
 
     coords = [np.arange(arr.size) % arr.shape[1],
               np.arange(arr.size) // arr.shape[1]]
@@ -91,7 +95,6 @@ def multicomponent_model(subData, subDataIVM, psf, psfIVM,
      ('sersic', 120, 136, 120, 136, 21, 28, 1.5, 3.5, 0.5, 8, 0.1, 1.0, 0, 360)]
     """
     model_comps = []
-    modelpx = np.zeros_like(subData)
 
     for count, component in enumerate(components):
         name = component[0]
@@ -133,8 +136,7 @@ def multicomponent_model(subData, subDataIVM, psf, psfIVM,
     def raw_model(model_comps=model_comps):
         _debug_timer('start')
         # TODO: shouldn't have to make this writeable every time
-        modelpx.flags.writeable = True
-        modelpx[:,:] = 0
+        modelpx = np.zeros_like(subData)
         for comp in model_comps:
             if comp[0] == 'psf':
                 _add_point_source(modelpx, magZP, *comp[1:])
