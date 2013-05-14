@@ -3,7 +3,6 @@ import pyfits
 import numpy as np
 from warnings import warn
 from pymc.MCMC import MCMC
-from pymc.Matplot import plot
 from .models import multicomponent_model
 try:
     import pyregion
@@ -20,7 +19,9 @@ def model_psf_mcmc(obs_file, subIVM_file, psf_file, psfIVM_file,
         raise ValueError('No fitting components specified. Please supply at ' +
                          'least one component.')
     if db_name is None:
-        db_name = obs_file.replace('.fits','_db')
+        db_name = obs_file.replace('.fits', '_db')
+    # pickle gets automatically added, ugh
+    db_name = db_name.replace('.pickle', '')
 
     # TODO: Set these based on total number of unknown components
     kwargs.setdefault('iter', 6000)
@@ -73,14 +74,16 @@ def model_psf_mcmc(obs_file, subIVM_file, psf_file, psfIVM_file,
         resid_file = obs_file.replace('sci', 'resid')
         model_file = obs_file.replace('sci', 'model')
         modelIVM_file = obs_file.replace('sci', 'residivm')
+
+        # TODO: Is this the best way to get at non-traced model data?
         with pyfits.open(obs_file) as f:
-            f[0].data -= sampler.db.trace('convolved_model')[-1]
+            f[0].data -= sampler.get_node('convolved_model').value
             f.writeto(resid_file, clobber=True, output_verify='fix')
-            f[0].data = sampler.db.trace('convolved_model')[-1]
+            f[0].data = sampler.get_node('convolved_model').value.copy()
             f.writeto(model_file, clobber=True, output_verify='fix')
 
         with pyfits.open(subIVM_file) as f:
-            f[0].data = sampler.db.trace('composite_IVM')[-1]
+            f[0].data = sampler.get_node('composite_IVM').value.copy()
             f.writeto(modelIVM_file, clobber=True, output_verify='fix')
 
     # TODO: Return something? Maybe model, resid, IVM arrays?

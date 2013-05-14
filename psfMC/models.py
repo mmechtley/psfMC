@@ -147,7 +147,7 @@ def multicomponent_model(subData, subDataIVM, psf, psfIVM,
         return modelpx
 
 
-    @deterministic(plot=False)
+    @deterministic(plot=False, trace=False)
     def convolved_model(psf=psf, rawmodel=raw_model):
         _debug_timer('start')
         cmodel = _convolve(rawmodel, psf)
@@ -155,7 +155,7 @@ def multicomponent_model(subData, subDataIVM, psf, psfIVM,
         return cmodel
 
 
-    @deterministic(plot=False)
+    @deterministic(plot=False, trace=False)
     def composite_IVM(subDataIVM=subDataIVM, psfIVM=psfIVM,
                       rawmodel=raw_model):
         _debug_timer('start')
@@ -171,8 +171,8 @@ def multicomponent_model(subData, subDataIVM, psf, psfIVM,
         return compIVM
 
     # TODO: Use skellam distribution instead of Normal for discrete data
-    data = Normal('data', value=subData, observed=True,
-                  mu=convolved_model, tau=composite_IVM)
+    data = Normal('data', value=subData, mu=convolved_model, tau=composite_IVM,
+                  observed=True, trace=False)
 
     model_comps += [raw_model, convolved_model, composite_IVM, data]
 
