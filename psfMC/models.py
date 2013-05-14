@@ -6,8 +6,10 @@ from pymc import Uniform, Normal, deterministic
 import time
 
 # Pixels that have zero weight will be replaced with a very small weight
-# TODO: Is there a way to use masked arrays to skip them instead?
+# TODO: Is there a way to use masked arrays to skip bad pixels instead?
 _zero_weight = 1e-20
+
+_show_debug_output = False
 
 np.seterr(divide='ignore')
 
@@ -15,6 +17,19 @@ np.seterr(divide='ignore')
 # further elements are min and max of uniform search regions
 # [('psf', 120, 136, 120, 136, 1e-14, 1e4)]
 # type xmin xmax ymin ymax p1min p1max etc
+
+_t_in = 0.0
+def _debug_timer(step, name=''):
+    global _t_in
+    if not _show_debug_output:
+        return
+    if step == 'start':
+        _t_in = time.time()
+    elif step == 'stop':
+        print '{}: {:.2e}'.format(name, time.time() - _t_in),
+    else:
+        print ''
+
 
 def _convolve(img, kernel):
     return np.fft.irfft2(np.fft.rfft2(img) * np.fft.rfft2(kernel, img.shape))
@@ -59,11 +74,10 @@ def _add_point_source(arr, xy, mag):
     return arr
 
 
-# TODO: Speed of the model generation is limited by the speed of
-# scipy.ndimage._convolve. Seek a way to speed it up.
 def multicomponent_model(subData, subDataIVM, psf, psfIVM,
                          components=[]):
     model_comps = []
+    modelpx = np.zeros_like(subData)
 
     for count, component in enumerate(components):
         name = component[0]
@@ -100,12 +114,10 @@ def multicomponent_model(subData, subDataIVM, psf, psfIVM,
         else:
             warn('Unrecognized component: {}'.format(name))
 
-    print 'Allocating pixels'
-    modelpx = np.zeros_like(subData)
 
     @deterministic(plot=False)
     def raw_model(model_comps=model_comps):
-        t_in = time.time()
+        _debug_timer('start')
         # TODO: shouldn't have to make this writeable every time
         modelpx.flags.writeable = True
         modelpx[:,:] = 0
@@ -116,22 +128,22 @@ def multicomponent_model(subData, subDataIVM, psf, psfIVM,
                 _add_sersic(modelpx, *comp[1:])
             else:
                 warn('Skipping unrecognized component {}'.format(comp[0]))
-        print 'Model: {:.2e}'.format(time.time() - t_in),
+        _debug_timer('stop', name='Model')
         return modelpx
 
 
     @deterministic(plot=False)
     def convolved_model(psf=psf, rawmodel=raw_model):
-        t_in = time.time()
+        _debug_timer('start')
         cmodel = _convolve(rawmodel, psf)
-        print 'Convolve: {:.2e}'.format(time.time() - t_in),
+        _debug_timer('stop', name='Convolve')
         return cmodel
 
 
     @deterministic(plot=False)
     def composite_IVM(subDataIVM=subDataIVM, psfIVM=psfIVM,
                       rawmodel=raw_model):
-        t_in = time.time()
+        _debug_timer('start')
         # TODO: Ensure math here is correct
         modelRMS = _convolve(rawmodel, 1/np.sqrt(psfIVM))
         # Set zero-weight pixels to very small number instead
@@ -139,8 +151,8 @@ def multicomponent_model(subData, subDataIVM, psf, psfIVM,
         badpx |= ~np.isfinite(modelRMS) | ~np.isfinite(subDataIVM)
         compIVM = np.where(badpx, _zero_weight,
                            1 / (modelRMS**2 + 1 / subDataIVM))
-        # assert np.all(compIVM > 0)
-        print 'IVM: {:.2e}'.format(time.time() - t_in)
+        _debug_timer('stop', name='IVM')
+        _debug_timer('final')
         return compIVM
 
     # TODO: Use skellam distribution instead of Normal for discrete data
