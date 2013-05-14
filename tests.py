@@ -5,9 +5,9 @@ import pymc
 import matplotlib.pyplot as pp
 
 try:
-    subfiles = glob.glob(sys.argv[1])
+    obsfiles = glob.glob(sys.argv[1])
 except IndexError:
-    subfiles = ['testdata/sci_J0005-0006.fits']
+    obsfiles = ['testdata/sci_J0005-0006.fits']
 try:
     psffile = sys.argv[2]
 except IndexError:
@@ -20,10 +20,10 @@ fit_components = [('psf', 60, 70, 60, 70, 18, 23),
                   ('sersic', 60, 70, 60, 70, 22, 27.5,
                    1.5, 8.0, 0.5, 8.0, 0.1, 1.0, 0, 360)]
 
-for subfile in subfiles:
-    subIVMfile = subfile.replace('sci', 'ivm')
-    dbfile = subfile.replace('sci', 'db').replace('.fits', '')
-    model_psf_mcmc(subfile, subIVMfile, psffile, psfIVMfile,
+for obsfile in obsfiles:
+    subIVMfile = obsfile.replace('sci', 'ivm')
+    dbfile = obsfile.replace('sci', 'db').replace('.fits', '')
+    model_psf_mcmc(obsfile, subIVMfile, psffile, psfIVMfile,
                    fit_components=fit_components,
                    db_name=dbfile, mag_zeropoint=26.2303)
 
@@ -33,6 +33,7 @@ for subfile in subfiles:
         pp.title(trace_name)
         pp.show()
 
-    runok = subprocess.call(['ds9', subfile.replace('sci','resid'),
-                             subfile.replace('sci','model')])
+    runok = subprocess.call(['ds9', obsfile,
+                             obsfile.replace('sci','model'),
+                             obsfile.replace('sci','resid')])
 
