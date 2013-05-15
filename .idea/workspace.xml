@@ -2,22 +2,24 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="f550eb5d-d804-46be-8e18-060ec19e5881" name="Default" comment="">
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/psfMC/fitting.py" afterPath="$PROJECT_DIR$/psfMC/fitting.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/psfMC/models.py" afterPath="$PROJECT_DIR$/psfMC/models.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tests.py" afterPath="$PROJECT_DIR$/tests.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="psfMC.iws" />
     <ignored path=".idea/workspace.xml" />
-    <file path="/fitting.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368584782441" ignored="false" />
-    <file path="/models.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368595204421" ignored="false" />
+    <file path="/fitting.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368597072830" ignored="false" />
+    <file path="/models.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368650139472" ignored="false" />
     <file path="/__init__.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368425731561" ignored="false" />
     <file path="/tests.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368590053753" ignored="false" />
-    <file path="/Dummy.txt" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368590476424" ignored="false" />
+    <file path="/Dummy.txt" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368595240117" ignored="false" />
     <file path="/a.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368499802072" ignored="false" />
     <file path="/start_script.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368499810666" ignored="false" />
     <file path="/setup.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368589471546" ignored="false" />
     <file path="/.gitignore" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368589678091" ignored="false" />
-    <file path="$PROJECT_DIR$/../../../WIP/z2quasars/fitting/psf_fit_byfocus.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368591541694" ignored="false" />
-    <file path="/psf_fit_byfocus.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368591538964" ignored="false" />
+    <file path="$PROJECT_DIR$/../../../WIP/z2quasars/fitting/psf_fit_byfocus.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368650843605" ignored="false" />
+    <file path="/psf_fit_byfocus.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368597461326" ignored="false" />
     <file path="/wxWindow.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368594698157" ignored="false" />
     <option name="TRACKING_ENABLED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -41,7 +43,7 @@
       <file leaf-file-name="tests.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/tests.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="17" column="57" selection-start="437" selection-end="437" vertical-scroll-proportion="0.0">
+            <state line="25" column="38" selection-start="794" selection-end="794" vertical-scroll-proportion="0.0">
               <folding>
                 <element signature="e#0#32#0" expanded="true" />
               </folding>
@@ -52,7 +54,7 @@
       <file leaf-file-name="fitting.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/psfMC/fitting.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="23" column="0" selection-start="774" selection-end="774" vertical-scroll-proportion="0.0">
+            <state line="50" column="29" selection-start="1919" selection-end="1919" vertical-scroll-proportion="0.0">
               <folding>
                 <element signature="e#0#31#0" expanded="true" />
               </folding>
@@ -63,7 +65,7 @@
       <file leaf-file-name="models.py" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/psfMC/models.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="25" column="16" selection-start="615" selection-end="615" vertical-scroll-proportion="0.59713376">
+            <state line="199" column="67" selection-start="7666" selection-end="7666" vertical-scroll-proportion="0.83439493">
               <folding>
                 <element signature="e#0#31#0" expanded="true" />
               </folding>
@@ -92,11 +94,11 @@
         <option value="$PROJECT_DIR$/__init__.py" />
         <option value="$PROJECT_DIR$/models.py" />
         <option value="$PROJECT_DIR$/fitting.py" />
-        <option value="$PROJECT_DIR$/psfMC/fitting.py" />
         <option value="$PROJECT_DIR$/setup.py" />
         <option value="$PROJECT_DIR$/.gitignore" />
-        <option value="$PROJECT_DIR$/tests.py" />
         <option value="$USER_HOME$/Downloads/wxWindow.py" />
+        <option value="$PROJECT_DIR$/psfMC/fitting.py" />
+        <option value="$PROJECT_DIR$/tests.py" />
         <option value="$PROJECT_DIR$/psfMC/models.py" />
       </list>
     </option>
@@ -377,7 +379,11 @@
       <created>1368590478298</created>
       <updated>1368590478298</updated>
     </task>
-    <option name="localTasksCounter" value="22" />
+    <task id="LOCAL-00022" summary="Fixed bug in fft padding logic.">
+      <created>1368595244464</created>
+      <updated>1368595244464</updated>
+    </task>
+    <option name="localTasksCounter" value="23" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -447,7 +453,7 @@
     <option name="WRAP_WHEN_TYPING_REACHES_RIGHT_MARGIN" value="false" />
     <option name="FORCE_NON_EMPTY_COMMENT" value="false" />
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="false" />
-    <option name="LAST_COMMIT_MESSAGE" value="Test skips histogram plots if numpy is not installed." />
+    <option name="LAST_COMMIT_MESSAGE" value="Fixed bug in fft padding logic." />
     <option name="MAKE_NEW_CHANGELIST_ACTIVE" value="true" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_FILES_UP_TO_DATE_BEFORE_COMMIT" value="false" />
@@ -482,10 +488,11 @@
     <MESSAGE value="plot more histograms when testing" />
     <MESSAGE value="Removed build dir from git" />
     <MESSAGE value="Test skips histogram plots if numpy is not installed." />
+    <MESSAGE value="Fixed bug in fft padding logic." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
-      <option name="time" value="1" />
+      <option name="time" value="2" />
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
@@ -531,16 +538,9 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$USER_HOME$/Downloads/wxWindow.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="4" column="9" selection-start="49" selection-end="49" vertical-scroll-proportion="0.07009346">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/tests.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="17" column="57" selection-start="437" selection-end="437" vertical-scroll-proportion="0.0">
+        <state line="25" column="38" selection-start="794" selection-end="794" vertical-scroll-proportion="0.0">
           <folding>
             <element signature="e#0#32#0" expanded="true" />
           </folding>
@@ -549,7 +549,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/psfMC/fitting.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="23" column="0" selection-start="774" selection-end="774" vertical-scroll-proportion="0.0">
+        <state line="50" column="29" selection-start="1919" selection-end="1919" vertical-scroll-proportion="0.0">
           <folding>
             <element signature="e#0#31#0" expanded="true" />
           </folding>
@@ -558,7 +558,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/psfMC/models.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="25" column="16" selection-start="615" selection-end="615" vertical-scroll-proportion="0.59713376">
+        <state line="199" column="67" selection-start="7666" selection-end="7666" vertical-scroll-proportion="0.83439493">
           <folding>
             <element signature="e#0#31#0" expanded="true" />
           </folding>

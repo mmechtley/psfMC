@@ -23,7 +23,7 @@ for obsfile in obsfiles:
     model_psf_mcmc(obsfile, subIVMfile, psffile, psfIVMfile,
                    fit_components=fit_components,
                    output_name=output_name, mag_zeropoint=26.2303,
-                   burn=5000, iter=10000)
+                   burn=500, iter=1000)
 
     db = pymc.database.pickle.load(output_name+'_db.pickle')
     for trace_name in ('0_psf_mag', '1_sersic_mag', '1_sersic_re', '1_sersic_n',

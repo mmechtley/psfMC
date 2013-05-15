@@ -29,20 +29,27 @@ def _debug_timer(step, name=''):
         print ''
 
 
+def _pad_psf(psf, imgshape):
+    """
+    Pads the psf array to the size described by imgshape, for fft convolution
+    """
+    # TODO: pad with white noise instead of zeros?
+    pad = np.asarray(imgshape) - np.asarray(psf.shape)
+    psf_pad = np.zeros(imgshape, dtype=psf.dtype)
+    psf_pad[pad[0]//2:pad[0]//2+psf.shape[0],
+            pad[1]//2:pad[1]//2+psf.shape[1]] = psf
+    return psf_pad
+
+
 def _convolve(img, kernel):
     """
     FFT-based convolution, using the Convolution Theorem. This is about 100x
     faster than using scipy.ndimage.convolve, due to FFT. But it effectively
     forces the boundary mode to be wrap.
     """
-    #TODO: consider zero-padding inputs to make sizes power-of-two
-    #TODO: pad with white noise instead of zeros
-    pad = np.asarray(img.shape) - np.asarray(kernel.shape)
-    kernel_pad = np.zeros_like(img)
-    kernel_pad[pad[0]//2:pad[0]//2+kernel.shape[0],
-               pad[1]//2:pad[1]//2+kernel.shape[1]] = kernel
+    # TODO: consider padding to power-of-two
     return np.fft.ifftshift(np.fft.irfft2(np.fft.rfft2(img) *
-                                          np.fft.rfft2(kernel_pad)))
+                                          np.fft.rfft2(kernel)))
 
 
 def add_sersic(arr, magZP, xy, mag, reff, index, axis_ratio, angle):
@@ -112,6 +119,19 @@ def multicomponent_model(subData, subDataIVM, psf, psfIVM,
      ('sersic', 120, 136, 120, 136, 21, 28, 1.5, 3.5, 0.5, 8, 0.1, 1.0, 0, 360)]
     """
     np.seterr(divide='ignore')
+
+    # pad the psf arrays to the same size as the data, for fft
+    psf = _pad_psf(psf, subData.shape)
+    psfIVM = _pad_psf(psfIVM, subData.shape)
+
+    # sanitize input arrays
+    badpx = ~np.isfinite(subData) | ~np.isfinite(subDataIVM)
+    subData[badpx] = 0
+    subDataIVM[badpx] = 0
+    badpx = ~np.isfinite(psf) | ~np.isfinite(psfIVM)
+    psf[badpx] = 0
+    psfIVM[badpx] = 0
+
     model_comps = []
 
     for count, component in enumerate(components):
@@ -176,12 +196,13 @@ def multicomponent_model(subData, subDataIVM, psf, psfIVM,
                       rawmodel=raw_model):
         _debug_timer('start')
         # TODO: Ensure math here is correct
-        modelRMS = _convolve(rawmodel, 1/np.sqrt(psfIVM))
+        modelRMS = _convolve(rawmodel, np.where(psfIVM<=0, 1/_zero_weight,
+                                                1/np.sqrt(psfIVM)))
         # Set zero-weight pixels to very small number instead
         badpx = (modelRMS <= 0) | (subDataIVM <= 0)
-        badpx |= ~np.isfinite(modelRMS) | ~np.isfinite(subDataIVM)
+        # badpx |= ~np.isfinite(modelRMS) | ~np.isfinite(subDataIVM)
         compIVM = np.where(badpx, _zero_weight,
-                           1 / (modelRMS**2 + 1 / subDataIVM))
+                           1 / (1 / modelRMS**2 + 1 / subDataIVM))
         _debug_timer('stop', name='IVM')
         _debug_timer('final')
         return compIVM

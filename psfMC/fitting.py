@@ -69,19 +69,24 @@ def model_psf_mcmc(obs_file, subIVM_file, psf_file, psfIVM_file,
     if write_fits:
         # TODO: Add fit information to fits headers
         # TODO: Is get_node the best way to get at non-traced model data?
+
+        rawmodeldata = np.ma.filled(sampler.get_node('raw_model').value, 0)
+        modeldata = np.ma.filled(sampler.get_node('convolved_model').value, 0)
+        modelivmdata = np.ma.filled(sampler.get_node('composite_IVM').value, 0)
+
         with pyfits.open(obs_file) as f:
-            f[0].data -= sampler.get_node('convolved_model').value
+            f[0].data -= modeldata.copy()
             f.writeto(output_name.format('resid.fits'),
                       clobber=True, output_verify='fix')
-            f[0].data = sampler.get_node('convolved_model').value.copy()
+            f[0].data = modeldata.copy()
             f.writeto(output_name.format('model.fits'),
                       clobber=True, output_verify='fix')
-            f[0].data = sampler.get_node('raw_model').value.copy()
+            f[0].data = rawmodeldata.copy()
             f.writeto(output_name.format('rawmodel.fits'),
                       clobber=True, output_verify='fix')
 
         with pyfits.open(subIVM_file) as f:
-            f[0].data = sampler.get_node('composite_IVM').value.copy()
+            f[0].data = modelivmdata.copy()
             f.writeto(output_name.format('modelivm.fits'),
                       clobber=True, output_verify='fix')
 
