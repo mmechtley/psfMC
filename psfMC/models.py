@@ -159,8 +159,6 @@ def multicomponent_model(subData, subDataIVM, psf, psfIVM,
                 add_point_source(modelpx, magZP, *comp[1:])
             elif comp[0] == 'sersic':
                 add_sersic(modelpx, magZP, *comp[1:])
-            else:
-                warn('Skipping unrecognized component {}'.format(comp[0]))
         _debug_timer('stop', name='Model')
         return modelpx
 

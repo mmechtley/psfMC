@@ -29,7 +29,8 @@ for obsfile in obsfiles:
                    burn=5000, iter=10000)
 
     db = pymc.database.pickle.load(output_name+'_db.pickle')
-    for trace_name in ('0_psf_mag', '1_sersic_mag'):
+    for trace_name in ('0_psf_mag', '1_sersic_mag', '1_sersic_re', '1_sersic_n',
+                       '1_sersic_angle', '1_sersic_axisratio'):
         pp.hist(db.trace(trace_name)[:], bins=20)
         pp.title(trace_name)
         pp.show()
