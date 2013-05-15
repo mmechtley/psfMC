@@ -32,8 +32,8 @@ def _debug_timer(step, name=''):
 def _convolve(img, kernel):
     """
     FFT-based convolution, using the Convolution Theorem. This is about 100x
-    faster than using scipy.ndimage.convolve. But it effectively forces the
-    boundary mode to be wrap.
+    faster than using scipy.ndimage.convolve, due to FFT. But it effectively
+    forces the boundary mode to be wrap.
     """
     #TODO: consider zero-padding inputs to make sizes power-of-two
     #TODO: pad with white noise instead of zeros
@@ -45,9 +45,20 @@ def _convolve(img, kernel):
                                           np.fft.rfft2(kernel_pad)))
 
 
-def _add_sersic(arr, magZP, xy, mag, reff, index, axis_ratio, angle):
+def add_sersic(arr, magZP, xy, mag, reff, index, axis_ratio, angle):
     """
-    Add Sersic profile with supplied parameters to a numpy array
+    Add Sersic profile with supplied parameters to a numpy array. Array is
+    assumed to be in counts per second, ie the brightness of a pixel is
+    m = -2.5*log(pixel value) + magZP
+
+    :param arr: Numpy array to add sersic profile to
+    :param magZP: Magnitude zeropoint (i.e. magnitude of 1 count/second)
+    :param xy: Placement in pixels within the array
+    :param mag: Integrated magnitude of profile
+    :param reff: Effective radius, in pixels
+    :param index: Sersic index n. 0.5=gaussian, 1=exponential, 4=de Vaucouleurs
+    :param axis_ratio: Ratio of minor over major axis
+    :param angle: Position angle of major axis, degrees clockwise of right
     """
     kappa = 1.9992*index - 0.3271
     fluxtot = 10 ** ((mag - magZP) / -2.5)
@@ -71,9 +82,16 @@ def _add_sersic(arr, magZP, xy, mag, reff, index, axis_ratio, angle):
     return arr
 
 
-def _add_point_source(arr, magZP, xy, mag):
+def add_point_source(arr, magZP, xy, mag):
     """
-    Add point source with supplied parameters to a numpy array
+    Add point source with supplied parameters to a numpy array. Array is
+    assumed to be in counts per second, ie the brightness of a pixel is
+    m = -2.5*log(pixel value) + magZP
+
+    :param arr: Numpy array to add psf to
+    :param magZP: Magnitude zeropoint (i.e. magnitude of 1 count/second)
+    :param xy: Placement in pixels within the array. Linearly interpolated.
+    :param mag: Integrated magnitude of point source
     """
     flux = 10 ** ((mag - magZP) / -2.5)
     xint, xfrac = xy[0] // 1, xy[0] % 1
@@ -138,9 +156,9 @@ def multicomponent_model(subData, subDataIVM, psf, psfIVM,
         modelpx = np.zeros_like(subData)
         for comp in model_comps:
             if comp[0] == 'psf':
-                _add_point_source(modelpx, magZP, *comp[1:])
+                add_point_source(modelpx, magZP, *comp[1:])
             elif comp[0] == 'sersic':
-                _add_sersic(modelpx, magZP, *comp[1:])
+                add_sersic(modelpx, magZP, *comp[1:])
             else:
                 warn('Skipping unrecognized component {}'.format(comp[0]))
         _debug_timer('stop', name='Model')
