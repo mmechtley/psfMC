@@ -13,15 +13,14 @@ except ImportError:
 # TODO: Friendlier interface for supplying components. File?
 def model_psf_mcmc(obs_file, subIVM_file, psf_file, psfIVM_file,
                    fit_components=None, mag_zeropoint=0,
-                   mask_file=None, db_name=None,
+                   mask_file=None, output_name=None,
                    write_fits=True, **kwargs):
     if fit_components is None:
         raise ValueError('No fitting components specified. Please supply at ' +
                          'least one component.')
-    if db_name is None:
-        db_name = obs_file.replace('.fits', '_db')
-    # pickle gets automatically added, ugh
-    db_name = db_name.replace('.pickle', '')
+    if output_name is None:
+        output_name = obs_file.replace('.fits', '')
+    output_name += '_{}'
 
     # TODO: Set these based on total number of unknown components
     kwargs.setdefault('iter', 6000)
@@ -54,7 +53,7 @@ def model_psf_mcmc(obs_file, subIVM_file, psf_file, psfIVM_file,
     mc_model = multicomponent_model(subData, subDataIVM, psfData, psfDataIVM,
                                     components=fit_components,
                                     magZP=mag_zeropoint)
-    sampler = MCMC(mc_model, db='pickle', name=db_name)
+    sampler = MCMC(mc_model, db='pickle', name=output_name.format('db'))
     sampler.sample(**kwargs)
 
     ## Saves out to pickle file
@@ -64,26 +63,26 @@ def model_psf_mcmc(obs_file, subIVM_file, psf_file, psfIVM_file,
     stats = sampler.stats()
     for stoch in sorted(stats):
         if stoch.startswith(tuple(str(i) for i in range(len(fit_components)))):
-            print '{}: mean: {} std: {} final: {}'.format(
-                stoch, stats[stoch]['mean'], stats[stoch]['standard deviation'],
-                sampler.db.trace(stoch)[-1])
+            print '{}: mean: {} std: {}'.format(
+                stoch, stats[stoch]['mean'], stats[stoch]['standard deviation'])
 
     if write_fits:
         # TODO: Add fit information to fits headers
-        # TODO: Don't use replace here
-        resid_file = obs_file.replace('sci', 'resid')
-        model_file = obs_file.replace('sci', 'model')
-        modelIVM_file = obs_file.replace('sci', 'modelivm')
-
-        # TODO: Is this the best way to get at non-traced model data?
+        # TODO: Is get_node the best way to get at non-traced model data?
         with pyfits.open(obs_file) as f:
             f[0].data -= sampler.get_node('convolved_model').value
-            f.writeto(resid_file, clobber=True, output_verify='fix')
+            f.writeto(output_name.format('resid.fits'),
+                      clobber=True, output_verify='fix')
             f[0].data = sampler.get_node('convolved_model').value.copy()
-            f.writeto(model_file, clobber=True, output_verify='fix')
+            f.writeto(output_name.format('model.fits'),
+                      clobber=True, output_verify='fix')
+            f[0].data = sampler.get_node('raw_model').value.copy()
+            f.writeto(output_name.format('rawmodel.fits'),
+                      clobber=True, output_verify='fix')
 
         with pyfits.open(subIVM_file) as f:
             f[0].data = sampler.get_node('composite_IVM').value.copy()
-            f.writeto(modelIVM_file, clobber=True, output_verify='fix')
+            f.writeto(output_name.format('modelivm.fits'),
+                      clobber=True, output_verify='fix')
 
     # TODO: Return something? Maybe model, resid, IVM arrays?

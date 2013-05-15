@@ -22,18 +22,16 @@ fit_components = [('psf', 60, 70, 60, 70, 18, 23),
 
 for obsfile in obsfiles:
     subIVMfile = obsfile.replace('sci', 'ivm')
-    dbfile = obsfile.replace('sci', 'db').replace('.fits', '.pickle')
+    output_name = obsfile.replace('sci_', '').replace('.fits', '')
     model_psf_mcmc(obsfile, subIVMfile, psffile, psfIVMfile,
                    fit_components=fit_components,
-                   db_name=dbfile, mag_zeropoint=26.2303,
-                   burn=500, iter=1000)
+                   output_name=output_name, mag_zeropoint=26.2303,
+                   burn=5000, iter=10000)
 
-    db = pymc.database.pickle.load(dbfile)
+    db = pymc.database.pickle.load(output_name+'_db.pickle')
     for trace_name in ('0_psf_mag', '1_sersic_mag'):
         pp.hist(db.trace(trace_name)[:], bins=20)
         pp.title(trace_name)
         pp.show()
 
-    runok = subprocess.call(['ds9', obsfile,
-                             obsfile.replace('sci', 'model'),
-                             obsfile.replace('sci', 'resid')])
+    runok = subprocess.call(['ds9', obsfile] + glob.glob(output_name+'_*.fits'))
