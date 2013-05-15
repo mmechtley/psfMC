@@ -39,8 +39,8 @@ def _convolve(img, kernel):
     #TODO: pad with white noise instead of zeros
     pad = np.asarray(img.shape) - np.asarray(kernel.shape)
     kernel_pad = np.zeros_like(img)
-    kernel_pad[pad[0]//2:pad[0]//2+pad[0],
-               pad[1]//2:pad[1]//2+pad[1]] = kernel
+    kernel_pad[pad[0]//2:pad[0]//2+kernel.shape[0],
+               pad[1]//2:pad[1]//2+kernel.shape[1]] = kernel
     return np.fft.ifftshift(np.fft.irfft2(np.fft.rfft2(img) *
                                           np.fft.rfft2(kernel_pad)))
 
