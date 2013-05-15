@@ -1,20 +1,17 @@
 from psfMC import model_psf_mcmc
-import glob, sys
+import glob
 import subprocess
 import pymc
-import matplotlib.pyplot as pp
+try:
+    import matplotlib.pyplot as pp
+except ImportError:
+    pp = None
 
-try:
-    obsfiles = glob.glob(sys.argv[1])
-except IndexError:
-    obsfiles = ['testdata/sci_J0005-0006.fits']
-try:
-    psffile = sys.argv[2]
-except IndexError:
-    psffile = 'testdata/sci_psf.fits'
+
+obsfiles = ['testdata/sci_J0005-0006.fits']
+psffile = 'testdata/sci_psf.fits'
 
 psfIVMfile = psffile.replace('sci', 'ivm')
-
 
 fit_components = [('psf', 60, 70, 60, 70, 18, 23),
                   ('sersic', 60, 70, 60, 70, 22, 27.5,
@@ -31,8 +28,9 @@ for obsfile in obsfiles:
     db = pymc.database.pickle.load(output_name+'_db.pickle')
     for trace_name in ('0_psf_mag', '1_sersic_mag', '1_sersic_re', '1_sersic_n',
                        '1_sersic_angle', '1_sersic_axisratio'):
-        pp.hist(db.trace(trace_name)[:], bins=20)
-        pp.title(trace_name)
-        pp.show()
+        if pp is not None:
+            pp.hist(db.trace(trace_name)[:], bins=20)
+            pp.title(trace_name)
+            pp.show()
 
     runok = subprocess.call(['ds9', obsfile] + glob.glob(output_name+'_*.fits'))
