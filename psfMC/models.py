@@ -73,6 +73,8 @@ def add_sersic(arr, magZP, xy, mag, reff, index, axis_ratio, angle):
                        index * np.power(kappa, -2*index) * gamma(2*index))
     angle = np.deg2rad(angle)
     sin_ang, cos_ang = np.sin(angle), np.cos(angle)
+
+    # Matrix representation of ellipse: http://en.wikipedia.org/wiki/Ellipsoid
     M_inv_scale = np.diag((1/reff, 1/(reff*axis_ratio))) ** 2
     M_rot = np.asarray((cos_ang, -sin_ang, sin_ang, cos_ang)).reshape(2, 2)
     M_inv_xform = np.dot(np.dot(M_rot, M_inv_scale), M_rot.T)
@@ -86,7 +88,7 @@ def add_sersic(arr, magZP, xy, mag, reff, index, axis_ratio, angle):
         axis=0))
     radii = radii.reshape(arr.shape)
     arr += sbeff * np.exp(-kappa * (np.power(radii, 1/index) - 1))
-    return arr
+    return arr, sbeff
 
 
 def add_point_source(arr, magZP, xy, mag):
@@ -200,7 +202,6 @@ def multicomponent_model(subData, subDataIVM, psf, psfIVM,
                                                 1/np.sqrt(psfIVM)))
         # Set zero-weight pixels to very small number instead
         badpx = (modelRMS <= 0) | (subDataIVM <= 0)
-        # badpx |= ~np.isfinite(modelRMS) | ~np.isfinite(subDataIVM)
         compIVM = np.where(badpx, _zero_weight,
                            1 / (1 / modelRMS**2 + 1 / subDataIVM))
         _debug_timer('stop', name='IVM')
