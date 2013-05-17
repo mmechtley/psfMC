@@ -1,4 +1,4 @@
-from psfMC import model_psf_mcmc
+from psfMC import model_galaxy_mcmc
 import glob
 import subprocess
 import pymc
@@ -8,22 +8,23 @@ except ImportError:
     pp = None
 
 
-obsfiles = ['testdata/sci_J0005-0006.fits']
-psffile = 'testdata/sci_psf.fits'
+obsfiles = ['testdata/sci_SDSSJ081518.99+103711.5.fits',
+            'testdata/sci_J0005-0006.fits']
+psffiles = ['testdata/sci_psf16.fits',
+            'testdata/sci_psf.fits']
 
-psfIVMfile = psffile.replace('sci', 'ivm')
-
-fit_components = [('psf', 60, 70, 60, 70, 18, 23),
-                  ('sersic', 60, 70, 60, 70, 22, 27.5,
+fit_components = [('psf', 60, 70, 60, 70, 15, 23),
+                  ('sersic', 60, 70, 60, 70, 18, 27.5,
                    1.5, 8.0, 0.5, 8.0, 0.1, 1.0, 0, 360)]
 
-for obsfile in obsfiles:
-    subIVMfile = obsfile.replace('sci', 'ivm')
+for obsfile, psffile in zip(obsfiles, psffiles):
+    obsIVMfile = obsfile.replace('sci', 'ivm')
+    psfIVMfile = psffile.replace('sci', 'ivm')
     output_name = obsfile.replace('sci_', '').replace('.fits', '')
-    model_psf_mcmc(obsfile, subIVMfile, psffile, psfIVMfile,
-                   fit_components=fit_components,
-                   output_name=output_name, mag_zeropoint=26.2303,
-                   burn=500, iter=1000)
+    model_galaxy_mcmc(obsfile, obsIVMfile, psffile, psfIVMfile,
+                      fit_components=fit_components,
+                      output_name=output_name, mag_zeropoint=26.2303,
+                      burn=500, iter=1000)
 
     db = pymc.database.pickle.load(output_name+'_db.pickle')
     for trace_name in ('0_psf_mag', '1_sersic_mag', '1_sersic_re', '1_sersic_n',

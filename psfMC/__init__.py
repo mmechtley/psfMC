@@ -1,1 +1,1 @@
-from .fitting import model_psf_mcmc
+from .fitting import model_galaxy_mcmc

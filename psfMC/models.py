@@ -4,6 +4,7 @@ import numpy as np
 from warnings import warn
 from scipy.special import gamma
 from pymc import Uniform, Normal, deterministic
+import matplotlib.pyplot as pp
 
 # TODO: Is there a way to use masked arrays to skip bad pixels instead?
 # Pixels that have zero weight will be replaced with a very small weight
@@ -29,15 +30,15 @@ def _debug_timer(step, name=''):
         print ''
 
 
-def _pad_psf(psf, imgshape):
+def _pad_image(img, newshape):
     """
     Pads the psf array to the size described by imgshape, for fft convolution
     """
     # TODO: pad with white noise instead of zeros?
-    pad = np.asarray(imgshape) - np.asarray(psf.shape)
-    psf_pad = np.zeros(imgshape, dtype=psf.dtype)
-    psf_pad[pad[0]//2:pad[0]//2+psf.shape[0],
-            pad[1]//2:pad[1]//2+psf.shape[1]] = psf
+    pad = np.asarray(newshape) - np.asarray(img.shape)
+    psf_pad = np.zeros(newshape, dtype=img.dtype)
+    psf_pad[pad[0]//2:pad[0]//2+img.shape[0],
+            pad[1]//2:pad[1]//2+img.shape[1]] = img
     return psf_pad
 
 
@@ -123,8 +124,8 @@ def multicomponent_model(subData, subDataIVM, psf, psfIVM,
     np.seterr(divide='ignore')
 
     # pad the psf arrays to the same size as the data, for fft
-    psf = _pad_psf(psf, subData.shape)
-    psfIVM = _pad_psf(psfIVM, subData.shape)
+    psf = _pad_image(psf, subData.shape)
+    psfIVM = _pad_image(psfIVM, subData.shape)
 
     # sanitize input arrays
     badpx = ~np.isfinite(subData) | ~np.isfinite(subDataIVM)
@@ -133,6 +134,9 @@ def multicomponent_model(subData, subDataIVM, psf, psfIVM,
     badpx = ~np.isfinite(psf) | ~np.isfinite(psfIVM)
     psf[badpx] = 0
     psfIVM[badpx] = 0
+    psfRMS = np.where(psfIVM<=0, 1/_zero_weight, 1/np.sqrt(psfIVM))
+
+    sky = Uniform('sky_ADU', lower=subData.min(), upper=subData.max())
 
     model_comps = []
 
@@ -194,24 +198,30 @@ def multicomponent_model(subData, subDataIVM, psf, psfIVM,
 
 
     @deterministic(plot=False, trace=False)
-    def composite_IVM(subDataIVM=subDataIVM, psfIVM=psfIVM,
+    def composite_ivm(subDataIVM=subDataIVM, psfRMS=psfRMS,
                       rawmodel=raw_model):
         _debug_timer('start')
         # TODO: Ensure math here is correct
-        modelRMS = _convolve(rawmodel, np.where(psfIVM<=0, 1/_zero_weight,
-                                                1/np.sqrt(psfIVM)))
+        # FIXME: Some horrendous gobledygook here sometimes
+        modelRMS = _convolve(rawmodel, psfRMS)
         # Set zero-weight pixels to very small number instead
         badpx = (modelRMS <= 0) | (subDataIVM <= 0)
         compIVM = np.where(badpx, _zero_weight,
-                           1 / (1 / modelRMS**2 + 1 / subDataIVM))
+                           1 / (modelRMS**2 + 1 / subDataIVM))
+        if np.all(compIVM < 1e-5):
+            for arr in (modelRMS, psfRMS, compIVM):
+                pp.imshow(arr, interpolation='nearest',
+                          vmin=0, vmax=arr[arr<1e20].max())
+                pp.show()
+            exit(1)
         _debug_timer('stop', name='IVM')
         _debug_timer('final')
         return compIVM
 
     # TODO: Use skellam distribution instead of Normal for discrete data
-    data = Normal('data', value=subData, mu=convolved_model, tau=composite_IVM,
-                  observed=True, trace=False)
+    data = Normal('data', value=subData, mu=convolved_model+sky,
+                  tau=composite_ivm, observed=True, trace=False)
 
-    model_comps += [raw_model, convolved_model, composite_IVM, data]
+    model_comps += [raw_model, convolved_model, composite_ivm, data, sky]
 
     return model_comps
