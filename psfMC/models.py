@@ -30,30 +30,42 @@ def _debug_timer(step, name=''):
         print ''
 
 
-def _pad_image(img, newshape):
+def _pad_and_rfft_image(img, newshape):
     """
-    Pads the psf array to the size described by imgshape, for fft convolution
+    Pads the psf array to the size described by imgshape, then run rfft to put
+    it in Fourier space.
     """
     # TODO: pad with white noise instead of zeros?
     pad = np.asarray(newshape) - np.asarray(img.shape)
-    psf_pad = np.zeros(newshape, dtype=img.dtype)
-    psf_pad[pad[0]//2:pad[0]//2+img.shape[0],
+    if np.any(pad < 0):
+        raise ValueError('PSF image size must be smaller than data image size')
+    img_pad = np.zeros(newshape, dtype=img.dtype)
+    img_pad[pad[0]//2:pad[0]//2+img.shape[0],
             pad[1]//2:pad[1]//2+img.shape[1]] = img
-    return psf_pad
+    return np.fft.rfft2(img_pad)
 
 
-def _convolve(img, kernel):
+def _convolve(img, fourier_kernel):
     """
     FFT-based convolution, using the Convolution Theorem. This is about 100x
     faster than using scipy.ndimage.convolve, due to FFT. But it effectively
-    forces the boundary mode to be wrap.
+    forces the boundary mode to be wrap. The kernel is supplied pre-computed
     """
     # TODO: consider padding to power-of-two for extra speed
-    return np.fft.ifftshift(np.fft.irfft2(np.fft.rfft2(img) *
-                                          np.fft.rfft2(kernel)))
+    return np.fft.ifftshift(np.fft.irfft2(np.fft.rfft2(img) * fourier_kernel))
 
 
-def add_sersic(arr, magZP, xy, mag, reff, index, axis_ratio, angle):
+def _coord_array(arr):
+    """
+    Returns arr.size x 2 array of x, y coordinate for each cell in arr
+    """
+    coords = [np.arange(arr.size) % arr.shape[1],
+              np.arange(arr.size) // arr.shape[1]]
+    return np.transpose(coords).astype(arr.dtype)
+
+
+def add_sersic(arr, magZP, xy, mag, reff, index, axis_ratio, angle,
+               coords=None):
     """
     Add Sersic profile with supplied parameters to a numpy array. Array is
     assumed to be in counts per second, ie the brightness of a pixel is
@@ -61,13 +73,19 @@ def add_sersic(arr, magZP, xy, mag, reff, index, axis_ratio, angle):
 
     :param arr: Numpy array to add sersic profile to
     :param magZP: Magnitude zeropoint (i.e. magnitude of 1 count/second)
-    :param xy: Placement in pixels within the array
+    :param xy: Numpy array, placement in pixels within the array
     :param mag: Integrated magnitude of profile
     :param reff: Effective radius, in pixels
     :param index: Sersic index n. 0.5=gaussian, 1=exponential, 4=de Vaucouleurs
     :param axis_ratio: Ratio of minor over major axis
     :param angle: Position angle of major axis, degrees clockwise of right
+    :param coords:
     """
+    if coords is None:
+        coords = _coord_array(arr)
+    else:
+        coords = coords.copy()
+
     kappa = 1.9992*index - 0.3271
     fluxtot = 10 ** ((mag - magZP) / -2.5)
     sbeff = fluxtot / (2 * np.pi * reff**2 * axis_ratio * np.exp(kappa) *
@@ -80,9 +98,6 @@ def add_sersic(arr, magZP, xy, mag, reff, index, axis_ratio, angle):
     M_rot = np.asarray((cos_ang, -sin_ang, sin_ang, cos_ang)).reshape(2, 2)
     M_inv_xform = np.dot(np.dot(M_rot, M_inv_scale), M_rot.T)
 
-    coords = [np.arange(arr.size) % arr.shape[1],
-              np.arange(arr.size) // arr.shape[1]]
-    coords = np.transpose(coords).astype(arr.dtype)
     coords -= xy
     radii = np.sqrt(np.sum(
         (coords.T * np.dot(M_inv_xform, coords.T)),
@@ -97,10 +112,11 @@ def add_point_source(arr, magZP, xy, mag):
     Add point source with supplied parameters to a numpy array. Array is
     assumed to be in counts per second, ie the brightness of a pixel is
     m = -2.5*log(pixel value) + magZP
+    Linearly interpolation is used for subpixel positions.
 
     :param arr: Numpy array to add psf to
     :param magZP: Magnitude zeropoint (i.e. magnitude of 1 count/second)
-    :param xy: Placement in pixels within the array. Linearly interpolated.
+    :param xy: Numpy array, placement in pixels within the array.
     :param mag: Integrated magnitude of point source
     """
     flux = 10 ** ((mag - magZP) / -2.5)
@@ -111,8 +127,8 @@ def add_point_source(arr, magZP, xy, mag):
     return arr
 
 
-def multicomponent_model(subData, subDataIVM, psf, psfIVM,
-                         components=None, magZP=0):
+def multicomponent_model(obs_data, obs_ivm, psf_data, psf_ivm,
+                         components=None, mag_zp=0):
     """
     Multi-component model for MCMC psf fitting.
     Components is a list of tuples. First element is type (psf, sersic).
@@ -123,28 +139,26 @@ def multicomponent_model(subData, subDataIVM, psf, psfIVM,
     """
     np.seterr(divide='ignore')
 
-    # sanitize input arrays
-    badpx = ~np.isfinite(subData) | ~np.isfinite(subDataIVM)
-    subData[badpx] = 0
-    subDataIVM[badpx] = 0
-    badpx = ~np.isfinite(psf) | ~np.isfinite(psfIVM)
-    psf[badpx] = 0
-    psfIVM[badpx] = 0
-    psfRMS = np.where(psfIVM <= 0, 1 / _zero_weight, np.sqrt(1 / psfIVM))
+    psf_rms = np.where(psf_ivm == 0, 0, 1 / np.sqrt(psf_ivm))
 
     # pad the psf arrays to the same size as the data, for fft
-    psf = _pad_image(psf, subData.shape)
-    psfRMS = _pad_image(psfRMS, subData.shape)
+    f_psf = _pad_and_rfft_image(psf_data, obs_data.shape)
+    f_psf_rms = _pad_and_rfft_image(psf_rms, obs_data.shape)
+
+    # pre-compute data x,y coordinates
+    data_coords = _coord_array(obs_data)
 
     model_comps = []
+    stochastics = []
+    sky = 0.0
 
     for count, component in enumerate(components):
         name = component[0]
         if name == 'sky':
-            sky_adu = Uniform('{}_{}_adu'.format(count, name),
+            sky = Uniform('{}_{}_adu'.format(count, name),
                               lower=min(component[1:3]),
                               upper=max(component[1:3]))
-            model_comps += [('sky', sky_adu)]
+            stochastics += [sky]
         elif name == 'psf':
             xy = np.asarray(component[1:5]).reshape((2, 2))
             xy = Uniform('{}_{}_xy'.format(count, name),
@@ -183,51 +197,47 @@ def multicomponent_model(subData, subDataIVM, psf, psfIVM,
     @deterministic(plot=False, trace=False)
     def raw_model(model_comps=model_comps):
         _debug_timer('start')
-        modelpx = np.zeros_like(subData)
+        modelpx = np.zeros_like(obs_data)
         for comp in model_comps:
-            if comp[0] == 'sky':
-                modelpx += comp[1]
-            elif comp[0] == 'psf':
-                add_point_source(modelpx, magZP, *comp[1:])
+            if comp[0] == 'psf':
+                add_point_source(modelpx, mag_zp, *comp[1:])
             elif comp[0] == 'sersic':
-                add_sersic(modelpx, magZP, *comp[1:])
+                add_sersic(modelpx, mag_zp, *comp[1:], coords=data_coords)
         _debug_timer('stop', name='Model')
         return modelpx
 
 
     @deterministic(plot=False, trace=False)
-    def convolved_model(psf=psf, rawmodel=raw_model):
+    def convolved_model(f_psf=f_psf, raw_model=raw_model):
         _debug_timer('start')
-        cmodel = _convolve(rawmodel, psf)
+        cmodel = _convolve(raw_model, f_psf)
         _debug_timer('stop', name='Convolve')
         return cmodel
 
 
     @deterministic(plot=False, trace=False)
-    def composite_ivm(subDataIVM=subDataIVM, psfRMS=psfRMS,
-                      rawmodel=raw_model):
+    def composite_ivm(obs_ivm=obs_ivm, f_psf_rms=f_psf_rms,
+                      raw_model=raw_model):
         _debug_timer('start')
-        # TODO: Ensure math here is correct
-        # FIXME: Some horrendous gobledygook here sometimes
-        modelRMS = _convolve(rawmodel, psfRMS)
+        # f * (g + h) = (f * g) + (f * h), so convolve PSF RMS map with model to
+        # get model RMS map
+        modelRMS = _convolve(raw_model, f_psf_rms)
         # Set zero-weight pixels to very small number instead
-        badpx = (modelRMS <= 0) | (subDataIVM <= 0)
-        compIVM = np.where(badpx, _zero_weight,
-                           1 / (modelRMS**2 + 1 / subDataIVM))
-        # if np.all(compIVM < 1e-5):
-        #     for arr in (psfRMS, modelRMS, compIVM):
-        #         pp.imshow(arr, interpolation='nearest')#,
-        #                   vmin=0, vmax=arr[arr<1e20].max())
-        #         pp.show()
-        #     exit(1)
+        badpx = (modelRMS <= 0) | (obs_ivm <= 0)
+        compIVM = np.where(badpx, _zero_weight, 1 / (modelRMS**2 + 1 / obs_ivm))
+        # for arr in (raw_model, modelRMS, compIVM):
+        #     pp.imshow(np.log10(arr), interpolation='nearest')
+        #     pp.colorbar()
+        #     pp.show()
+        # exit(1)
         _debug_timer('stop', name='IVM')
         _debug_timer('final')
         return compIVM
 
-    # TODO: Use skellam distribution instead of Normal for discrete data
-    data = Normal('data', value=subData, mu=convolved_model,
+    data = Normal('data', value=obs_data, mu=convolved_model+sky,
                   tau=composite_ivm, observed=True, trace=False)
 
-    model_comps += [raw_model, convolved_model, composite_ivm, data]
+    stochastics += [raw_model, convolved_model, composite_ivm, data]
+    stochastics += model_comps
 
-    return model_comps
+    return stochastics

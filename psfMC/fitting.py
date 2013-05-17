@@ -73,12 +73,15 @@ def model_galaxy_mcmc(obs_file, obsIVM_file, psf_file, psfIVM_file,
     psfData = pyfits.getdata(psf_file, ignore_missing_end=True)
     psfDataIVM = pyfits.getdata(psfIVM_file, ignore_missing_end=True)
 
+    obsData, obsDataIVM, psfData, psfDataIVM = _mask_bad_pixels(
+        obsData, obsDataIVM, psfData, psfDataIVM)
+
     if mask_file is not None:
         if pyregion is not None:
             hdr = pyfits.getheader(obs_file)
             regfilt = pyregion.open(mask_file).as_imagecoord(hdr).get_filter()
             mask = regfilt.mask(obsData.shape)
-            obsData = np.ma.masked_array(obsData, mask=~mask)
+            obsData.mask |= ~mask
             obsDataIVM[~mask] = 0
             # TODO: Use slice to fit only the masked area. But messes up xy pos.
         else:
@@ -86,13 +89,13 @@ def model_galaxy_mcmc(obs_file, obsIVM_file, psf_file, psfIVM_file,
 
     # Normalize the PSF kernel
     # TODO: Convert to float64 first?
-    psfScale = 1 / psfData.sum()
-    psfData *= psfScale
-    psfDataIVM /= psfScale**2
+    psf_sum = psfData.sum()
+    psfData /= psf_sum
+    psfDataIVM *= psf_sum**2
 
     mc_model = multicomponent_model(obsData, obsDataIVM, psfData, psfDataIVM,
                                     components=fit_components,
-                                    magZP=mag_zeropoint)
+                                    mag_zp=mag_zeropoint)
     sampler = MCMC(mc_model, db='pickle', name=output_name.format('db'))
     sampler.sample(**kwargs)
 
@@ -127,3 +130,19 @@ def model_galaxy_mcmc(obs_file, obsIVM_file, psf_file, psfIVM_file,
                        clobber=True, output_verify='fix')
 
     # TODO: Return something? Maybe model, resid, IVM arrays?
+
+def _mask_bad_pixels(obs_data, obs_ivm, psf_data, psf_ivm):
+    """
+    Sanitize input arrays by masking out bad pixels
+    """
+    # For observed data, we use numpy masked array to simply ignore bad pixels
+    # We set them to zero in the weight map, even though they ought be already
+    badpx = ~np.isfinite(obs_data) | ~np.isfinite(obs_ivm) | (obs_ivm <= 0)
+    obs_data = np.ma.masked_array(obs_data, mask=badpx)
+    obs_ivm[badpx] = 0
+    # We don't want zero-weight pixels in the PSF to contribute to the RMS,
+    # so we simply set them to 0 in both data and weight map
+    badpx = ~np.isfinite(psf_data) | ~np.isfinite(psf_ivm) | (psf_ivm <= 0)
+    psf_data[badpx] = 0
+    psf_ivm[badpx] = 0
+    return obs_data, obs_ivm, psf_data, psf_ivm
