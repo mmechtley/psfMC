@@ -8,8 +8,8 @@ except ImportError:
     pp = None
 
 
-obsfiles = ['testdata/sci_J0005-0006.fits']
-psffiles = ['testdata/sci_psf.fits']
+obsfiles = ['sci_J0005-0006.fits']
+psffiles = ['sci_psf.fits']
 
 fit_components = [('sky', -1e-1, 1e-1),
                   ('psf', 60, 70, 60, 70, 18, 23),
