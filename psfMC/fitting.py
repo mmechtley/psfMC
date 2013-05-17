@@ -102,9 +102,8 @@ def model_galaxy_mcmc(obs_file, obsIVM_file, psf_file, psfIVM_file,
     # TODO: Remove debug output
     stats = sampler.stats()
     for stoch in sorted(stats):
-        if stoch.startswith(tuple(str(i) for i in range(len(fit_components)))):
-            print '{}: mean: {} std: {}'.format(
-                stoch, stats[stoch]['mean'], stats[stoch]['standard deviation'])
+        print '{}: mean: {} std: {}'.format(stoch, stats[stoch]['mean'],
+                                            stats[stoch]['standard deviation'])
 
     # TODO: Add fit information to fits headers
     obsHeader = pyfits.getheader(obs_file, ignore_missing_end=True)

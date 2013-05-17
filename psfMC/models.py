@@ -48,7 +48,7 @@ def _convolve(img, kernel):
     faster than using scipy.ndimage.convolve, due to FFT. But it effectively
     forces the boundary mode to be wrap.
     """
-    # TODO: consider padding to power-of-two
+    # TODO: consider padding to power-of-two for extra speed
     return np.fft.ifftshift(np.fft.irfft2(np.fft.rfft2(img) *
                                           np.fft.rfft2(kernel)))
 
@@ -123,10 +123,6 @@ def multicomponent_model(subData, subDataIVM, psf, psfIVM,
     """
     np.seterr(divide='ignore')
 
-    # pad the psf arrays to the same size as the data, for fft
-    psf = _pad_image(psf, subData.shape)
-    psfIVM = _pad_image(psfIVM, subData.shape)
-
     # sanitize input arrays
     badpx = ~np.isfinite(subData) | ~np.isfinite(subDataIVM)
     subData[badpx] = 0
@@ -134,16 +130,23 @@ def multicomponent_model(subData, subDataIVM, psf, psfIVM,
     badpx = ~np.isfinite(psf) | ~np.isfinite(psfIVM)
     psf[badpx] = 0
     psfIVM[badpx] = 0
-    psfRMS = np.where(psfIVM<=0, 1/_zero_weight, 1/np.sqrt(psfIVM))
+    psfRMS = np.where(psfIVM <= 0, 1 / _zero_weight, np.sqrt(1 / psfIVM))
 
-    sky = Uniform('sky_ADU', lower=subData.min(), upper=subData.max())
+    # pad the psf arrays to the same size as the data, for fft
+    psf = _pad_image(psf, subData.shape)
+    psfRMS = _pad_image(psfRMS, subData.shape)
 
     model_comps = []
 
     for count, component in enumerate(components):
         name = component[0]
-        xy = np.asarray(component[1:5]).reshape((2, 2))
-        if name == 'psf':
+        if name == 'sky':
+            sky_adu = Uniform('{}_{}_adu'.format(count, name),
+                              lower=min(component[1:3]),
+                              upper=max(component[1:3]))
+            model_comps += [('sky', sky_adu)]
+        elif name == 'psf':
+            xy = np.asarray(component[1:5]).reshape((2, 2))
             xy = Uniform('{}_{}_xy'.format(count, name),
                          lower=np.min(xy, axis=1), upper=np.max(xy, axis=1))
             mag = Uniform('{}_{}_mag'.format(count, name),
@@ -152,6 +155,7 @@ def multicomponent_model(subData, subDataIVM, psf, psfIVM,
             model_comps += [('psf', xy, mag)]
 
         elif name == 'sersic':
+            xy = np.asarray(component[1:5]).reshape((2, 2))
             xy = Uniform('{}_{}_xy'.format(count, name),
                          lower=np.min(xy, axis=1), upper=np.max(xy, axis=1))
             mag = Uniform('{}_{}_mag'.format(count, name),
@@ -181,7 +185,9 @@ def multicomponent_model(subData, subDataIVM, psf, psfIVM,
         _debug_timer('start')
         modelpx = np.zeros_like(subData)
         for comp in model_comps:
-            if comp[0] == 'psf':
+            if comp[0] == 'sky':
+                modelpx += comp[1]
+            elif comp[0] == 'psf':
                 add_point_source(modelpx, magZP, *comp[1:])
             elif comp[0] == 'sersic':
                 add_sersic(modelpx, magZP, *comp[1:])
@@ -208,20 +214,20 @@ def multicomponent_model(subData, subDataIVM, psf, psfIVM,
         badpx = (modelRMS <= 0) | (subDataIVM <= 0)
         compIVM = np.where(badpx, _zero_weight,
                            1 / (modelRMS**2 + 1 / subDataIVM))
-        if np.all(compIVM < 1e-5):
-            for arr in (modelRMS, psfRMS, compIVM):
-                pp.imshow(arr, interpolation='nearest',
-                          vmin=0, vmax=arr[arr<1e20].max())
-                pp.show()
-            exit(1)
+        # if np.all(compIVM < 1e-5):
+        #     for arr in (psfRMS, modelRMS, compIVM):
+        #         pp.imshow(arr, interpolation='nearest')#,
+        #                   vmin=0, vmax=arr[arr<1e20].max())
+        #         pp.show()
+        #     exit(1)
         _debug_timer('stop', name='IVM')
         _debug_timer('final')
         return compIVM
 
     # TODO: Use skellam distribution instead of Normal for discrete data
-    data = Normal('data', value=subData, mu=convolved_model+sky,
+    data = Normal('data', value=subData, mu=convolved_model,
                   tau=composite_ivm, observed=True, trace=False)
 
-    model_comps += [raw_model, convolved_model, composite_ivm, data, sky]
+    model_comps += [raw_model, convolved_model, composite_ivm, data]
 
     return model_comps
