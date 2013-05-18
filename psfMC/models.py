@@ -83,8 +83,6 @@ def add_sersic(arr, magZP, xy, mag, reff, index, axis_ratio, angle,
     """
     if coords is None:
         coords = _coord_array(arr)
-    else:
-        coords = coords.copy()
 
     kappa = 1.9992*index - 0.3271
     fluxtot = 10 ** ((mag - magZP) / -2.5)
@@ -94,14 +92,12 @@ def add_sersic(arr, magZP, xy, mag, reff, index, axis_ratio, angle,
     sin_ang, cos_ang = np.sin(angle), np.cos(angle)
 
     # Matrix representation of ellipse: http://en.wikipedia.org/wiki/Ellipsoid
-    M_inv_scale = np.diag((1/reff, 1/(reff*axis_ratio))) ** 2
-    M_rot = np.asarray((cos_ang, -sin_ang, sin_ang, cos_ang)).reshape(2, 2)
-    M_inv_xform = np.dot(np.dot(M_rot, M_inv_scale), M_rot.T)
+    M_inv_scale = np.diag((1/reff, 1/(reff*axis_ratio)))
+    M_rot = np.asarray(((cos_ang, -sin_ang), (sin_ang, cos_ang)))
+    # Inverse of a rotation matrix is its transpose
+    M_inv_xform = np.dot(M_inv_scale, M_rot.T)
 
-    coords -= xy
-    radii = np.sqrt(np.sum(
-        (coords.T * np.dot(M_inv_xform, coords.T)),
-        axis=0))
+    radii = np.sqrt(np.sum(np.dot(M_inv_xform, (coords-xy).T)**2, axis=0))
     radii = radii.reshape(arr.shape)
     arr += sbeff * np.exp(-kappa * (np.power(radii, 1/index) - 1))
     return arr, sbeff
