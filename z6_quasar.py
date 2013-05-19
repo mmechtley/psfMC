@@ -10,21 +10,27 @@ except ImportError:
 
 magzp = {'F125W':26.2303, 'F160W':25.9463}
 
-obsfiles = ['examples/sci_J0005-0006.fits']
-psffiles = ['examples/sci_psf.fits']
+obsfiles = ['examples/sci_SDSSJ081518.99+103711.5.fits']
+psffiles = ['examples/sci_psf16.fits']
+
+# fit_components = [('sky', -1e-1, 1e-1),
+#                   ('psf', 120, 140, 120, 140, 15, 20),
+#                   ('sersic', 120, 140, 120, 140, 16, 27.5,
+#                    1.5, 8.0, 0.5, 8.0, 0.1, 1.0, 0, 360)]
 
 fit_components = [('sky', -1e-1, 1e-1),
-                  ('psf', 60, 70, 60, 70, 18, 24),
-                  ('sersic', 60, 70, 60, 70, 20, 27.5,
-                   0.5, 8.0, 0.5, 8.0, 0.1, 1.0, 0, 360)]
+                  ('psf', 120, 136, 120, 136, 16, 19),
+                  ('sersic', 120, 136, 120, 136, 16, 26,
+                   0.75, 12.0, 0.5, 8.0, 0.1, 1.0, 0, 360)]
 
 for obsfile, psffile in zip(obsfiles, psffiles):
     obsIVMfile = obsfile.replace('sci', 'ivm')
     psfIVMfile = psffile.replace('sci', 'ivm')
+    maskfile = obsfile.replace('sci', 'mask').replace('.fits','.reg')
     output_name = obsfile.replace('sci_', '').replace('.fits', '')
     filter = pyfits.getval(obsfile, 'FILTER')
     model_galaxy_mcmc(obsfile, obsIVMfile, psffile, psfIVMfile,
-                      fit_components=fit_components,
+                      fit_components=fit_components, mask_file=maskfile,
                       output_name=output_name, mag_zeropoint=magzp[filter],
                       burn=5000, iter=10000)
 

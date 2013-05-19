@@ -4,24 +4,25 @@
     <list default="true" id="f550eb5d-d804-46be-8e18-060ec19e5881" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/psfMC/models.py" afterPath="$PROJECT_DIR$/psfMC/models.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/z6_quasar.py" afterPath="$PROJECT_DIR$/z6_quasar.py" />
     </list>
     <ignored path="psfMC.iws" />
     <ignored path=".idea/workspace.xml" />
     <file path="/fitting.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368831029669" ignored="false" />
-    <file path="/models.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368842552800" ignored="false" />
+    <file path="/models.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368914561755" ignored="false" />
     <file path="/__init__.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368425731561" ignored="false" />
     <file path="/tests.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368764844984" ignored="false" />
-    <file path="/Dummy.txt" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368840558121" ignored="false" />
+    <file path="/Dummy.txt" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368842570706" ignored="false" />
     <file path="/a.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368499802072" ignored="false" />
     <file path="/start_script.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368499810666" ignored="false" />
     <file path="/setup.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368589471546" ignored="false" />
     <file path="/.gitignore" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368589678091" ignored="false" />
-    <file path="$PROJECT_DIR$/../../../WIP/z2quasars/fitting/psf_fit_byfocus.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368765960612" ignored="false" />
-    <file path="/psf_fit_byfocus.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368692527634" ignored="false" />
+    <file path="$PROJECT_DIR$/../../../WIP/z2quasars/fitting/psf_fit_byfocus.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368914574211" ignored="false" />
+    <file path="/psf_fit_byfocus.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368853819916" ignored="false" />
     <file path="/wxWindow.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368594698157" ignored="false" />
     <file path="/a.dummy" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368690053942" ignored="false" />
     <file path="$PROJECT_DIR$/../../lib/python2.7/site-packages/psfMC/fitting.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368756862092" ignored="false" />
-    <file path="/z6_quasar.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368833151562" ignored="false" />
+    <file path="/z6_quasar.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368862632204" ignored="false" />
     <option name="TRACKING_ENABLED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -44,7 +45,7 @@
       <file leaf-file-name="z6_quasar.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/z6_quasar.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="34" column="53" selection-start="1292" selection-end="1292" vertical-scroll-proportion="0.0">
+            <state line="17" column="39" selection-start="446" selection-end="446" vertical-scroll-proportion="0.0">
               <folding>
                 <element signature="e#0#35#0" expanded="true" />
               </folding>
@@ -55,7 +56,7 @@
       <file leaf-file-name="fitting.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/psfMC/fitting.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="93" column="28" selection-start="4528" selection-end="4528" vertical-scroll-proportion="0.0">
+            <state line="70" column="29" selection-start="3547" selection-end="3547" vertical-scroll-proportion="0.0">
               <folding>
                 <element signature="e#0#31#0" expanded="true" />
               </folding>
@@ -66,7 +67,7 @@
       <file leaf-file-name="models.py" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/psfMC/models.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="12" column="25" selection-start="393" selection-end="393" vertical-scroll-proportion="0.2866242">
+            <state line="6" column="0" selection-start="171" selection-end="201" vertical-scroll-proportion="-4.3726115">
               <folding>
                 <element signature="e#0#31#0" expanded="true" />
               </folding>
@@ -434,7 +435,11 @@
       <created>1368840560342</created>
       <updated>1368840560342</updated>
     </task>
-    <option name="localTasksCounter" value="30" />
+    <task id="LOCAL-00030" summary="Cleaning and speed improvements in add_sersic">
+      <created>1368842575180</created>
+      <updated>1368842575180</updated>
+    </task>
+    <option name="localTasksCounter" value="31" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -504,7 +509,7 @@
     <option name="WRAP_WHEN_TYPING_REACHES_RIGHT_MARGIN" value="false" />
     <option name="FORCE_NON_EMPTY_COMMENT" value="false" />
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="false" />
-    <option name="LAST_COMMIT_MESSAGE" value="Adjusted default parameters in example file." />
+    <option name="LAST_COMMIT_MESSAGE" value="Cleaning and speed improvements in add_sersic" />
     <option name="MAKE_NEW_CHANGELIST_ACTIVE" value="true" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_FILES_UP_TO_DATE_BEFORE_COMMIT" value="false" />
@@ -518,7 +523,6 @@
     <option name="UPDATE_FILTER_BY_SCOPE" value="false" />
     <option name="SHOW_FILE_HISTORY_AS_TREE" value="false" />
     <option name="FILE_HISTORY_SPLITTER_PROPORTION" value="0.6" />
-    <MESSAGE value="Added ability to include magnitude zeropoint" />
     <MESSAGE value="comment cleanup" />
     <MESSAGE value="readability cleanup, comments" />
     <MESSAGE value="Output residual and model files. Fixed shift bug in convolution. Replaced M_rot_inv with M_rot.T, since it's a rotation matrix." />
@@ -543,6 +547,7 @@
     <MESSAGE value="Renamed &quot;tests&quot; directory to &quot;examples&quot; to allow unit tests later." />
     <MESSAGE value="Moved bad pixel masking before model definition (and into fitting.py from models.py). Speed improvements to model calculation (pre-compute ffts for psf and psf ivm, pre-compute image coordinate arrays)." />
     <MESSAGE value="Adjusted default parameters in example file." />
+    <MESSAGE value="Cleaning and speed improvements in add_sersic" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -592,27 +597,27 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/psfMC/fitting.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="93" column="28" selection-start="4528" selection-end="4528" vertical-scroll-proportion="0.0">
-          <folding>
-            <element signature="e#0#31#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/z6_quasar.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="34" column="53" selection-start="1292" selection-end="1292" vertical-scroll-proportion="0.0">
+        <state line="17" column="39" selection-start="446" selection-end="446" vertical-scroll-proportion="0.0">
           <folding>
             <element signature="e#0#35#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/psfMC/fitting.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="70" column="29" selection-start="3547" selection-end="3547" vertical-scroll-proportion="0.0">
+          <folding>
+            <element signature="e#0#31#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/psfMC/models.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="12" column="25" selection-start="393" selection-end="393" vertical-scroll-proportion="0.2866242">
+        <state line="6" column="0" selection-start="171" selection-end="201" vertical-scroll-proportion="-4.3726115">
           <folding>
             <element signature="e#0#31#0" expanded="true" />
           </folding>

@@ -4,7 +4,7 @@ import numpy as np
 from warnings import warn
 from scipy.special import gamma
 from pymc import Uniform, Normal, deterministic
-import matplotlib.pyplot as pp
+# import matplotlib.pyplot as pp
 
 # TODO: Is there a way to use masked arrays to skip bad pixels instead?
 # Pixels that have zero weight will be replaced with a very small weight
@@ -38,7 +38,8 @@ def _pad_and_rfft_image(img, newshape):
     # TODO: pad with white noise instead of zeros?
     pad = np.asarray(newshape) - np.asarray(img.shape)
     if np.any(pad < 0):
-        raise ValueError('PSF image size must be smaller than data image size')
+        raise ValueError('PSF image size cannot be larger than observation '+
+                         'image size')
     img_pad = np.zeros(newshape, dtype=img.dtype)
     img_pad[pad[0]//2:pad[0]//2+img.shape[0],
             pad[1]//2:pad[1]//2+img.shape[1]] = img
@@ -55,9 +56,9 @@ def _convolve(img, fourier_kernel):
     return np.fft.ifftshift(np.fft.irfft2(np.fft.rfft2(img) * fourier_kernel))
 
 
-def _coord_array(arr):
+def _array_coords(arr):
     """
-    Returns arr.size x 2 array of x, y coordinate for each cell in arr
+    Returns arr.size x 2 array of x, y coordinates for each cell in arr
     """
     coords = [np.arange(arr.size) % arr.shape[1],
               np.arange(arr.size) // arr.shape[1]]
@@ -82,7 +83,7 @@ def add_sersic(arr, magZP, xy, mag, reff, index, axis_ratio, angle,
     :param coords:
     """
     if coords is None:
-        coords = _coord_array(arr)
+        coords = _array_coords(arr)
 
     kappa = 1.9992*index - 0.3271
     fluxtot = 10 ** ((mag - magZP) / -2.5)
@@ -142,7 +143,7 @@ def multicomponent_model(obs_data, obs_ivm, psf_data, psf_ivm,
     f_psf_rms = _pad_and_rfft_image(psf_rms, obs_data.shape)
 
     # pre-compute data x,y coordinates
-    data_coords = _coord_array(obs_data)
+    data_coords = _array_coords(obs_data)
 
     model_comps = []
     stochastics = []
@@ -221,7 +222,7 @@ def multicomponent_model(obs_data, obs_ivm, psf_data, psf_ivm,
         # Set zero-weight pixels to very small number instead
         badpx = (modelRMS <= 0) | (obs_ivm <= 0)
         compIVM = np.where(badpx, _zero_weight, 1 / (modelRMS**2 + 1 / obs_ivm))
-        # for arr in (raw_model, modelRMS, compIVM):
+        # for arr in (obs_data.mask, raw_model, modelRMS, compIVM):
         #     pp.imshow(np.log10(arr), interpolation='nearest')
         #     pp.colorbar()
         #     pp.show()
@@ -230,6 +231,7 @@ def multicomponent_model(obs_data, obs_ivm, psf_data, psf_ivm,
         _debug_timer('final')
         return compIVM
 
+    #FIXME: Masks are somehow fucking up fitting
     data = Normal('data', value=obs_data, mu=convolved_model+sky,
                   tau=composite_ivm, observed=True, trace=False)
 
