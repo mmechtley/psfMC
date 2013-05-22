@@ -22,7 +22,7 @@ for obsfile, psffile in zip(obsfiles, psffiles):
 
     filter = pyfits.getval(obsfile, 'FILTER')
     model_galaxy_mcmc(obsfile, obsIVMfile, psffile, psfIVMfile,
-                      fit_components=model_file, mask_file=maskfile,
+                      model_file=model_file, mask_file=maskfile,
                       output_name=output_name, mag_zeropoint=magzp[filter],
                       burn=5000, iter=10000)
 

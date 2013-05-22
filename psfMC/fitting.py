@@ -12,7 +12,7 @@ except ImportError:
 
 
 def model_galaxy_mcmc(obs_file, obsIVM_file, psf_file, psfIVM_file,
-                      fit_components=None, mag_zeropoint=0,
+                      model_file=None, mag_zeropoint=0,
                       mask_file=None, output_name=None,
                       write_fits=('raw_model', 'convolved_model',
                                   'composite_ivm', 'residual'),
@@ -33,11 +33,9 @@ def model_galaxy_mcmc(obs_file, obsIVM_file, psf_file, psfIVM_file,
     :param psfIVM_file: Filename or pyfits HDU containing the PSF's inverse
         variance (weight map). Must include poisson noise from the object, such
         as multidrizzle ERR weight maps
-    :param fit_components: List of tuples, each defining a component for the
-        fit. First element of each tuple is a string specifying the component
-        type (psf, sersic). Following elements specify the min and max values
-        for each parameter. See documentation for different component types and
-        parameter orders.
+    :param model_file: Filename of the model definition file. This should be
+        a series of components from psfMC.ModelComponents, with parameters
+        supplied as either fixed values or stochastics from psfMC.distributions
     :param mag_zeropoint: Magnitude zeropoint, i.e. the magnitude of one ADU,
         whether in electrons per second (as with published HST zeropoints) or
         whatever funky units the data use.
@@ -56,10 +54,10 @@ def model_galaxy_mcmc(obs_file, obsIVM_file, psf_file, psfIVM_file,
         pyMC documentation.
     """
     try:
-        fit_components = component_list_from_file(fit_components)
+        fit_components = component_list_from_file(model_file)
     except IOError, err:
         message = 'Unable to open components file {}. Does it exist?'
-        err.message = message.format(fit_components)
+        err.message = message.format(model_file)
         raise err
 
     if output_name is None:
