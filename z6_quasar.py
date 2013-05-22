@@ -10,33 +10,26 @@ except ImportError:
 
 magzp = {'F125W':26.2303, 'F160W':25.9463}
 
-obsfiles = ['examples/sci_SDSSJ081518.99+103711.5.fits']
-psffiles = ['examples/sci_psf16.fits']
-
-# fit_components = [('sky', -1e-1, 1e-1),
-#                   ('psf', 120, 140, 120, 140, 15, 20),
-#                   ('sersic', 120, 140, 120, 140, 16, 27.5,
-#                    1.5, 8.0, 0.5, 8.0, 0.1, 1.0, 0, 360)]
-
-fit_components = [('sky', -1e-1, 1e-1),
-                  ('psf', 120, 136, 120, 136, 16, 19),
-                  ('sersic', 120, 136, 120, 136, 16, 26,
-                   0.75, 12.0, 0.5, 8.0, 0.1, 1.0, 0, 360)]
+obsfiles = ['examples/sci_J0005-0006.fits']
+psffiles = ['examples/sci_psf.fits']
 
 for obsfile, psffile in zip(obsfiles, psffiles):
     obsIVMfile = obsfile.replace('sci', 'ivm')
     psfIVMfile = psffile.replace('sci', 'ivm')
     maskfile = obsfile.replace('sci', 'mask').replace('.fits','.reg')
-    output_name = obsfile.replace('sci_', '').replace('.fits', '')
+    model_file = obsfile.replace('sci', 'model').replace('.fits', '.py')
+    output_name = obsfile.replace('sci', 'out').replace('.fits', '')
+
     filter = pyfits.getval(obsfile, 'FILTER')
     model_galaxy_mcmc(obsfile, obsIVMfile, psffile, psfIVMfile,
-                      fit_components=fit_components, mask_file=maskfile,
+                      fit_components=model_file, mask_file=maskfile,
                       output_name=output_name, mag_zeropoint=magzp[filter],
                       burn=5000, iter=10000)
 
     db = pymc.database.pickle.load(output_name+'_db.pickle')
-    for trace_name in ('0_sky_adu', '1_psf_mag', '2_sersic_mag', '2_sersic_re',
-                       '2_sersic_n', '2_sersic_angle', '2_sersic_axisratio'):
+    for trace_name in ('0_Sky_adu', '1_PSF_mag', '2_Sersic_mag',
+                       '2_Sersic_reff', '2_Sersic_index', '2_Sersic_angle',
+                       '2_Sersic_axis_ratio'):
         if pp is not None:
             pp.hist(db.trace(trace_name)[:], bins=20)
             pp.title(trace_name)

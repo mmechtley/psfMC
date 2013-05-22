@@ -4,13 +4,13 @@ import numpy as np
 from warnings import warn
 from pymc.MCMC import MCMC
 from .models import multicomponent_model
+from .model_parser import component_list_from_file
 try:
     import pyregion
 except ImportError:
     pyregion = None
 
 
-# TODO: Friendlier interface for supplying components. File?
 def model_galaxy_mcmc(obs_file, obsIVM_file, psf_file, psfIVM_file,
                       fit_components=None, mag_zeropoint=0,
                       mask_file=None, output_name=None,
@@ -55,9 +55,13 @@ def model_galaxy_mcmc(obs_file, obsIVM_file, psf_file, psfIVM_file,
         Useful parameters include iter=, burn=, tune_interval=, thin=, etc. See
         pyMC documentation.
     """
-    if fit_components is None:
-        raise ValueError('No fitting components specified. Please supply at ' +
-                         'least one component.')
+    try:
+        fit_components = component_list_from_file(fit_components)
+    except IOError, err:
+        message = 'Unable to open components file {}. Does it exist?'
+        err.message = message.format(fit_components)
+        raise err
+
     if output_name is None:
         output_name = obs_file.replace('.fits', '')
     output_name += '_{}'
@@ -76,16 +80,17 @@ def model_galaxy_mcmc(obs_file, obsIVM_file, psf_file, psfIVM_file,
     obsData, obsDataIVM, psfData, psfDataIVM = _mask_bad_pixels(
         obsData, obsDataIVM, psfData, psfDataIVM)
 
-    if mask_file is not None:
-        if pyregion is not None:
-            hdr = pyfits.getheader(obs_file)
-            regfilt = pyregion.open(mask_file).as_imagecoord(hdr).get_filter()
-            mask = regfilt.mask(obsData.shape)
-            obsData.mask |= ~mask
-            obsDataIVM[~mask] = 0
-            # TODO: Use slice to fit only the masked area. But messes up xy pos.
-        else:
-            warn('pyregion could not be imported. mask_file will be ignored.')
+    # FIXME: Masks are breaking fitting
+    # if mask_file is not None:
+    #     if pyregion is not None:
+    #         hdr = pyfits.getheader(obs_file)
+    #         regfilt = pyregion.open(mask_file).as_imagecoord(hdr).get_filter()
+    #         mask = regfilt.mask(obsData.shape)
+    #         obsData.mask |= ~mask
+    #         obsDataIVM[~mask] = 0
+        # TODO: Use slice to fit only the masked area. But messes up xy pos.
+        # else:
+        #     warn('pyregion could not be imported. mask_file will be ignored.')
 
     # Normalize the PSF kernel
     # TODO: Convert to float64 first?

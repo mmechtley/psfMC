@@ -1,127 +1,13 @@
 from __future__ import division
-import time
 import numpy as np
-from warnings import warn
-from scipy.special import gamma
-from pymc import Uniform, Normal, deterministic
+from pymc import deterministic, Normal
+from .array_utils import *
+from .ModelComponents import Sky
 # import matplotlib.pyplot as pp
 
 # TODO: Is there a way to use masked arrays to skip bad pixels instead?
 # Pixels that have zero weight will be replaced with a very small weight
 _zero_weight = 1e-20
-
-_show_timing_info = False
-
-_t_in = 0.0
-
-
-def _debug_timer(step, name=''):
-    """
-    Hacky lightweight timer, for profiling model creation
-    """
-    global _t_in
-    if not _show_timing_info:
-        return
-    if step == 'start':
-        _t_in = time.time()
-    elif step == 'stop':
-        print '{}: {:.2e}'.format(name, time.time() - _t_in),
-    else:
-        print ''
-
-
-def _pad_and_rfft_image(img, newshape):
-    """
-    Pads the psf array to the size described by imgshape, then run rfft to put
-    it in Fourier space.
-    """
-    # TODO: pad with white noise instead of zeros?
-    pad = np.asarray(newshape) - np.asarray(img.shape)
-    if np.any(pad < 0):
-        raise ValueError('PSF image size cannot be larger than observation '+
-                         'image size')
-    img_pad = np.zeros(newshape, dtype=img.dtype)
-    img_pad[pad[0]//2:pad[0]//2+img.shape[0],
-            pad[1]//2:pad[1]//2+img.shape[1]] = img
-    return np.fft.rfft2(img_pad)
-
-
-def _convolve(img, fourier_kernel):
-    """
-    FFT-based convolution, using the Convolution Theorem. This is about 100x
-    faster than using scipy.ndimage.convolve, due to FFT. But it effectively
-    forces the boundary mode to be wrap. The kernel is supplied pre-computed
-    """
-    # TODO: consider padding to power-of-two for extra speed
-    return np.fft.ifftshift(np.fft.irfft2(np.fft.rfft2(img) * fourier_kernel))
-
-
-def _array_coords(arr):
-    """
-    Returns arr.size x 2 array of x, y coordinates for each cell in arr
-    """
-    coords = [np.arange(arr.size) % arr.shape[1],
-              np.arange(arr.size) // arr.shape[1]]
-    return np.transpose(coords).astype(arr.dtype)
-
-
-def add_sersic(arr, magZP, xy, mag, reff, index, axis_ratio, angle,
-               coords=None):
-    """
-    Add Sersic profile with supplied parameters to a numpy array. Array is
-    assumed to be in counts per second, ie the brightness of a pixel is
-    m = -2.5*log(pixel value) + magZP
-
-    :param arr: Numpy array to add sersic profile to
-    :param magZP: Magnitude zeropoint (i.e. magnitude of 1 count/second)
-    :param xy: Numpy array, placement in pixels within the array
-    :param mag: Integrated magnitude of profile
-    :param reff: Effective radius, in pixels
-    :param index: Sersic index n. 0.5=gaussian, 1=exponential, 4=de Vaucouleurs
-    :param axis_ratio: Ratio of minor over major axis
-    :param angle: Position angle of major axis, degrees clockwise of right
-    :param coords:
-    """
-    if coords is None:
-        coords = _array_coords(arr)
-
-    kappa = 1.9992*index - 0.3271
-    fluxtot = 10 ** ((mag - magZP) / -2.5)
-    sbeff = fluxtot / (2 * np.pi * reff**2 * axis_ratio * np.exp(kappa) *
-                       index * np.power(kappa, -2*index) * gamma(2*index))
-    angle = np.deg2rad(angle)
-    sin_ang, cos_ang = np.sin(angle), np.cos(angle)
-
-    # Matrix representation of ellipse: http://en.wikipedia.org/wiki/Ellipsoid
-    M_inv_scale = np.diag((1/reff, 1/(reff*axis_ratio)))
-    M_rot = np.asarray(((cos_ang, -sin_ang), (sin_ang, cos_ang)))
-    # Inverse of a rotation matrix is its transpose
-    M_inv_xform = np.dot(M_inv_scale, M_rot.T)
-
-    radii = np.sqrt(np.sum(np.dot(M_inv_xform, (coords-xy).T)**2, axis=0))
-    radii = radii.reshape(arr.shape)
-    arr += sbeff * np.exp(-kappa * (np.power(radii, 1/index) - 1))
-    return arr, sbeff
-
-
-def add_point_source(arr, magZP, xy, mag):
-    """
-    Add point source with supplied parameters to a numpy array. Array is
-    assumed to be in counts per second, ie the brightness of a pixel is
-    m = -2.5*log(pixel value) + magZP
-    Linearly interpolation is used for subpixel positions.
-
-    :param arr: Numpy array to add psf to
-    :param magZP: Magnitude zeropoint (i.e. magnitude of 1 count/second)
-    :param xy: Numpy array, placement in pixels within the array.
-    :param mag: Integrated magnitude of point source
-    """
-    flux = 10 ** ((mag - magZP) / -2.5)
-    xint, xfrac = xy[0] // 1, xy[0] % 1
-    yint, yfrac = xy[1] // 1, xy[1] % 1
-    arr[yint:yint+2, xint:xint+2] += flux * np.outer((yfrac, 1-yfrac),
-                                                     (xfrac, 1-xfrac))
-    return arr
 
 
 def multicomponent_model(obs_data, obs_ivm, psf_data, psf_ivm,
@@ -139,86 +25,51 @@ def multicomponent_model(obs_data, obs_ivm, psf_data, psf_ivm,
     psf_rms = np.where(psf_ivm == 0, 0, 1 / np.sqrt(psf_ivm))
 
     # pad the psf arrays to the same size as the data, for fft
-    f_psf = _pad_and_rfft_image(psf_data, obs_data.shape)
-    f_psf_rms = _pad_and_rfft_image(psf_rms, obs_data.shape)
+    f_psf = pad_and_rfft_image(psf_data, obs_data.shape)
+    f_psf_rms = pad_and_rfft_image(psf_rms, obs_data.shape)
 
     # pre-compute data x,y coordinates
-    data_coords = _array_coords(obs_data)
+    data_coords = array_coords(obs_data)
 
     model_comps = []
     stochastics = []
-    sky = 0.0
+    sky = Sky(adu=0.0)
 
     for count, component in enumerate(components):
-        name = component[0]
-        if name == 'sky':
-            sky = Uniform('{}_{}_adu'.format(count, name),
-                              lower=min(component[1:3]),
-                              upper=max(component[1:3]))
+        component.update_trace_names(count=count)
+
+        if component.__class__.__name__ == 'Sky':
+            sky = component
             stochastics += [sky]
-        elif name == 'psf':
-            xy = np.asarray(component[1:5]).reshape((2, 2))
-            xy = Uniform('{}_{}_xy'.format(count, name),
-                         lower=np.min(xy, axis=1), upper=np.max(xy, axis=1))
-            mag = Uniform('{}_{}_mag'.format(count, name),
-                          lower=min(component[5:7]),
-                          upper=max(component[5:7]))
-            model_comps += [('psf', xy, mag)]
-
-        elif name == 'sersic':
-            xy = np.asarray(component[1:5]).reshape((2, 2))
-            xy = Uniform('{}_{}_xy'.format(count, name),
-                         lower=np.min(xy, axis=1), upper=np.max(xy, axis=1))
-            mag = Uniform('{}_{}_mag'.format(count, name),
-                          lower=min(component[5:7]),
-                          upper=max(component[5:7]))
-            rad_eff = Uniform('{}_{}_re'.format(count, name),
-                              lower=min(component[7:9]),
-                              upper=max(component[7:9]))
-            sersic_n = Uniform('{}_{}_n'.format(count, name),
-                               lower=min(component[9:11]),
-                               upper=max(component[9:11]))
-            axis_ratio = Uniform('{}_{}_axisratio'.format(count, name),
-                                 lower=min(component[11:13]),
-                                 upper=max(component[11:13]))
-            angle = Uniform('{}_{}_angle'.format(count, name),
-                            lower=min(component[13:15]),
-                            upper=max(component[13:15]))
-
-            model_comps += [('sersic', xy, mag, rad_eff, sersic_n,
-                            axis_ratio, angle)]
         else:
-            warn('Unrecognized component: {}'.format(name))
+            model_comps += [component]
 
 
     @deterministic(plot=False, trace=False)
     def raw_model(model_comps=model_comps):
-        _debug_timer('start')
         modelpx = np.zeros_like(obs_data)
         for comp in model_comps:
-            if comp[0] == 'psf':
-                add_point_source(modelpx, mag_zp, *comp[1:])
-            elif comp[0] == 'sersic':
-                add_sersic(modelpx, mag_zp, *comp[1:], coords=data_coords)
-        _debug_timer('stop', name='Model')
+            debug_timer('start')
+            comp.add_to_array(modelpx, mag_zp, coords=data_coords)
+            debug_timer('stop', name=comp.__class__.__name__)
         return modelpx
 
 
     @deterministic(plot=False, trace=False)
     def convolved_model(f_psf=f_psf, raw_model=raw_model):
-        _debug_timer('start')
-        cmodel = _convolve(raw_model, f_psf)
-        _debug_timer('stop', name='Convolve')
+        debug_timer('start')
+        cmodel = convolve(raw_model, f_psf)
+        debug_timer('stop', name='Convolve')
         return cmodel
 
 
     @deterministic(plot=False, trace=False)
     def composite_ivm(obs_ivm=obs_ivm, f_psf_rms=f_psf_rms,
                       raw_model=raw_model):
-        _debug_timer('start')
+        debug_timer('start')
         # f * (g + h) = (f * g) + (f * h), so convolve PSF RMS map with model to
         # get model RMS map
-        modelRMS = _convolve(raw_model, f_psf_rms)
+        modelRMS = convolve(raw_model, f_psf_rms)
         # Set zero-weight pixels to very small number instead
         badpx = (modelRMS <= 0) | (obs_ivm <= 0)
         compIVM = np.where(badpx, _zero_weight, 1 / (modelRMS**2 + 1 / obs_ivm))
@@ -227,12 +78,11 @@ def multicomponent_model(obs_data, obs_ivm, psf_data, psf_ivm,
         #     pp.colorbar()
         #     pp.show()
         # exit(1)
-        _debug_timer('stop', name='IVM')
-        _debug_timer('final')
+        debug_timer('stop', name='IVM')
+        debug_timer('final')
         return compIVM
 
-    #FIXME: Masks are somehow fucking up fitting
-    data = Normal('data', value=obs_data, mu=convolved_model+sky,
+    data = Normal('data', value=obs_data, mu=convolved_model+sky.adu,
                   tau=composite_ivm, observed=True, trace=False)
 
     stochastics += [raw_model, convolved_model, composite_ivm, data]
