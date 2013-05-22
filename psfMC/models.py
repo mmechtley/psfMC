@@ -13,12 +13,8 @@ _zero_weight = 1e-20
 def multicomponent_model(obs_data, obs_ivm, psf_data, psf_ivm,
                          components=None, mag_zp=0):
     """
-    Multi-component model for MCMC psf fitting.
-    Components is a list of tuples. First element is type (psf, sersic).
-    Further elements are min and max of uniform search regions, e.g.
-    type xmin xmax ymin ymax p1min p1max etc
-    [('psf', 120, 136, 120, 136, 17, 20),
-     ('sersic', 120, 136, 120, 136, 21, 28, 1.5, 3.5, 0.5, 8, 0.1, 1.0, 0, 360)]
+    Multi-component model for MCMC psf fitting. Components is a list of
+    ComponentBase subclasses.
     """
     np.seterr(divide='ignore')
 
@@ -38,12 +34,12 @@ def multicomponent_model(obs_data, obs_ivm, psf_data, psf_ivm,
     for count, component in enumerate(components):
         component.update_trace_names(count=count)
 
+        # Sky is added after convolution
         if component.__class__.__name__ == 'Sky':
             sky = component
             stochastics += [sky]
         else:
             model_comps += [component]
-
 
     @deterministic(plot=False, trace=False)
     def raw_model(model_comps=model_comps):
@@ -54,14 +50,12 @@ def multicomponent_model(obs_data, obs_ivm, psf_data, psf_ivm,
             debug_timer('stop', name=comp.__class__.__name__)
         return modelpx
 
-
     @deterministic(plot=False, trace=False)
     def convolved_model(f_psf=f_psf, raw_model=raw_model):
         debug_timer('start')
         cmodel = convolve(raw_model, f_psf)
         debug_timer('stop', name='Convolve')
         return cmodel
-
 
     @deterministic(plot=False, trace=False)
     def composite_ivm(obs_ivm=obs_ivm, f_psf_rms=f_psf_rms,
