@@ -5,11 +5,11 @@ from psfMC.distributions import Normal, Uniform
 Sky(adu=Normal(mu=0, tau=100))
 
 # Point source component
-PSF(xy=Normal(mu=(64, 64), tau=(0.06, 0.06)),
+PSF(xy=Uniform(lower=(60, 60), upper=(70, 70)),
     mag=Uniform(lower=18, upper=24))
 
 # Sersic profile, modeling the galaxy under the point source
-Sersic(xy=Normal(mu=(64, 64), tau=(0.06, 0.06)),
+Sersic(xy=Uniform(lower=(60, 60), upper=(70, 70)),
        mag=Uniform(lower=22, upper=27.5),
        reff=Uniform(lower=1.0, upper=12.0),
        index=Uniform(lower=0.5, upper=8),
@@ -17,7 +17,7 @@ Sersic(xy=Normal(mu=(64, 64), tau=(0.06, 0.06)),
        angle=Uniform(lower=0, upper=360))
 
 # Second sersic profile, modeling the faint blob to the upper left of the quasar
-Sersic(xy=Normal(mu=(46, 86), tau=(0.06, 0.06)),
+Sersic(xy=Uniform(lower=(42, 82), upper=(50, 90)),
        mag=Uniform(lower=22, upper=27.5),
        reff=Uniform(lower=1.0, upper=4.0),
        index=Uniform(lower=0.5, upper=8.0),

@@ -2,11 +2,11 @@ from copy import copy
 from pymc.Container import DictContainer, ContainerBase, file_items
 from pymc.Container_values import OCValue
 
+
 class ComponentBase(ContainerBase):
     """
     Base class which other components inherit from
     """
-
     def __init__(self):
         # Significant portions of this adapted from
         # pymc.Container.ObjectContainer.
@@ -38,7 +38,7 @@ class ComponentBase(ContainerBase):
         self.OCValue.run()
         return self._value
 
-    value = property(fget = _get_value,
+    value = property(fget=_get_value,
                      doc='Copy of object with stochastics replaced by values')
 
     @staticmethod

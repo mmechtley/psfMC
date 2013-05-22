@@ -5,12 +5,13 @@ _comps_name = 'components'
 
 class ExprsToAssigns(NodeTransformer):
     """
-    Transforms bare expressions, such as:
+    Walks the Abstract Syntax Tree from the parsed model file, and transforms
+    bare expressions into augmented assignments that are tacked on to the end
+    of the components list, ie:
     Sky(...)
-    to augmented assignments that tack on to the end of the components list, ie:
+    becomes:
     components += [Sky(...)]
     """
-
     def visit_Expr(self, node):
         return copy_location(AugAssign(
             target=Name(id=_comps_name, ctx=Store()),
@@ -29,6 +30,7 @@ def component_list_from_file(filename):
     # Inject distribution and component imports. Put them at the beginning
     # so user imports may override them. level=1 means relative import, e.g.:
     # from .ModelComponents import *
+    increment_lineno(model_tree, n=3)
     comps = ImportFrom(module='ModelComponents',
                        names=[alias(name='*', asname=None)], level=1)
     dists = ImportFrom(module='distributions',

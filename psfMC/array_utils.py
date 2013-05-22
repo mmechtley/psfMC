@@ -55,3 +55,20 @@ def array_coords(arr):
     coords = [np.arange(arr.size) % arr.shape[1],
               np.arange(arr.size) // arr.shape[1]]
     return np.transpose(coords).astype(arr.dtype)
+
+
+def mask_bad_pixels(obs_data, obs_ivm, psf_data, psf_ivm):
+    """
+    Sanitize input arrays by masking out bad pixels
+    """
+    # For observed data, we use numpy masked array to simply ignore bad pixels
+    # We set them to zero in the weight map, even though they ought be already
+    badpx = ~np.isfinite(obs_data) | ~np.isfinite(obs_ivm) | (obs_ivm <= 0)
+    obs_data = np.ma.masked_array(obs_data, mask=badpx)
+    obs_ivm[badpx] = 0
+    # We don't want zero-weight pixels in the PSF to contribute to the RMS,
+    # so we simply set them to 0 in both data and weight map
+    badpx = ~np.isfinite(psf_data) | ~np.isfinite(psf_ivm) | (psf_ivm <= 0)
+    psf_data[badpx] = 0
+    psf_ivm[badpx] = 0
+    return obs_data, obs_ivm, psf_data, psf_ivm

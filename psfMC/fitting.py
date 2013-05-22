@@ -1,10 +1,14 @@
 from __future__ import division
+from warnings import warn
+
 import pyfits
 import numpy as np
-from warnings import warn
 from pymc.MCMC import MCMC
+
 from .models import multicomponent_model
 from .model_parser import component_list_from_file
+from .array_utils import mask_bad_pixels
+
 try:
     import pyregion
 except ImportError:
@@ -75,7 +79,7 @@ def model_galaxy_mcmc(obs_file, obsIVM_file, psf_file, psfIVM_file,
     psfData = pyfits.getdata(psf_file, ignore_missing_end=True)
     psfDataIVM = pyfits.getdata(psfIVM_file, ignore_missing_end=True)
 
-    obsData, obsDataIVM, psfData, psfDataIVM = _mask_bad_pixels(
+    obsData, obsDataIVM, psfData, psfDataIVM = mask_bad_pixels(
         obsData, obsDataIVM, psfData, psfDataIVM)
 
     # FIXME: Masks are breaking fitting
@@ -105,14 +109,11 @@ def model_galaxy_mcmc(obs_file, obsIVM_file, psf_file, psfIVM_file,
     ## Saves out to pickle file
     sampler.db.close()
 
-    # TODO: Remove debug output
     stats = sampler.stats()
-    for stoch in sorted(stats):
-        print '{}: mean: {} std: {}'.format(stoch, stats[stoch]['mean'],
-                                            stats[stoch]['standard deviation'])
+    statscards = _to_header_cards(stats)
 
-    # TODO: Add fit information to fits headers
     obsHeader = pyfits.getheader(obs_file, ignore_missing_end=True)
+    obsHeader.extend(statscards)
     for out_type in write_fits:
         node_name = out_type
         if out_type == 'residual':
@@ -134,18 +135,27 @@ def model_galaxy_mcmc(obs_file, obsIVM_file, psf_file, psfIVM_file,
 
     # TODO: Return something? Maybe model, resid, IVM arrays?
 
-def _mask_bad_pixels(obs_data, obs_ivm, psf_data, psf_ivm):
-    """
-    Sanitize input arrays by masking out bad pixels
-    """
-    # For observed data, we use numpy masked array to simply ignore bad pixels
-    # We set them to zero in the weight map, even though they ought be already
-    badpx = ~np.isfinite(obs_data) | ~np.isfinite(obs_ivm) | (obs_ivm <= 0)
-    obs_data = np.ma.masked_array(obs_data, mask=badpx)
-    obs_ivm[badpx] = 0
-    # We don't want zero-weight pixels in the PSF to contribute to the RMS,
-    # so we simply set them to 0 in both data and weight map
-    badpx = ~np.isfinite(psf_data) | ~np.isfinite(psf_ivm) | (psf_ivm <= 0)
-    psf_data[badpx] = 0
-    psf_ivm[badpx] = 0
-    return obs_data, obs_ivm, psf_data, psf_ivm
+
+def _to_header_cards(stats):
+    # TODO: better way to make keys. Maybe component.shortname(attr) etc.
+    replace_pairs = (('_Sersic','SER'), ('_PSF','PSF'), ('_Sky', 'SKY'),
+                     ('_reff', '_RE'), ('_index', '_N'), ('_axis_ratio','_Q'),
+                     ('_angle', '_ANG'))
+    statscards = []
+    print sorted(stats)
+    for stoch in sorted(stats):
+        mean = stats[stoch]['mean']
+        std = stats[stoch]['standard deviation']
+        key = stoch
+        for oldstr, newstr in replace_pairs:
+            key = key.replace(oldstr, newstr)
+        try:
+            val = '{:0.2f} +/- {:0.2f}'.format(mean, std)
+        except ValueError:
+            strmean = ','.join(['{:0.2f}'.format(dim) for dim in mean])
+            strstd = ','.join(['{:0.2f}'.format(dim) for dim in std])
+            val = '({}) +/- ({})'.format(strmean, strstd)
+        statscards += [(key, val, 'psfMC model component')]
+        # TODO: Remove debug output
+        print '{}: {}'.format(stoch, val)
+    return statscards
