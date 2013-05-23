@@ -142,7 +142,6 @@ def _to_header_cards(stats):
                      ('_reff', '_RE'), ('_index', '_N'), ('_axis_ratio','_Q'),
                      ('_angle', '_ANG'))
     statscards = []
-    print sorted(stats)
     for stoch in sorted(stats):
         mean = stats[stoch]['mean']
         std = stats[stoch]['standard deviation']
