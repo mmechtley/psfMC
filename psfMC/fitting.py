@@ -71,8 +71,6 @@ def model_galaxy_mcmc(obs_file, obsIVM_file, psf_file, psfIVM_file,
     # TODO: Set these based on total number of unknown components
     kwargs.setdefault('iter', 6000)
     kwargs.setdefault('burn', 3000)
-    kwargs.setdefault('tune_interval', 25)
-    kwargs.setdefault('thin', 5)
 
     obsData = pyfits.getdata(obs_file, ignore_missing_end=True)
     obsDataIVM = pyfits.getdata(obsIVM_file, ignore_missing_end=True)
@@ -83,16 +81,18 @@ def model_galaxy_mcmc(obs_file, obsIVM_file, psf_file, psfIVM_file,
         obsData, obsDataIVM, psfData, psfDataIVM)
 
     # FIXME: Masks are breaking fitting
-    # if mask_file is not None:
-    #     if pyregion is not None:
-    #         hdr = pyfits.getheader(obs_file)
-    #         regfilt = pyregion.open(mask_file).as_imagecoord(hdr).get_filter()
-    #         mask = regfilt.mask(obsData.shape)
-    #         obsData.mask |= ~mask
-    #         obsDataIVM[~mask] = 0
+    if mask_file is not None:
+        if pyregion is not None:
+            hdr = pyfits.getheader(obs_file)
+            regfilt = pyregion.open(mask_file).as_imagecoord(hdr).get_filter()
+            mask = regfilt.mask(obsData.shape)
+            obsData[~mask] = 0
+            obsDataIVM[~mask] = 0
+            # obsData.mask |= ~mask
+            # obsDataIVM[~mask] = 0
         # TODO: Use slice to fit only the masked area. But messes up xy pos.
-        # else:
-        #     warn('pyregion could not be imported. mask_file will be ignored.')
+        else:
+            warn('pyregion could not be imported. mask_file will be ignored.')
 
     # Normalize the PSF kernel
     # TODO: Convert to float64 first?
@@ -138,8 +138,8 @@ def model_galaxy_mcmc(obs_file, obsIVM_file, psf_file, psfIVM_file,
 
 def _to_header_cards(stats):
     # TODO: better way to make keys. Maybe component.shortname(attr) etc.
-    replace_pairs = (('_Sersic','SER'), ('_PSF','PSF'), ('_Sky', 'SKY'),
-                     ('_reff', '_RE'), ('_index', '_N'), ('_axis_ratio','_Q'),
+    replace_pairs = (('_Sersic', 'SER'), ('_PSF', 'PSF'), ('_Sky', 'SKY'),
+                     ('_reff', '_RE'), ('_index', '_N'), ('_axis_ratio', '_Q'),
                      ('_angle', '_ANG'))
     statscards = []
     for stoch in sorted(stats):

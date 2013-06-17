@@ -33,8 +33,8 @@ def pad_and_rfft_image(img, newshape):
         raise ValueError('PSF image size cannot be larger than observation ' +
                          'image size')
     img_pad = np.zeros(newshape, dtype=img.dtype)
-    img_pad[pad[0]//2:pad[0]//2+img.shape[0],
-            pad[1]//2:pad[1]//2+img.shape[1]] = img
+    img_pad[pad[0]//2:pad[0]//2 + img.shape[0],
+            pad[1]//2:pad[1]//2 + img.shape[1]] = img
     return np.fft.rfft2(img_pad)
 
 

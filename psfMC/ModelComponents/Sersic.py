@@ -10,13 +10,14 @@ class Sersic(ComponentBase):
     Sersic profile component
     """
     def __init__(self, xy=None, mag=None, reff=None, index=None,
-                 axis_ratio=None, angle=None):
+                 axis_ratio=None, angle=None, angle_degrees=True):
         self.xy = xy
         self.mag = mag
         self.reff = reff
         self.index = index
         self.axis_ratio = axis_ratio
         self.angle = angle
+        self.angle_degrees = angle_degrees
         super(Sersic, self).__init__()
 
     def total_flux_adu(self, mag_zp):
@@ -60,7 +61,7 @@ class Sersic(ComponentBase):
         kappa = self.kappa()
         flux_tot = self.total_flux_adu(mag_zp)
         sbeff = self.sb_eff_adu(mag_zp, flux_tot, kappa)
-        angle = np.deg2rad(self.angle)
+        angle = np.deg2rad(self.angle) if self.angle_degrees else self.angle
         sin_ang, cos_ang = np.sin(angle), np.cos(angle)
 
         # Matrix representation of ellipse:

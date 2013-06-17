@@ -16,7 +16,7 @@ class PSF(ComponentBase):
         Add point source to a numpy array. Array is assumed to be in counts per
         second, ie the brightness of a pixel is
         m = -2.5*log(pixel value) + mag_zp
-        Linearly interpolation is used for subpixel positions.
+        Linear interpolation is used for subpixel positions.
 
         :param arr: Numpy array to add psf to
         :param mag_zp: Magnitude zeropoint (i.e. magnitude of 1 count/second)
