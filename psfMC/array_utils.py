@@ -1,6 +1,7 @@
 from __future__ import division
 import time
 import numpy as np
+from math import fsum
 
 
 _show_timing_info = False
@@ -72,3 +73,12 @@ def mask_bad_pixels(obs_data, obs_ivm, psf_data, psf_ivm):
     psf_data[badpx] = 0
     psf_ivm[badpx] = 0
     return obs_data, obs_ivm, psf_data, psf_ivm
+
+
+def normed_psf(psf_data, psf_ivm):
+    """
+    Returns normed psf and correspondingly scaled IVM.
+    Uses math.fsum for its stable summation algorithm
+    """
+    psf_sum = fsum(psf_data.flat)
+    return psf_data / psf_sum, psf_ivm * psf_sum**2

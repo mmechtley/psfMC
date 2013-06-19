@@ -7,7 +7,7 @@ from pymc.MCMC import MCMC
 
 from .models import multicomponent_model
 from .model_parser import component_list_from_file
-from .array_utils import mask_bad_pixels
+from .array_utils import mask_bad_pixels, normed_psf
 
 try:
     import pyregion
@@ -80,7 +80,7 @@ def model_galaxy_mcmc(obs_file, obsIVM_file, psf_file, psfIVM_file,
     obsData, obsDataIVM, psfData, psfDataIVM = mask_bad_pixels(
         obsData, obsDataIVM, psfData, psfDataIVM)
 
-    # FIXME: Masks are breaking fitting
+    # FIXME: Masks should use masked array, but this breaks fitting?
     if mask_file is not None:
         if pyregion is not None:
             hdr = pyfits.getheader(obs_file)
@@ -95,10 +95,7 @@ def model_galaxy_mcmc(obs_file, obsIVM_file, psf_file, psfIVM_file,
             warn('pyregion could not be imported. mask_file will be ignored.')
 
     # Normalize the PSF kernel
-    # TODO: Convert to float64 first?
-    psf_sum = psfData.sum()
-    psfData /= psf_sum
-    psfDataIVM *= psf_sum**2
+    psfData, psfDataIVM = normed_psf(psfData, psfDataIVM)
 
     mc_model = multicomponent_model(obsData, obsDataIVM, psfData, psfDataIVM,
                                     components=fit_components,
