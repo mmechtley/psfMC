@@ -1,4 +1,5 @@
 from ast import *
+from .ModelComponents import ComponentBase
 
 _comps_name = 'components'
 
@@ -49,4 +50,5 @@ def component_list_from_file(filename):
 
     exec(compile(model_tree, filename, mode='exec'))
 
-    return locals()[_comps_name]
+    return [comp for comp in locals()[_comps_name]
+            if isinstance(comp, ComponentBase)]
