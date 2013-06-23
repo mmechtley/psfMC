@@ -1,8 +1,10 @@
 from __future__ import division
 import numpy as np
 from pymc import deterministic, Normal
+from pymc.Model import Model
 from .array_utils import *
 from .ModelComponents import Sky
+from .model_parser import component_list_from_file
 # import matplotlib.pyplot as pp
 
 # TODO: Is there a way to use masked arrays to skip bad pixels instead?
@@ -14,9 +16,21 @@ def multicomponent_model(obs_data, obs_ivm, psf_data, psf_ivm,
                          components=None, mag_zp=0):
     """
     Multi-component model for MCMC psf fitting. Components is a list of
-    ComponentBase subclasses.
+    ComponentBase subclasses, or a model definition python file parsable by
+    model_parser
     """
+    if isinstance(components, basestring):
+        try:
+            components = component_list_from_file(components)
+        except IOError, err:
+            message = 'Unable to open components file {}. Does it exist?'
+            err.message = message.format(components)
+            raise err
+
     np.seterr(divide='ignore')
+
+    # Normalize the PSF kernel
+    psf_data, psf_ivm = normed_psf(psf_data, psf_ivm)
 
     psf_rms = np.where(psf_ivm == 0, 0, 1 / np.sqrt(psf_ivm))
 
@@ -83,4 +97,4 @@ def multicomponent_model(obs_data, obs_ivm, psf_data, psf_ivm,
     stochastics += [raw_model, convolved_model, composite_ivm, data]
     stochastics += model_comps
 
-    return stochastics
+    return Model(stochastics)

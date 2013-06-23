@@ -51,4 +51,4 @@ def component_list_from_file(filename):
     exec(compile(model_tree, filename, mode='exec'))
 
     return [comp for comp in locals()[_comps_name]
-            if isinstance(comp, ComponentBase)]
+            if isinstance(comp, ComponentBase.ComponentBase)]

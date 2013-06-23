@@ -6,8 +6,7 @@ import numpy as np
 from pymc.MCMC import MCMC
 
 from .models import multicomponent_model
-from .model_parser import component_list_from_file
-from .array_utils import mask_bad_pixels, normed_psf
+from .array_utils import mask_bad_pixels
 
 try:
     import pyregion
@@ -57,13 +56,6 @@ def model_galaxy_mcmc(obs_file, obsIVM_file, psf_file, psfIVM_file,
         Useful parameters include iter=, burn=, tune_interval=, thin=, etc. See
         pyMC documentation.
     """
-    try:
-        fit_components = component_list_from_file(model_file)
-    except IOError, err:
-        message = 'Unable to open components file {}. Does it exist?'
-        err.message = message.format(model_file)
-        raise err
-
     if output_name is None:
         output_name = obs_file.replace('.fits', '')
     output_name += '_{}'
@@ -94,11 +86,8 @@ def model_galaxy_mcmc(obs_file, obsIVM_file, psf_file, psfIVM_file,
         else:
             warn('pyregion could not be imported. mask_file will be ignored.')
 
-    # Normalize the PSF kernel
-    psfData, psfDataIVM = normed_psf(psfData, psfDataIVM)
-
     mc_model = multicomponent_model(obsData, obsDataIVM, psfData, psfDataIVM,
-                                    components=fit_components,
+                                    components=model_file,
                                     mag_zp=mag_zeropoint)
     sampler = MCMC(mc_model, db='pickle', name=output_name.format('db'))
     sampler.sample(**kwargs)
@@ -106,43 +95,62 @@ def model_galaxy_mcmc(obs_file, obsIVM_file, psf_file, psfIVM_file,
     ## Saves out to pickle file
     sampler.db.close()
 
-    stats = sampler.stats()
-    statscards = _to_header_cards(stats)
-
+    # Write mean model output files
     obsHeader = pyfits.getheader(obs_file, ignore_missing_end=True)
-    obsHeader.extend(statscards)
-    for out_type in write_fits:
+    write_mean_model(sampler, sampler.db, basename=output_name,
+                     filetypes=write_fits, header=obsHeader)
+    # TODO: Return something? Maybe model, resid, IVM arrays?
+
+
+def write_mean_model(model, db, basename='mcmc', filetypes=('residual', ),
+                     trace_slice=slice(0, -1), header=None):
+    if header is None:
+        header = pyfits.Header()
+    if '{}' not in basename:
+        basename += '_{}'
+
+    # TODO: Strictly speaking, there may be stochastics whose traces are not
+    # retained in the database. What to do about those?
+    stoch_names = [stoch.__name__ for stoch
+                   in model.stochastics - model.observed_stochastics]
+    statscards = _stats_as_header_cards(db, trace_names=stoch_names,
+                                        trace_slice=trace_slice)
+    header.extend(statscards)
+
+    # Set model stochastic values to their trace means
+    for stoch in model.stochastics - model.observed_stochastics:
+        stoch.set_value(np.mean(db.trace(stoch.__name__)[trace_slice]))
+
+    # Save out requested file types
+    for out_type in filetypes:
         node_name = out_type
         if out_type == 'residual':
             node_name = 'convolved_model'
-        # TODO: Is get_node the best way to get at non-traced model data?
         try:
-            outputData = np.ma.filled(sampler.get_node(node_name).value, 0)
+            outputData = np.ma.filled(model.get_node(node_name).value, 0)
         except AttributeError:
             warn(('Unable to find model parameter named {}. No output will ' +
                   'be written for file type {}').format(node_name, out_type))
             continue
         if out_type == 'residual':
-            obsData = pyfits.getdata(obs_file, ignore_missing_end=True)
+            obsData = model.get_node('data').value
             outputData = obsData - outputData
 
-        pyfits.writeto(output_name.format(out_type + '.fits'),
-                       outputData.copy(), header=obsHeader,
+        pyfits.writeto(basename.format(out_type + '.fits'),
+                       outputData.copy(), header=header,
                        clobber=True, output_verify='fix')
 
-    # TODO: Return something? Maybe model, resid, IVM arrays?
 
-
-def _to_header_cards(stats):
+def _stats_as_header_cards(db, trace_names=None, trace_slice=slice(0, -1)):
     # TODO: better way to make keys. Maybe component.shortname(attr) etc.
     replace_pairs = (('_Sersic', 'SER'), ('_PSF', 'PSF'), ('_Sky', 'SKY'),
                      ('_reff', '_RE'), ('_index', '_N'), ('_axis_ratio', '_Q'),
                      ('_angle', '_ANG'))
     statscards = []
-    for stoch in sorted(stats):
-        mean = stats[stoch]['mean']
-        std = stats[stoch]['standard deviation']
-        key = stoch
+    for trace_name in trace_names:
+        mean = np.mean(db.trace(trace_name)[trace_slice])
+        std = np.std(db.trace(trace_name)[trace_slice])
+        key = trace_name
         for oldstr, newstr in replace_pairs:
             key = key.replace(oldstr, newstr)
         try:
@@ -152,6 +160,4 @@ def _to_header_cards(stats):
             strstd = ','.join(['{:0.2f}'.format(dim) for dim in std])
             val = '({}) +/- ({})'.format(strmean, strstd)
         statscards += [(key, val, 'psfMC model component')]
-        # TODO: Remove debug output
-        print '{}: {}'.format(stoch, val)
     return statscards
