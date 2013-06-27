@@ -77,7 +77,7 @@ def multicomponent_model(obs_data, obs_ivm, psf_data, psf_ivm,
         debug_timer('start')
         # f * (g + h) = (f * g) + (f * h), so convolve PSF RMS map with model to
         # get model RMS map
-        # TODO: should this be modelIVM = convolve(rawmodel**2, 1/f_psf_ivm)?
+        # TODO: should this be modelIVM = convolve(rawmodel**2, f_psf_var)?
         modelRMS = convolve(raw_model, f_psf_rms)
         # Set zero-weight pixels to very small number instead
         badpx = (modelRMS <= 0) | (obs_ivm <= 0)

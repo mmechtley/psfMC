@@ -18,4 +18,4 @@ def Normal(mu=None, tau=None, **kwargs):
 
 
 def VonMises(mu=None, kappa=None, **kwargs):
-    return pymc.distributions.VonMises('', mu=mu, kappa=kappa **kwargs)
+    return pymc.distributions.VonMises('', mu=mu, kappa=kappa, **kwargs)

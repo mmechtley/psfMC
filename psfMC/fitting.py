@@ -148,8 +148,9 @@ def _stats_as_header_cards(db, trace_names=None, trace_slice=slice(0, -1)):
                      ('_angle', '_ANG'))
     statscards = []
     for trace_name in trace_names:
-        mean = np.mean(db.trace(trace_name)[trace_slice])
-        std = np.std(db.trace(trace_name)[trace_slice])
+        trace = db.trace(trace_name)[trace_slice]
+        mean = np.mean(trace, axis=0)
+        std = np.std(trace, axis=0)
         key = trace_name
         for oldstr, newstr in replace_pairs:
             key = key.replace(oldstr, newstr)
