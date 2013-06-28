@@ -124,17 +124,12 @@ def write_mean_model(model, db, basename='mcmc', filetypes=('residual', ),
     # Save out requested file types
     for out_type in filetypes:
         node_name = out_type
-        if out_type == 'residual':
-            node_name = 'convolved_model'
         try:
             outputData = np.ma.filled(model.get_node(node_name).value, 0)
         except AttributeError:
             warn(('Unable to find model parameter named {}. No output will ' +
                   'be written for file type {}').format(node_name, out_type))
             continue
-        if out_type == 'residual':
-            obsData = model.get_node('data').value
-            outputData = obsData - outputData
 
         pyfits.writeto(basename.format(out_type + '.fits'),
                        outputData.copy(), header=header,
@@ -147,7 +142,7 @@ def _stats_as_header_cards(db, trace_names=None, trace_slice=slice(0, -1)):
                      ('_reff', '_RE'), ('_index', '_N'), ('_axis_ratio', '_Q'),
                      ('_angle', '_ANG'))
     statscards = []
-    for trace_name in trace_names:
+    for trace_name in sorted(trace_names):
         trace = db.trace(trace_name)[trace_slice]
         mean = np.mean(trace, axis=0)
         std = np.std(trace, axis=0)

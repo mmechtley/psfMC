@@ -5,20 +5,19 @@ from math import fsum
 
 
 _show_timing_info = False
-_t_in = 0.0
 
 
+_timers = dict()
 def debug_timer(step, name=''):
     """
     Hacky lightweight timer, for profiling model creation
     """
-    global _t_in
     if not _show_timing_info:
         return
     if step == 'start':
-        _t_in = time.time()
+        _timers[name] = time.time()
     elif step == 'stop':
-        print '{}: {:.2e}'.format(name, time.time() - _t_in),
+        print '{}: {:.2e}'.format(name, time.time() - _timers[name]),
     else:
         print ''
 
