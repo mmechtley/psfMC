@@ -119,7 +119,7 @@ def write_mean_model(model, db, basename='mcmc', filetypes=('residual', ),
 
     # Set model stochastic values to their trace means
     for stoch in model.stochastics - model.observed_stochastics:
-        stoch.set_value(np.mean(db.trace(stoch.__name__)[trace_slice]))
+        stoch.value = np.mean(db.trace(stoch.__name__)[trace_slice], axis=0)
 
     # Save out requested file types
     for out_type in filetypes:
