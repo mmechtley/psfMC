@@ -24,7 +24,7 @@ class Sersic(ComponentBase):
         """
         Returns total flux of the integrated profile, in ADU relative to mag_zp
         """
-        return 10 ** (-0.4 * (self.mag - mag_zp))
+        return np.power(10, -0.4 * (self.mag - mag_zp))
 
     def sb_eff_adu(self, mag_zp, flux_tot=None, kappa=None):
         """
@@ -56,8 +56,7 @@ class Sersic(ComponentBase):
         :param mag_zp: Magnitude zeropoint (i.e. magnitude of 1 count/second)
         :param coords: Optional pre-computed x,y coordinates of each element
         """
-        coords = kwargs.get('coords', array_coords(arr))
-
+        coords = kwargs['coords'] if 'coords' in kwargs else array_coords(arr)
         kappa = self.kappa()
         flux_tot = self.total_flux_adu(mag_zp)
         sbeff = self.sb_eff_adu(mag_zp, flux_tot, kappa)
