@@ -48,11 +48,12 @@ class Sersic(ComponentBase):
     def add_to_array(self, arr, mag_zp, **kwargs):
         """
         Add Sersic profile with supplied parameters to a numpy array. Array is
-        assumed to be in counts per second, ie the brightness of a pixel is
+        assumed to be in same units as the zero point, ie the brightness of a
+        pixel is:
         m = -2.5*log(pixel value) + mag_zp
 
         :param arr: Numpy array to add sersic profile to
-        :param mag_zp: Magnitude zeropoint (i.e. magnitude of 1 count/second)
+        :param mag_zp: Magnitude zeropoint (e.g. magnitude of 1 count/second)
         :param coords: Optional pre-computed x,y coordinates of each element
         """
         coords = kwargs['coords'] if 'coords' in kwargs else array_coords(arr)

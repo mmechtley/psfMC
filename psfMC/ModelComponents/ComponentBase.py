@@ -21,6 +21,9 @@ class ComponentBase(ContainerBase):
         self.OCValue = OCValue(self)
 
     def update_trace_names(self, count=None):
+        """
+        Set trace names based on component number, type, and attribute name
+        """
         comptype = self.__class__.__name__
         for attr in self.__dict__:
             newname = '{}_{}'.format(comptype, attr)
