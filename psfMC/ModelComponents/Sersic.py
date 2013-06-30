@@ -4,7 +4,6 @@ from scipy.special import gamma
 from .ComponentBase import ComponentBase
 from ..array_utils import array_coords
 
-
 class Sersic(ComponentBase):
     """
     Sersic profile component
@@ -24,7 +23,7 @@ class Sersic(ComponentBase):
         """
         Returns total flux of the integrated profile, in ADU relative to mag_zp
         """
-        return np.power(10, -0.4 * (self.mag - mag_zp))
+        return 10**(-0.4 * (self.mag - mag_zp))
 
     def sb_eff_adu(self, mag_zp, flux_tot=None, kappa=None):
         """
@@ -63,7 +62,7 @@ class Sersic(ComponentBase):
         angle = np.deg2rad(self.angle) if self.angle_degrees else self.angle
         sin_ang, cos_ang = np.sin(angle), np.cos(angle)
 
-        # Matrix representation of ellipse:
+        # Matrix representation of n-D ellipse:
         # http://en.wikipedia.org/wiki/Ellipsoid
         M_inv_scale = np.diag((1/self.reff,
                                1/(self.reff*self.axis_ratio)))
@@ -77,5 +76,8 @@ class Sersic(ComponentBase):
                                       (coords-self.xy).T)**2, axis=0))
         radii = radii.reshape(arr.shape)
         # 1.4e-03 seconds for 128x128
-        arr += sbeff * np.exp(-kappa * (np.power(radii, 1/self.index) - 1))
+        # arr += sbeff * np.exp(-kappa * (np.power(radii, 1/self.index) - 1))
+        # 8.8e-04 seconds for 128x128
+        arr += sbeff * np.exp(-np.exp(np.log(kappa) +
+                                      np.log(radii)*(1/self.index)) - 1)
         return arr

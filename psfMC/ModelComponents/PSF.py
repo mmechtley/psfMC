@@ -1,4 +1,5 @@
 from numpy import outer, modf, clip
+from scipy.special import exp10
 from .ComponentBase import ComponentBase
 
 
@@ -21,7 +22,7 @@ class PSF(ComponentBase):
         :param arr: Numpy array to add psf to
         :param mag_zp: Magnitude zeropoint (i.e. magnitude of 1 count/second)
         """
-        flux = 10 ** (-0.4 * (self.mag - mag_zp))
+        flux = 10**(-0.4 * (self.mag - mag_zp))
         shape = arr.shape
         fracs, ints = modf(clip(self.xy, (0, 0),
                                 (shape[1]-2, shape[0]-2)))

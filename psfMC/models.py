@@ -31,7 +31,6 @@ def multicomponent_model(obs_data, obs_ivm, psf_data, psf_ivm,
 
     # Normalize the PSF kernel
     psf_data, psf_ivm = normed_psf(psf_data, psf_ivm)
-
     # psf_rms = np.where(psf_ivm == 0, 0, 1 / np.sqrt(psf_ivm))
     psf_var = np.where(psf_ivm == 0, 0, 1 / psf_ivm)
 
@@ -39,6 +38,9 @@ def multicomponent_model(obs_data, obs_ivm, psf_data, psf_ivm,
     f_psf = pad_and_rfft_image(psf_data, obs_data.shape)
     # f_psf_rms = pad_and_rfft_image(psf_rms, obs_data.shape)
     f_psf_var = pad_and_rfft_image(psf_var, obs_data.shape)
+
+    obs_mask = obs_ivm <= 0
+    obs_var = np.where(obs_mask, 0, 1 / obs_ivm)
 
     # pre-compute data x,y coordinates
     data_coords = array_coords(obs_data)
@@ -61,39 +63,28 @@ def multicomponent_model(obs_data, obs_ivm, psf_data, psf_ivm,
     def raw_model(model_comps=model_comps):
         modelpx = np.zeros_like(obs_data)
         for comp in model_comps:
-            debug_timer('start', name=comp.__class__.__name__)
             comp.add_to_array(modelpx, mag_zp, coords=data_coords)
-            debug_timer('stop', name=comp.__class__.__name__)
         return modelpx
 
     @deterministic(plot=False, trace=False)
     def convolved_model(f_psf=f_psf, raw_model=raw_model):
-        debug_timer('start', name='Convolve')
         cmodel = convolve(raw_model, f_psf)
-        debug_timer('stop', name='Convolve')
         return cmodel
 
     @deterministic(plot=False, trace=False)
-    def composite_ivm(obs_ivm=obs_ivm, f_psf_var=f_psf_var, #f_psf_rms=f_psf_rms,
+    def composite_ivm(obs_var=obs_var, obs_mask=obs_mask,
+                      f_psf_var=f_psf_var, #f_psf_rms=f_psf_rms,
                       raw_model=raw_model):
-        debug_timer('start', name='IVM')
         # f * (g + h) = (f * g) + (f * h), so convolve PSF RMS map with model to
         # get model RMS map
         # TODO: should this be modelIVM = convolve(rawmodel**2, f_psf_var)?
         # modelRMS = convolve(raw_model, f_psf_rms)
-        modelVar = convolve(raw_model**2, f_psf_var)
+        model_var = convolve(raw_model**2, f_psf_var)
         # Set zero-weight pixels to very small number instead
         # badpx = (modelRMS <= 0) | (obs_ivm <= 0)
-        badpx = (modelVar <= 0) | (obs_ivm <= 0)
+        badpx = (model_var <= 0) | obs_mask
         # compIVM = np.where(badpx, _zero_weight, 1 / (modelRMS**2 + 1 / obs_ivm))
-        compIVM = np.where(badpx, _zero_weight, 1 / (modelVar + 1 / obs_ivm))
-        # for arr in (obs_data.mask, raw_model, modelRMS, compIVM):
-        #     pp.imshow(np.log10(arr), interpolation='nearest')
-        #     pp.colorbar()
-        #     pp.show()
-        # exit(1)
-        debug_timer('stop', name='IVM')
-        debug_timer('final')
+        compIVM = np.where(badpx, _zero_weight, 1 / (model_var + obs_var))
         return compIVM
 
     @deterministic(plot=False, trace=False)

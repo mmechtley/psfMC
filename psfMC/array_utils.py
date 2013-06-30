@@ -4,7 +4,7 @@ import numpy as np
 from math import fsum
 
 
-_show_timing_info = False
+_show_timing_info = True
 
 
 _timers = dict()
