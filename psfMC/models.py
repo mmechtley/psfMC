@@ -31,14 +31,13 @@ def multicomponent_model(obs_data, obs_ivm, psf_data, psf_ivm,
 
     # Normalize the PSF kernel
     psf_data, psf_ivm = normed_psf(psf_data, psf_ivm)
-    # psf_rms = np.where(psf_ivm == 0, 0, 1 / np.sqrt(psf_ivm))
     psf_var = np.where(psf_ivm == 0, 0, 1 / psf_ivm)
 
     # pad the psf arrays to the same size as the data, for fft
     f_psf = pad_and_rfft_image(psf_data, obs_data.shape)
-    # f_psf_rms = pad_and_rfft_image(psf_rms, obs_data.shape)
     f_psf_var = pad_and_rfft_image(psf_var, obs_data.shape)
 
+    # pre-compute variance map and bad pixel mask for observation
     obs_mask = obs_ivm <= 0
     obs_var = np.where(obs_mask, 0, 1 / obs_ivm)
 
@@ -67,31 +66,25 @@ def multicomponent_model(obs_data, obs_ivm, psf_data, psf_ivm,
         return modelpx
 
     @deterministic(plot=False, trace=False)
-    def convolved_model(f_psf=f_psf, raw_model=raw_model):
+    def convolved_model(f_psf=f_psf, raw_model=raw_model, sky=sky):
         cmodel = convolve(raw_model, f_psf)
-        return cmodel
+        return cmodel + sky.adu
 
     @deterministic(plot=False, trace=False)
-    def composite_ivm(obs_var=obs_var, obs_mask=obs_mask,
-                      f_psf_var=f_psf_var, #f_psf_rms=f_psf_rms,
+    def composite_ivm(obs_var=obs_var, obs_mask=obs_mask, f_psf_var=f_psf_var,
                       raw_model=raw_model):
-        # f * (g + h) = (f * g) + (f * h), so convolve PSF RMS map with model to
-        # get model RMS map
-        # TODO: should this be modelIVM = convolve(rawmodel**2, f_psf_var)?
-        # modelRMS = convolve(raw_model, f_psf_rms)
+        # compute model variance
         model_var = convolve(raw_model**2, f_psf_var)
         # Set zero-weight pixels to very small number instead
-        # badpx = (modelRMS <= 0) | (obs_ivm <= 0)
         badpx = (model_var <= 0) | obs_mask
-        # compIVM = np.where(badpx, _zero_weight, 1 / (modelRMS**2 + 1 / obs_ivm))
         compIVM = np.where(badpx, _zero_weight, 1 / (model_var + obs_var))
         return compIVM
 
     @deterministic(plot=False, trace=False)
-    def residual(obs_data=obs_data, convolved_model=convolved_model, sky=sky):
-        return obs_data - convolved_model - sky.adu
+    def residual(obs_data=obs_data, convolved_model=convolved_model):
+        return obs_data - convolved_model
 
-    data = Normal('data', value=np.zeros_like(obs_data), mu=residual,
+    data = Normal('data', value=obs_data, mu=convolved_model,
                   tau=composite_ivm, observed=True, trace=False)
 
     stochastics += [raw_model, convolved_model, composite_ivm, residual, data]
