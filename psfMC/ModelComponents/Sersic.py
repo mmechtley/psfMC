@@ -9,7 +9,7 @@ class Sersic(ComponentBase):
     Sersic profile component
     """
     def __init__(self, xy=None, mag=None, reff=None, index=None,
-                 axis_ratio=None, angle=None, angle_degrees=True):
+                 axis_ratio=None, angle=None, angle_degrees=False):
         self.xy = xy
         self.mag = mag
         self.reff = reff
