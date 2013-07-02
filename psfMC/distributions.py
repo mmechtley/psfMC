@@ -1,6 +1,6 @@
 from __future__ import division
 import pymc.distributions
-import pymc.CircularStochastic
+from pymc import CircVonMises as _CircVonMises
 
 # FIXME: can't use 'className' here, uses global variable instead of creating
 # function with literal
@@ -22,5 +22,4 @@ def VonMises(mu=None, kappa=None, **kwargs):
     return pymc.distributions.VonMises('', mu=mu, kappa=kappa, **kwargs)
 
 def CircVonMises(mu=None, kappa=None, **kwargs):
-    return pymc.CircularStochastic.CircVonMises('', mu=mu, kappa=kappa,
-                                                **kwargs)
+    return _CircVonMises('', mu=mu, kappa=kappa, **kwargs)
