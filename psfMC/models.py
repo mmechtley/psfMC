@@ -3,13 +3,12 @@ import numpy as np
 from pymc import deterministic, Normal
 from pymc.Model import Model
 from .array_utils import *
-from .ModelComponents import Sky
+from .ModelComponents import Sky, PSF
 from .model_parser import component_list_from_file
 # import matplotlib.pyplot as pp
 
-# TODO: Is there a way to use masked arrays to skip bad pixels instead?
 # Pixels that have zero weight will be replaced with a very small weight
-_zero_weight = 1e-20
+# _zero_weight = 1e-20
 
 
 def multicomponent_model(obs_data, obs_ivm, psf_data, psf_ivm,
@@ -84,10 +83,20 @@ def multicomponent_model(obs_data, obs_ivm, psf_data, psf_ivm,
     def residual(obs_data=obs_data, convolved_model=convolved_model):
         return obs_data - convolved_model
 
+    @deterministic(plot=False, trace=False)
+    def point_source_subtracted(model_comps=model_comps, f_psf=f_psf):
+        psf_px = np.zeros_like(obs_ivm)
+        psf_comps = [comp for comp in model_comps if isinstance(comp, PSF)]
+        for comp in psf_comps:
+            comp.add_to_array(psf_px, mag_zp)
+        psf_px = convolve(psf_px, f_psf)
+        return obs_data - psf_px
+
     data = Normal('data', value=obs_data, mu=convolved_model,
                   tau=composite_ivm, observed=True, trace=False)
 
-    stochastics += [raw_model, convolved_model, composite_ivm, residual, data]
+    stochastics += [raw_model, convolved_model, composite_ivm, residual,
+                    point_source_subtracted, data]
     stochastics += model_comps
 
     return Model(stochastics)

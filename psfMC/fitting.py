@@ -12,7 +12,8 @@ def model_galaxy_mcmc(obs_file, obsIVM_file, psf_file, psfIVM_file,
                       model_file=None, mag_zeropoint=0,
                       mask_file=None, output_name=None,
                       write_fits=('raw_model', 'convolved_model',
-                                  'composite_ivm', 'residual'),
+                                  'composite_ivm', 'residual',
+                                  'point_source_subtracted'),
                       **kwargs):
     """
     Model the light distribution of a galaxy or galaxies using multi-component
