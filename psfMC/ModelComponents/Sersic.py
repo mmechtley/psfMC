@@ -4,6 +4,7 @@ from scipy.special import gamma
 from .ComponentBase import ComponentBase
 from ..array_utils import array_coords
 
+
 class Sersic(ComponentBase):
     """
     Sersic profile component
@@ -79,5 +80,6 @@ class Sersic(ComponentBase):
         # 1.4e-03 seconds for 128x128
         # arr += sbeff * np.exp(-kappa * (np.power(radii, 1/self.index) - 1))
         # 7e-04 seconds for 128x128
-        arr += sbeff * np.exp(-kappa * (np.exp(np.log(radii)*(1/self.index)) - 1))
+        arr += sbeff * np.exp(-kappa *
+                              (np.exp(np.log(radii)*(1/self.index)) - 1))
         return arr
