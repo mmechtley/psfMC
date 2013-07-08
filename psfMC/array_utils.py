@@ -7,10 +7,11 @@ from warnings import warn
 
 
 _show_timing_info = False
+_timers = dict()
+
 _bad_px_value = 1e20
 
 
-_timers = dict()
 def debug_timer(step, name=''):
     """
     Hacky lightweight timer, for profiling model creation
@@ -86,7 +87,7 @@ def mask_bad_pixels(obs_data, obs_ivm, psf_data, psf_ivm, mask_reg=None,
             obs_data.mask |= exclude_px
             obs_ivm[exclude_px] = 0
         except ImportError:
-            warn('pyregion could not be imported. masked regions will be '+
+            warn('pyregion could not be imported. Mask regions will be ' +
                  'ignored.')
 
     return obs_data, obs_ivm, psf_data, psf_ivm

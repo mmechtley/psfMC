@@ -8,12 +8,14 @@ from pymc.MCMC import MCMC
 from .models import multicomponent_model
 
 
+_default_filetypes = ('raw_model', 'convolved_model', 'composite_ivm',
+                      'residual', 'point_source_subtracted')
+
+
 def model_galaxy_mcmc(obs_file, obsIVM_file, psf_file, psfIVM_file,
                       model_file=None, mag_zeropoint=0,
                       mask_file=None, output_name=None,
-                      write_fits=('raw_model', 'convolved_model',
-                                  'composite_ivm', 'residual',
-                                  'point_source_subtracted'),
+                      write_fits=_default_filetypes,
                       **kwargs):
     """
     Model the light distribution of a galaxy or galaxies using multi-component
@@ -74,7 +76,6 @@ def model_galaxy_mcmc(obs_file, obsIVM_file, psf_file, psfIVM_file,
     obsHeader = pyfits.getheader(obs_file, ignore_missing_end=True)
     write_mean_model(sampler, sampler.db, basename=output_name,
                      filetypes=write_fits, header=obsHeader)
-    # TODO: Return something? Maybe model, resid, IVM arrays?
 
 
 def write_mean_model(model, db, basename='mcmc', filetypes=('residual', ),
@@ -103,12 +104,11 @@ def write_mean_model(model, db, basename='mcmc', filetypes=('residual', ),
 
     # Save out requested file types
     for out_type in filetypes:
-        node_name = out_type
         try:
-            outputData = np.ma.filled(model.get_node(node_name).value, 0)
+            outputData = np.ma.filled(model.get_node(out_type).value)
         except AttributeError:
             warn(('Unable to find model parameter named {}. No output will ' +
-                  'be written for file type {}').format(node_name, out_type))
+                  'be written for file type.').format(out_type))
             continue
 
         pyfits.writeto(basename.format(out_type + '.fits'),
