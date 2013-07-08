@@ -84,8 +84,6 @@ def write_mean_model(model, db, basename='mcmc', filetypes=('residual', ),
     if '{}' not in basename:
         basename += '_{}'
 
-    # TODO: Strictly speaking, there may be stochastics whose traces are not
-    # retained in the database. What to do about those?
     stoch_names = [stoch.__name__ for stoch
                    in model.stochastics - model.observed_stochastics]
     statscards = _stats_as_header_cards(db, trace_names=stoch_names,

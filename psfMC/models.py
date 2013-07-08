@@ -92,8 +92,10 @@ def multicomponent_model(obs_data, obs_ivm, psf_data, psf_ivm,
         psf_px = convolve(psf_px, f_psf)
         return obs_data - psf_px
 
-    data = Normal('data', value=obs_data, mu=convolved_model,
-                  tau=composite_ivm, observed=True, trace=False)
+    data = Normal('data', value=obs_data[~obs_data.mask],
+                  mu=convolved_model[~obs_data.mask],
+                  tau=composite_ivm[~obs_data.mask],
+                  observed=True, trace=False)
 
     stochastics += [raw_model, convolved_model, composite_ivm, residual,
                     point_source_subtracted, data]
