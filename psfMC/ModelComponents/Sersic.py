@@ -79,6 +79,5 @@ class Sersic(ComponentBase):
         # 1.4e-03 seconds for 128x128
         # arr += sbeff * np.exp(-kappa * (np.power(radii, 1/self.index) - 1))
         # 7e-04 seconds for 128x128
-        arr += sbeff * np.exp(-np.exp(np.log(kappa) +
-                                      np.log(radii)*(1/self.index)) - 1)
+        arr += sbeff * np.exp(-kappa * (np.exp(np.log(radii)*(1/self.index)) - 1))
         return arr
