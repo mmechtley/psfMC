@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="f550eb5d-d804-46be-8e18-060ec19e5881" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/psfMC/ModelComponents/Sersic.py" afterPath="$PROJECT_DIR$/psfMC/ModelComponents/Sersic.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/psfMC/array_utils.py" afterPath="$PROJECT_DIR$/psfMC/array_utils.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="psfMC.iws" />
@@ -11,7 +11,7 @@
     <file path="/models.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1373252891929" ignored="false" />
     <file path="/__init__.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1371947352772" ignored="false" />
     <file path="/tests.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368764844984" ignored="false" />
-    <file path="/Dummy.txt" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1373261413166" ignored="false" />
+    <file path="/Dummy.txt" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1373279524066" ignored="false" />
     <file path="/a.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368499802072" ignored="false" />
     <file path="/start_script.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368499810666" ignored="false" />
     <file path="/setup.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1373247725028" ignored="false" />
@@ -19,7 +19,7 @@
     <file path="$PROJECT_DIR$/../../../WIP/z2quasars/fitting/psf_fit_byfocus.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1371506612206" ignored="false" />
     <file path="/psf_fit_byfocus.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1371183751412" ignored="false" />
     <file path="/wxWindow.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368594698157" ignored="false" />
-    <file path="/a.dummy" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1372896063392" ignored="false" />
+    <file path="/a.dummy" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1373280070052" ignored="false" />
     <file path="$PROJECT_DIR$/../../lib/python2.7/site-packages/psfMC/fitting.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1372354795765" ignored="false" />
     <file path="/z6_quasar.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1369183959062" ignored="false" />
     <file path="/PSF.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1372470366640" ignored="false" />
@@ -27,54 +27,54 @@
     <file path="/Sky.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1369177480310" ignored="false" />
     <file path="/model_J0005-0006.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1371095169042" ignored="false" />
     <file path="/distributions.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1372842546777" ignored="false" />
-    <file path="/array_utils.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1373259954498" ignored="false" />
+    <file path="/array_utils.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1373327215776" ignored="false" />
     <file path="/test_ast.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1369095317899" ignored="false" />
     <file path="/ComponentBase.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1372560953267" ignored="false" />
     <file path="/Container.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1369171372669" ignored="false" />
     <file path="/model_parser.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1371948440493" ignored="false" />
-    <file path="$PROJECT_DIR$/../../../WIP/z2quasars/fitting/stamps/model_SDSSJ081518.99+103711.5.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1372726215831" ignored="false" />
-    <file path="$PROJECT_DIR$/../../../WIP/z2quasars/fitting/stamps/model_SDSSJ082510.09+031801.4.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1372726215831" ignored="false" />
-    <file path="$PROJECT_DIR$/../../../WIP/z2quasars/fitting/stamps/model_SDSSJ085117.41+301838.7.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1372726215831" ignored="false" />
-    <file path="$PROJECT_DIR$/../../../WIP/z2quasars/fitting/stamps/model_SDSSJ094737.70+110843.3.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1372726215831" ignored="false" />
-    <file path="$PROJECT_DIR$/../../../WIP/z2quasars/fitting/stamps/model_SDSSJ102719.13+584114.3.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1372726215831" ignored="false" />
-    <file path="$PROJECT_DIR$/../../../WIP/z2quasars/fitting/stamps/model_SDSSJ113820.35+565652.8.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1372726215831" ignored="false" />
-    <file path="$PROJECT_DIR$/../../../WIP/z2quasars/fitting/stamps/model_SDSSJ120305.42+481313.1.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1372726215831" ignored="false" />
-    <file path="$PROJECT_DIR$/../../../WIP/z2quasars/fitting/stamps/model_SDSSJ123011.84+401442.9.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1372726215831" ignored="false" />
-    <file path="$PROJECT_DIR$/../../../WIP/z2quasars/fitting/stamps/model_SDSSJ131501.14+533314.1.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1372726215831" ignored="false" />
-    <file path="$PROJECT_DIR$/../../../WIP/z2quasars/fitting/stamps/model_SDSSJ124949.65+593216.9.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1372726215831" ignored="false" />
-    <file path="$PROJECT_DIR$/../../../WIP/z2quasars/fitting/stamps/model_SDSSJ131535.42+253643.9.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1372726215831" ignored="false" />
-    <file path="$PROJECT_DIR$/../../../WIP/z2quasars/fitting/stamps/model_SDSSJ135851.73+540805.3.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1372726215831" ignored="false" />
-    <file path="$PROJECT_DIR$/../../../WIP/z2quasars/fitting/stamps/model_SDSSJ143645.80+633637.9.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1372726215831" ignored="false" />
-    <file path="$PROJECT_DIR$/../../../WIP/z2quasars/fitting/stamps/model_SDSSJ145645.53+110142.6.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1372726215831" ignored="false" />
-    <file path="$PROJECT_DIR$/../../../WIP/z2quasars/fitting/stamps/model_SDSSJ155447.85+194502.7.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1372726215831" ignored="false" />
-    <file path="$PROJECT_DIR$/../../../WIP/z2quasars/fitting/stamps/model_SDSSJ215006.72+120620.6.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1372726215831" ignored="false" />
-    <file path="$PROJECT_DIR$/../../../WIP/z2quasars/fitting/stamps/model_SDSSJ215954.45-002150.1.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1372726215831" ignored="false" />
-    <file path="$PROJECT_DIR$/../../../WIP/z2quasars/fitting/stamps/model_SDSSJ220811.62-083235.1.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1372726215831" ignored="false" />
-    <file path="$PROJECT_DIR$/../../../WIP/z2quasars/fitting/stamps/model_SDSSJ232300.06+151002.4.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1372726215831" ignored="false" />
+    <file path="$PROJECT_DIR$/../../../WIP/z2quasars/fitting/stamps/model_SDSSJ081518.99+103711.5.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1373280102100" ignored="false" />
+    <file path="$PROJECT_DIR$/../../../WIP/z2quasars/fitting/stamps/model_SDSSJ082510.09+031801.4.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1373280109097" ignored="false" />
+    <file path="$PROJECT_DIR$/../../../WIP/z2quasars/fitting/stamps/model_SDSSJ085117.41+301838.7.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1373280349650" ignored="false" />
+    <file path="$PROJECT_DIR$/../../../WIP/z2quasars/fitting/stamps/model_SDSSJ094737.70+110843.3.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1373280343986" ignored="false" />
+    <file path="$PROJECT_DIR$/../../../WIP/z2quasars/fitting/stamps/model_SDSSJ102719.13+584114.3.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1373280332522" ignored="false" />
+    <file path="$PROJECT_DIR$/../../../WIP/z2quasars/fitting/stamps/model_SDSSJ113820.35+565652.8.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1373280319559" ignored="false" />
+    <file path="$PROJECT_DIR$/../../../WIP/z2quasars/fitting/stamps/model_SDSSJ120305.42+481313.1.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1373280310362" ignored="false" />
+    <file path="$PROJECT_DIR$/../../../WIP/z2quasars/fitting/stamps/model_SDSSJ123011.84+401442.9.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1373280305286" ignored="false" />
+    <file path="$PROJECT_DIR$/../../../WIP/z2quasars/fitting/stamps/model_SDSSJ131501.14+533314.1.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1373280280747" ignored="false" />
+    <file path="$PROJECT_DIR$/../../../WIP/z2quasars/fitting/stamps/model_SDSSJ124949.65+593216.9.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1373280295082" ignored="false" />
+    <file path="$PROJECT_DIR$/../../../WIP/z2quasars/fitting/stamps/model_SDSSJ131535.42+253643.9.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1373280273698" ignored="false" />
+    <file path="$PROJECT_DIR$/../../../WIP/z2quasars/fitting/stamps/model_SDSSJ135851.73+540805.3.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1373280261464" ignored="false" />
+    <file path="$PROJECT_DIR$/../../../WIP/z2quasars/fitting/stamps/model_SDSSJ143645.80+633637.9.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1373280255594" ignored="false" />
+    <file path="$PROJECT_DIR$/../../../WIP/z2quasars/fitting/stamps/model_SDSSJ145645.53+110142.6.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1373280245278" ignored="false" />
+    <file path="$PROJECT_DIR$/../../../WIP/z2quasars/fitting/stamps/model_SDSSJ155447.85+194502.7.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1373280213797" ignored="false" />
+    <file path="$PROJECT_DIR$/../../../WIP/z2quasars/fitting/stamps/model_SDSSJ215006.72+120620.6.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1373280183427" ignored="false" />
+    <file path="$PROJECT_DIR$/../../../WIP/z2quasars/fitting/stamps/model_SDSSJ215954.45-002150.1.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1373280167977" ignored="false" />
+    <file path="$PROJECT_DIR$/../../../WIP/z2quasars/fitting/stamps/model_SDSSJ220811.62-083235.1.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1373280143492" ignored="false" />
+    <file path="$PROJECT_DIR$/../../../WIP/z2quasars/fitting/stamps/model_SDSSJ232300.06+151002.4.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1373280137659" ignored="false" />
     <file path="$PROJECT_DIR$/../HIPPIES_Pipeline/pipeline/02_hippies_drizzle_all.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1372114419287" ignored="false" />
     <file path="/02_hippies_drizzle_all.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1372114410265" ignored="false" />
     <file path="$USER_HOME$/Downloads/20111229_HippiesHelpers.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1369915637437" ignored="false" />
     <file path="$PROJECT_DIR$/../../../WIP/z2quasars/fitting/analyze_chains.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1372038714799" ignored="false" />
     <file path="/analyze_chains.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1372038585169" ignored="false" />
-    <file path="/model_SDSSJ232300.06+151002.4.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1372716006301" ignored="false" />
-    <file path="/model_SDSSJ220811.62-083235.1.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1372715959782" ignored="false" />
-    <file path="/model_SDSSJ215954.45-002150.1.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1372715862360" ignored="false" />
-    <file path="/model_SDSSJ215006.72+120620.6.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1372715766798" ignored="false" />
-    <file path="/model_SDSSJ155447.85+194502.7.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1372715664656" ignored="false" />
-    <file path="/model_SDSSJ145645.53+110142.6.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1372715486212" ignored="false" />
-    <file path="/model_SDSSJ143645.80+633637.9.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1372715143512" ignored="false" />
-    <file path="/model_SDSSJ135851.73+540805.3.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1372715083489" ignored="false" />
-    <file path="/model_SDSSJ131535.42+253643.9.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1372715036641" ignored="false" />
-    <file path="/model_SDSSJ131501.14+533314.1.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1372714911088" ignored="false" />
-    <file path="/model_SDSSJ124949.65+593216.9.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1372714865996" ignored="false" />
-    <file path="/model_SDSSJ123011.84+401442.9.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1372714716971" ignored="false" />
-    <file path="/model_SDSSJ120305.42+481313.1.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1372714646526" ignored="false" />
-    <file path="/model_SDSSJ113820.35+565652.8.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1372714582327" ignored="false" />
-    <file path="/model_SDSSJ102719.13+584114.3.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1372714524034" ignored="false" />
-    <file path="/model_SDSSJ094737.70+110843.3.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1372714371147" ignored="false" />
-    <file path="/model_SDSSJ085117.41+301838.7.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1372714118642" ignored="false" />
-    <file path="/model_SDSSJ082510.09+031801.4.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1372714043768" ignored="false" />
-    <file path="/model_SDSSJ081518.99+103711.5.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1372713932280" ignored="false" />
+    <file path="/model_SDSSJ232300.06+151002.4.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1373280136547" ignored="false" />
+    <file path="/model_SDSSJ220811.62-083235.1.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1373280142922" ignored="false" />
+    <file path="/model_SDSSJ215954.45-002150.1.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1373280156641" ignored="false" />
+    <file path="/model_SDSSJ215006.72+120620.6.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1373280176450" ignored="false" />
+    <file path="/model_SDSSJ155447.85+194502.7.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1373280200894" ignored="false" />
+    <file path="/model_SDSSJ145645.53+110142.6.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1373280243239" ignored="false" />
+    <file path="/model_SDSSJ143645.80+633637.9.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1373280253701" ignored="false" />
+    <file path="/model_SDSSJ135851.73+540805.3.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1373280259434" ignored="false" />
+    <file path="/model_SDSSJ131535.42+253643.9.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1373280269430" ignored="false" />
+    <file path="/model_SDSSJ131501.14+533314.1.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1373280279373" ignored="false" />
+    <file path="/model_SDSSJ124949.65+593216.9.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1373280288865" ignored="false" />
+    <file path="/model_SDSSJ123011.84+401442.9.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1373280303204" ignored="false" />
+    <file path="/model_SDSSJ120305.42+481313.1.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1373280308260" ignored="false" />
+    <file path="/model_SDSSJ113820.35+565652.8.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1373280317572" ignored="false" />
+    <file path="/model_SDSSJ102719.13+584114.3.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1373280327988" ignored="false" />
+    <file path="/model_SDSSJ094737.70+110843.3.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1373280342587" ignored="false" />
+    <file path="/model_SDSSJ085117.41+301838.7.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1373280347195" ignored="false" />
+    <file path="/model_SDSSJ082510.09+031801.4.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1373280108661" ignored="false" />
+    <file path="/model_SDSSJ081518.99+103711.5.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1373280101700" ignored="false" />
     <file path="$PROJECT_DIR$/../HIPPIES_Pipeline/pipeline/05_hippies_calc_limits.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1370311380493" ignored="false" />
     <file path="/05_hippies_calc_limits.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1370311370117" ignored="false" />
     <file path="$PROJECT_DIR$/../HIPPIES_Pipeline/pipeline/06_hippies_find_dropouts.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1370994139202" ignored="false" />
@@ -128,8 +128,8 @@
     <file path="$PROJECT_DIR$/../../../WIP/FaintQuasars/stamps/model_SDSSS-J2054-0005_J.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1372113881907" ignored="false" />
     <file path="$PROJECT_DIR$/../../../WIP/FaintQuasars/stamps/model_SDSSS-J2054-0005_H.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1372113918091" ignored="false" />
     <file path="$PROJECT_DIR$/../../lib/python2.7/site-packages/psfMC/distributions.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1372842660987" ignored="false" />
-    <file path="$PROJECT_DIR$/../../../WIP/FaintQuasars/stamps/model_SDSS-J2054-0005_H.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1373274903140" ignored="false" />
-    <file path="$PROJECT_DIR$/../../../WIP/FaintQuasars/stamps/model_SDSS-J2054-0005_J.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1373274907716" ignored="false" />
+    <file path="$PROJECT_DIR$/../../../WIP/FaintQuasars/stamps/model_SDSS-J2054-0005_H.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1373320919274" ignored="false" />
+    <file path="$PROJECT_DIR$/../../../WIP/FaintQuasars/stamps/model_SDSS-J2054-0005_J.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1373320914836" ignored="false" />
     <file path="$PROJECT_DIR$/../../lib/python2.7/site-packages/CatalogTools.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1372228712217" ignored="false" />
     <file path="$PROJECT_DIR$/../HIPPIES_Pipeline/pipeline/CatalogTools.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1372228840956" ignored="false" />
     <file path="$PROJECT_DIR$/../HIPPIES_Pipeline/pipeline/SextractorTools.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1372228873923" ignored="false" />
@@ -139,13 +139,13 @@
     <file path="$PROJECT_DIR$/../../../WIP/FaintQuasars/stamps/plot_subtract4pane.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1373259761523" ignored="false" />
     <file path="/model_SDSS-J2054-0005_J.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1372721990656" ignored="false" />
     <file path="/model_NDWFS-J1425+3254_H.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1372888091151" ignored="false" />
-    <file path="$PROJECT_DIR$/../../lib/python2.7/site-packages/psfMC/ModelComponents/Sersic.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1373278465468" ignored="false" />
+    <file path="$PROJECT_DIR$/../../lib/python2.7/site-packages/psfMC/ModelComponents/Sersic.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1373279531880" ignored="false" />
     <file path="$PROJECT_DIR$/../../bin/exiraf.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1372565269877" ignored="false" />
     <file path="/exiraf.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1372565135324" ignored="false" />
     <file path="/model_SDSS-J2054-0005_H.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1372721955317" ignored="false" />
     <file path="$PROJECT_DIR$/../../../WIP/FaintQuasars/stamps/iFit.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1372896279880" ignored="false" />
-    <file path="$PROJECT_DIR$/../../../WIP/FaintQuasars/stamps/regphot.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1373189322872" ignored="false" />
-    <file path="/regphot.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1373189322415" ignored="false" />
+    <file path="$PROJECT_DIR$/../../../WIP/FaintQuasars/stamps/regphot.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1373323867291" ignored="false" />
+    <file path="/regphot.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1373323854341" ignored="false" />
     <file path="$PROJECT_DIR$/../../../WIP/qsoPaper/figs/mkSED.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1372934175428" ignored="false" />
     <file path="/mkSED.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1372931765187" ignored="false" />
     <file path="$PROJECT_DIR$/../../../WIP/qsoPaper/figs/photPoints.txt" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1372932898911" ignored="false" />
@@ -172,10 +172,10 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="array_utils.py" pinned="false" current="false" current-in-tab="false">
+      <file leaf-file-name="array_utils.py" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/psfMC/array_utils.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="83" column="19" selection-start="2724" selection-end="2724" vertical-scroll-proportion="-11.24">
+            <state line="50" column="7" selection-start="1456" selection-end="1456" vertical-scroll-proportion="0.32669982">
               <folding>
                 <element signature="e#0#31#0" expanded="true" />
               </folding>
@@ -183,10 +183,10 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Sersic.py" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="Sersic.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/psfMC/ModelComponents/Sersic.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="56" column="34" selection-start="1978" selection-end="1978" vertical-scroll-proportion="0.59152544">
+            <state line="73" column="0" selection-start="2761" selection-end="2761" vertical-scroll-proportion="-22.96">
               <folding>
                 <element signature="e#0#31#0" expanded="true" />
               </folding>
@@ -212,7 +212,6 @@
   <component name="IdeDocumentHistory">
     <option name="changedFiles">
       <list>
-        <option value="/usr/local/scisoft/packages/python/lib/python2.7/site-packages/pymc/Container.py" />
         <option value="$PROJECT_DIR$/../../lib/python2.7/site-packages/pymc-2.2-py2.7-macosx-10.8-intel.egg/pymc/Container.py" />
         <option value="$PROJECT_DIR$/psfMC/ModelComponents/Sky.py" />
         <option value="$PROJECT_DIR$/z6_quasar.py" />
@@ -224,10 +223,11 @@
         <option value="$PROJECT_DIR$/psfMC/distributions.py" />
         <option value="$PROJECT_DIR$/setup.py" />
         <option value="$PROJECT_DIR$/psfMC/models.py" />
-        <option value="$PROJECT_DIR$/psfMC/array_utils.py" />
         <option value="$PROJECT_DIR$/psfMC/fitting.py" />
-        <option value="$PROJECT_DIR$/psfMC/ModelComponents/Sersic.py" />
         <option value="$PROJECT_DIR$/tests/sim.feedme" />
+        <option value="$PROJECT_DIR$/psfMC/ModelComponents/Sersic.py" />
+        <option value="$PROJECT_DIR$/build/lib/psfMC/array_utils.py" />
+        <option value="$PROJECT_DIR$/psfMC/array_utils.py" />
       </list>
     </option>
   </component>
@@ -709,8 +709,36 @@
       <created>1373261416417</created>
       <updated>1373261416418</updated>
     </task>
-    <option name="localTasksCounter" value="57" />
+    <task id="LOCAL-00057" summary="Fixed bug in Sersic profile SB calculation">
+      <created>1373278561444</created>
+      <updated>1373278561444</updated>
+    </task>
+    <task id="LOCAL-00058" summary="formatting cleanup">
+      <created>1373279527127</created>
+      <updated>1373279527127</updated>
+    </task>
+    <option name="localTasksCounter" value="59" />
     <servers />
+  </component>
+  <component name="TodoView" selected-index="0">
+    <todo-panel id="selected-file">
+      <are-packages-shown value="false" />
+      <are-modules-shown value="false" />
+      <flatten-packages value="false" />
+      <is-autoscroll-to-source value="false" />
+    </todo-panel>
+    <todo-panel id="all">
+      <are-packages-shown value="false" />
+      <are-modules-shown value="false" />
+      <flatten-packages value="false" />
+      <is-autoscroll-to-source value="false" />
+    </todo-panel>
+    <todo-panel id="default-changelist">
+      <are-packages-shown value="false" />
+      <are-modules-shown value="false" />
+      <flatten-packages value="false" />
+      <is-autoscroll-to-source value="false" />
+    </todo-panel>
   </component>
   <component name="ToolWindowManager">
     <frame x="3" y="22" width="975" height="965" extended-state="0" />
@@ -722,11 +750,11 @@
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32887402" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.18729097" sideWeight="0.50053823" order="1" side_tool="true" content_ui="tabs" />
-      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="true" content_ui="tabs" />
+      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.2917115" sideWeight="0.42474917" order="0" side_tool="true" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32998884" sideWeight="0.4994618" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32998884" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" />
-      <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
-      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.24918033" sideWeight="0.495114" order="2" side_tool="true" content_ui="tabs" />
+      <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32998884" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
+      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.2917115" sideWeight="0.42474917" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.2917115" sideWeight="0.73132664" order="1" side_tool="false" content_ui="combo" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.18729097" sideWeight="0.4994618" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
@@ -779,7 +807,7 @@
     <option name="WRAP_WHEN_TYPING_REACHES_RIGHT_MARGIN" value="false" />
     <option name="FORCE_NON_EMPTY_COMMENT" value="false" />
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="false" />
-    <option name="LAST_COMMIT_MESSAGE" value="Changed bad pixel fill value" />
+    <option name="LAST_COMMIT_MESSAGE" value="formatting cleanup" />
     <option name="MAKE_NEW_CHANGELIST_ACTIVE" value="true" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_FILES_UP_TO_DATE_BEFORE_COMMIT" value="false" />
@@ -793,8 +821,6 @@
     <option name="UPDATE_FILTER_BY_SCOPE" value="false" />
     <option name="SHOW_FILE_HISTORY_AS_TREE" value="false" />
     <option name="FILE_HISTORY_SPLITTER_PROPORTION" value="0.6" />
-    <MESSAGE value="Major model component system refactoring. Models are now specified using a configuration file. New ComponentBase parent class for all components." />
-    <MESSAGE value="Fixed docstring" />
     <MESSAGE value="Changed components argument of fitting to model_file" />
     <MESSAGE value="Fitting parameters saved to output FITS headers." />
     <MESSAGE value="ModelComponents package added to setup.py" />
@@ -818,6 +844,8 @@
     <MESSAGE value="Fixed masking bug, MASKING FINALLY WORKS" />
     <MESSAGE value="Updated mask fill value to bad pixel value" />
     <MESSAGE value="Changed bad pixel fill value" />
+    <MESSAGE value="Fixed bug in Sersic profile SB calculation" />
+    <MESSAGE value="formatting cleanup" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -825,11 +853,6 @@
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/psfMC/ModelComponents/ComponentBase.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="48" column="39" selection-start="1542" selection-end="1542" vertical-scroll-proportion="0.8175355" />
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/../../lib/python2.7/site-packages/pymc-2.2-py2.7-macosx-10.8-intel.egg/pymc/CircularStochastic.py">
       <provider selected="true" editor-type-id="text-editor">
         <state line="8" column="46" selection-start="297" selection-end="309" vertical-scroll-proportion="0.03504673" />
@@ -927,18 +950,25 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/psfMC/array_utils.py">
+    <entry file="file://$PROJECT_DIR$/build/lib/psfMC/array_utils.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="83" column="19" selection-start="2724" selection-end="2724" vertical-scroll-proportion="-11.24">
+        <state line="49" column="51" selection-start="1449" selection-end="1449" vertical-scroll-proportion="0.34854016">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/psfMC/ModelComponents/Sersic.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="73" column="0" selection-start="2761" selection-end="2761" vertical-scroll-proportion="-22.96">
           <folding>
             <element signature="e#0#31#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/psfMC/ModelComponents/Sersic.py">
+    <entry file="file://$PROJECT_DIR$/psfMC/array_utils.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="56" column="34" selection-start="1978" selection-end="1978" vertical-scroll-proportion="0.59152544">
+        <state line="50" column="7" selection-start="1456" selection-end="1456" vertical-scroll-proportion="0.32669982">
           <folding>
             <element signature="e#0#31#0" expanded="true" />
           </folding>
