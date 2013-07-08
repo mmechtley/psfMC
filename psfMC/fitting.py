@@ -6,12 +6,6 @@ import numpy as np
 from pymc.MCMC import MCMC
 
 from .models import multicomponent_model
-from .array_utils import mask_bad_pixels
-
-try:
-    import pyregion
-except ImportError:
-    pyregion = None
 
 
 def model_galaxy_mcmc(obs_file, obsIVM_file, psf_file, psfIVM_file,
@@ -64,31 +58,11 @@ def model_galaxy_mcmc(obs_file, obsIVM_file, psf_file, psfIVM_file,
     kwargs.setdefault('iter', 6000)
     kwargs.setdefault('burn', 3000)
 
-    obsData = pyfits.getdata(obs_file, ignore_missing_end=True)
-    obsDataIVM = pyfits.getdata(obsIVM_file, ignore_missing_end=True)
-    psfData = pyfits.getdata(psf_file, ignore_missing_end=True)
-    psfDataIVM = pyfits.getdata(psfIVM_file, ignore_missing_end=True)
-
-    obsData, obsDataIVM, psfData, psfDataIVM = mask_bad_pixels(
-        obsData, obsDataIVM, psfData, psfDataIVM)
-
-    # FIXME: Masks should use masked array, but this breaks fitting?
-    if mask_file is not None:
-        if pyregion is not None:
-            hdr = pyfits.getheader(obs_file)
-            regfilt = pyregion.open(mask_file).as_imagecoord(hdr).get_filter()
-            mask = regfilt.mask(obsData.shape)
-            obsData[~mask] = 0
-            obsDataIVM[~mask] = 0
-            # obsData.mask |= ~mask
-            # obsDataIVM[~mask] = 0
-        # TODO: Use slice to fit only the masked area. But messes up xy pos.
-        else:
-            warn('pyregion could not be imported. mask_file will be ignored.')
-
-    mc_model = multicomponent_model(obsData, obsDataIVM, psfData, psfDataIVM,
+    mc_model = multicomponent_model(obs_file, obsIVM_file,
+                                    psf_file, psfIVM_file,
                                     components=model_file,
-                                    mag_zp=mag_zeropoint)
+                                    mag_zp=mag_zeropoint,
+                                    mask_file=mask_file)
     sampler = MCMC(mc_model, db='pickle', name=output_name.format('db'))
     sampler.sample(**kwargs)
 
@@ -103,7 +77,7 @@ def model_galaxy_mcmc(obs_file, obsIVM_file, psf_file, psfIVM_file,
 
 
 def write_mean_model(model, db, basename='mcmc', filetypes=('residual', ),
-                     trace_slice=slice(0, -1), header=None):
+                     samples_slice=slice(0, -1), header=None):
     if header is None:
         header = pyfits.Header()
     if '{}' not in basename:
@@ -114,12 +88,19 @@ def write_mean_model(model, db, basename='mcmc', filetypes=('residual', ),
     stoch_names = [stoch.__name__ for stoch
                    in model.stochastics - model.observed_stochastics]
     statscards = _stats_as_header_cards(db, trace_names=stoch_names,
-                                        trace_slice=trace_slice)
+                                        trace_slice=samples_slice)
     header.extend(statscards)
 
     # Set model stochastic values to their trace means
     for stoch in model.stochastics - model.observed_stochastics:
-        stoch.value = np.mean(db.trace(stoch.__name__)[trace_slice], axis=0)
+        stoch.value = np.mean(db.trace(stoch.__name__)[samples_slice], axis=0)
+
+    # TODO: BPIC might be better, but more work to calculate
+    # Calculate DIC
+    mean_dev = np.mean(db.trace('deviance')[samples_slice], axis=0)
+    dic = 2*mean_dev - model.deviance
+    header.set('MDL_DIC', value=dic,
+               comment='Deviance Information Criterion')
 
     # Save out requested file types
     for out_type in filetypes:

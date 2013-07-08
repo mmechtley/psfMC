@@ -17,9 +17,14 @@ def Uniform(lower=None, upper=None, **kwargs):
 def Normal(mu=None, tau=None, **kwargs):
     return pymc.distributions.Normal('', mu=mu, tau=tau, **kwargs)
 
+def TruncatedNormal(mu=None, tau=None, a=None, b=None, **kwargs):
+    return pymc.distributions.TruncatedNormal('', mu=mu, tau=tau, a=a, b=b,
+                                              **kwargs)
+
 
 def VonMises(mu=None, kappa=None, **kwargs):
     return pymc.distributions.VonMises('', mu=mu, kappa=kappa, **kwargs)
+
 
 def CircVonMises(mu=None, kappa=None, **kwargs):
     return _CircVonMises('', mu=mu, kappa=kappa, **kwargs)

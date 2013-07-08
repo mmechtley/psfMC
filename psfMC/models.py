@@ -13,7 +13,7 @@ _zero_weight = 1e-20
 
 
 def multicomponent_model(obs_data, obs_ivm, psf_data, psf_ivm,
-                         components=None, mag_zp=0):
+                         components=None, mag_zp=0, mask_file=None):
     """
     Multi-component model for MCMC psf fitting. Components is a list of
     ComponentBase subclasses, or a model definition python file parsable by
@@ -29,17 +29,16 @@ def multicomponent_model(obs_data, obs_ivm, psf_data, psf_ivm,
 
     np.seterr(divide='ignore')
 
-    # Normalize the PSF kernel
-    psf_data, psf_ivm = normed_psf(psf_data, psf_ivm)
-    psf_var = np.where(psf_ivm == 0, 0, 1 / psf_ivm)
+    obs_data, obs_ivm, psf_data, psf_ivm = open_and_preprocess(
+        obs_data, obs_ivm, psf_data, psf_ivm, mask_reg=mask_file)
 
-    # pad the psf arrays to the same size as the data, for fft
+    # pad the psf arrays to the same size as the data, precompute fft
+    psf_var = np.where(psf_ivm <= 0, 0, 1 / psf_ivm)
     f_psf = pad_and_rfft_image(psf_data, obs_data.shape)
     f_psf_var = pad_and_rfft_image(psf_var, obs_data.shape)
 
-    # pre-compute variance map and bad pixel mask for observation
-    obs_mask = obs_ivm <= 0
-    obs_var = np.where(obs_mask, 0, 1 / obs_ivm)
+    # pre-compute variance map for observation
+    obs_var = np.where(obs_ivm <= 0, 0, 1 / obs_ivm)
 
     # pre-compute data x,y coordinates
     data_coords = array_coords(obs_data)
@@ -60,7 +59,7 @@ def multicomponent_model(obs_data, obs_ivm, psf_data, psf_ivm,
 
     @deterministic(plot=False, trace=False)
     def raw_model(model_comps=model_comps):
-        modelpx = np.zeros_like(obs_data)
+        modelpx = np.zeros_like(obs_ivm)
         for comp in model_comps:
             comp.add_to_array(modelpx, mag_zp, coords=data_coords)
         return modelpx
@@ -71,13 +70,14 @@ def multicomponent_model(obs_data, obs_ivm, psf_data, psf_ivm,
         return cmodel + sky.adu
 
     @deterministic(plot=False, trace=False)
-    def composite_ivm(obs_var=obs_var, obs_mask=obs_mask, f_psf_var=f_psf_var,
+    def composite_ivm(obs_var=obs_var, f_psf_var=f_psf_var,
                       raw_model=raw_model):
         # compute model variance
         model_var = convolve(raw_model**2, f_psf_var)
         # Set zero-weight pixels to very small number instead
-        badpx = (model_var <= 0) | obs_mask
-        compIVM = np.where(badpx, _zero_weight, 1 / (model_var + obs_var))
+        # badpx = (model_var <= 0) | obs_mask
+        # compIVM = np.where(badpx, _zero_weight, 1 / (model_var + obs_var))
+        compIVM = 1 / (model_var + obs_var)
         return compIVM
 
     @deterministic(plot=False, trace=False)
