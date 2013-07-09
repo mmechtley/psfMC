@@ -9,7 +9,7 @@ from warnings import warn
 _show_timing_info = False
 _timers = dict()
 
-_bad_px_value = 1e20
+_bad_px_value = 0
 
 
 def debug_timer(step, name=''):
