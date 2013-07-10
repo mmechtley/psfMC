@@ -102,14 +102,14 @@ def write_mean_model(model, db, basename='mcmc', filetypes=('residual', ),
     psf_selector = [cont for cont in model.containers
                     if isinstance(cont, PSFSelector)].pop()
     header.set('PSF_IMG', value=psf_selector.value.filename(),
-               comment='Maximum likelihood PSF image')
+               comment='psfMC maximum likelihood PSF image')
 
     # TODO: BPIC might be better, but more work to calculate
     # Calculate DIC
     mean_dev = np.mean(db.trace('deviance')[samples_slice], axis=0)
     dic = 2*mean_dev - model.deviance
     header.set('MDL_DIC', value=dic,
-               comment='Deviance Information Criterion')
+               comment='psfMC Deviance Information Criterion')
 
     # Save out requested file types
     for out_type in filetypes:
