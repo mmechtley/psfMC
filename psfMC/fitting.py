@@ -121,6 +121,7 @@ def write_mean_model(model, db, basename='mcmc', filetypes=('residual', ),
                   'be written for file type.').format(out_type))
             continue
 
+        header.set('OBJECT', value=out_type)
         pyfits.writeto(basename.format(out_type + '.fits'),
                        outputData.copy(), header=header,
                        clobber=True, output_verify='fix')
