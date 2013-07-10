@@ -96,16 +96,12 @@ def write_mean_model(model, db, basename='mcmc', filetypes=('residual', ),
     # Set model stochastic values to their trace means
     for stoch in model.stochastics - model.observed_stochastics:
         trace = db.trace(stoch.__name__)[samples_slice]
-        # Discrete-valued stochastics should be set to most common value
-        if trace.dtype.kind in 'iu':
-            stoch.value = trace[np.bincount(trace).argmax(axis=0)]
-        else:
-            stoch.value = np.mean(trace, axis=0)
+        stoch.value = _max_likelihood_value(trace)
 
     # Find name of PSF file used
     psf_selector = [cont for cont in model.containers
                     if isinstance(cont, PSFSelector)].pop()
-    header.set('PSFIMG', value=psf_selector.value.filename(),
+    header.set('PSF_IMG', value=psf_selector.value.filename(),
                comment='Maximum likelihood PSF image')
 
     # TODO: BPIC might be better, but more work to calculate
@@ -138,17 +134,24 @@ def _stats_as_header_cards(db, trace_names=None, trace_slice=slice(0, -1)):
     statscards = []
     for trace_name in sorted(trace_names):
         trace = db.trace(trace_name)[trace_slice]
-        mean = np.mean(trace, axis=0)
+        max_likely = _max_likelihood_value(trace)
         std = np.std(trace, axis=0)
         key = trace_name
         for oldstr, newstr in replace_pairs:
             key = key.replace(oldstr, newstr)
-        # TODO: might prefer scientific notation for values
         try:
-            val = '{:0.2f} +/- {:0.2f}'.format(mean, std)
+            val = '{:0.3g} +/- {:0.3g}'.format(max_likely, std)
         except ValueError:
-            strmean = ','.join(['{:0.2f}'.format(dim) for dim in mean])
-            strstd = ','.join(['{:0.2f}'.format(dim) for dim in std])
+            strmean = ','.join(['{:0.3g}'.format(dim) for dim in max_likely])
+            strstd = ','.join(['{:0.3g}'.format(dim) for dim in std])
             val = '({}) +/- ({})'.format(strmean, strstd)
         statscards += [(key, val, 'psfMC model component')]
     return statscards
+
+
+def _max_likelihood_value(trace):
+    # Discrete-valued stochastics should be set to most common value
+    if trace.dtype.kind in 'iu':
+        return trace[np.bincount(trace).argmax(axis=0)]
+    else:
+        return np.mean(trace, axis=0)
