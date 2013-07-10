@@ -61,38 +61,6 @@ def array_coords(arr):
     return np.transpose(coords).astype(arr.dtype)
 
 
-def mask_bad_pixels(obs_data, obs_ivm, psf_data, psf_ivm, mask_reg=None,
-                    obs_header=None):
-    """
-    Sanitize input arrays by masking out bad pixels, with optional region file
-    for masking arbitary pixels
-    """
-    # For observed data, we use numpy masked array to simply ignore bad pixels
-    # We set them to zero in the weight map, even though they ought be already
-    badpx = ~np.isfinite(obs_data) | ~np.isfinite(obs_ivm) | (obs_ivm <= 0)
-    obs_data = np.ma.masked_array(obs_data, mask=badpx)
-    obs_data.fill_value = _bad_px_value
-    obs_ivm[badpx] = 0
-    # We don't want zero-weight pixels in the PSF to contribute to the RMS,
-    # so we simply set them to 0 in both data and weight map
-    badpx = ~np.isfinite(psf_data) | ~np.isfinite(psf_ivm) | (psf_ivm <= 0)
-    psf_data[badpx] = 0
-    psf_ivm[badpx] = 0
-
-    if mask_reg is not None:
-        try:
-            import pyregion as preg
-            regfilt = preg.open(mask_reg).as_imagecoord(obs_header).get_filter()
-            exclude_px = ~regfilt.mask(obs_data.shape)
-            obs_data.mask |= exclude_px
-            obs_ivm[exclude_px] = 0
-        except ImportError:
-            warn('pyregion could not be imported. Mask regions will be ' +
-                 'ignored.')
-
-    return obs_data, obs_ivm, psf_data, psf_ivm
-
-
 def norm_psf(psf_data, psf_ivm):
     """
     Returns normed psf and correspondingly scaled IVM.
@@ -102,20 +70,58 @@ def norm_psf(psf_data, psf_ivm):
     return psf_data / psf_sum, psf_ivm * psf_sum**2
 
 
-def open_and_preprocess(obs_data, obs_ivm, psf_data, psf_ivm, mask_reg=None):
+def preprocess_obs(obs_data, obs_ivm, mask_reg=None):
     """
     Opens data and weight maps for both observations and PSF, masks out bad
     pixels, and normalizes the PSF for convolution
     """
     # Read in arrays, mask bad pixels
     obs_hdr = pyfits.getheader(obs_data)
-    all_arrays = (obs_data, obs_ivm, psf_data, psf_ivm)
-    all_arrays = [pyfits.getdata(f, ignore_missing_end=True) for f
-                  in all_arrays]
-    all_arrays = mask_bad_pixels(*all_arrays, mask_reg=mask_reg,
-                                 obs_header=obs_hdr)
-    obs_data, obs_ivm, psf_data, psf_ivm = all_arrays
+    obs_data = pyfits.getdata(obs_data, ignore_missing_end=True)
+    obs_ivm = pyfits.getdata(obs_ivm, ignore_missing_end=True)
+
+    # Generate bad pixel mask. Bad pixels get 0 weight in weight map, and are
+    # excluded from fitting
+    badpx = ~np.isfinite(obs_data) | ~np.isfinite(obs_ivm) | (obs_ivm <= 0)
+
+    # Pre-compute variance map for observation. Bad pixels are given infinite
+    # variance, since, when making the weight map, 1 / inf = 0.0
+    obs_var = np.where(badpx, np.inf, 1 / obs_ivm)
+
+    # Add masking regions to bad pixel mask. We leave their variance alone, to
+    # facilitate photometry later
+    if mask_reg is not None:
+        try:
+            import pyregion as preg
+            regfilt = preg.open(mask_reg).as_imagecoord(obs_hdr).get_filter()
+            exclude_px = ~regfilt.mask(obs_data.shape)
+            badpx |= exclude_px
+        except ImportError:
+            warn('pyregion could not be imported. Mask regions will be ' +
+                 'ignored.')
+
+    return obs_data, obs_var, badpx
+
+
+def preprocess_psf(psf_data, psf_ivm, pad_to_shape=None):
+    """
+    Read in a PSF & IVM, mask bad pixels, normalize kernel, and pre-FFT
+    """
+    psf_data = pyfits.getdata(psf_data, ignore_missing_end=True)
+    psf_ivm = pyfits.getdata(psf_ivm, ignore_missing_end=True)
+
+    # We don't want zero-weight pixels in the PSF to contribute infinitely to
+    # the variance, so we simply set them to 0 in both data and weight map
+    badpx = ~np.isfinite(psf_data) | ~np.isfinite(psf_ivm) | (psf_ivm <= 0)
+    psf_data[badpx] = 0
+    psf_ivm[badpx] = 0
 
     # Normalize the PSF kernel
     psf_data, psf_ivm = norm_psf(psf_data, psf_ivm)
-    return obs_data, obs_ivm, psf_data, psf_ivm
+
+    # pad the psf arrays to the same size as the data, precompute fft
+    psf_var = np.where(psf_ivm <= 0, 0, 1 / psf_ivm)
+    f_psf = pad_and_rfft_image(psf_data, pad_to_shape)
+    f_psf_var = pad_and_rfft_image(psf_var, pad_to_shape)
+
+    return f_psf, f_psf_var

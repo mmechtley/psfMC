@@ -3,16 +3,17 @@ from warnings import warn
 
 import pyfits
 import numpy as np
-from pymc.MCMC import MCMC
 
 from .models import multicomponent_model
+from .array_utils import _bad_px_value
+from .ModelComponents.PSFSelector import PSFSelector
 
 
 _default_filetypes = ('raw_model', 'convolved_model', 'composite_ivm',
                       'residual', 'point_source_subtracted')
 
 
-def model_galaxy_mcmc(obs_file, obsIVM_file, psf_file, psfIVM_file,
+def model_galaxy_mcmc(obs_file, obsIVM_file, psf_files, psfIVM_files,
                       model_file=None, mag_zeropoint=0,
                       mask_file=None, output_name=None,
                       write_fits=_default_filetypes,
@@ -28,9 +29,9 @@ def model_galaxy_mcmc(obs_file, obsIVM_file, psf_file, psfIVM_file,
         inverse variance (weight) map. Must already include poisson noise from
         the object, as with multidrizzle ERR weight maps. Consider using
         astroRMS module to include correlated noise in resampled images
-    :param psf_file: Filename or pyfits HDU containing the PSF for the model.
-        This should be e.g. a high S/N star
-    :param psfIVM_file: Filename or pyfits HDU containing the PSF's inverse
+    :param psf_files: Filename(s) or pyfits HDU containing the PSF for the
+        model. This should be e.g. a high S/N star
+    :param psfIVM_files: Filename(s) or pyfits HDU containing the PSF's inverse
         variance (weight map). Must include poisson noise from the object, such
         as multidrizzle ERR weight maps
     :param model_file: Filename of the model definition file. This should be
@@ -62,19 +63,20 @@ def model_galaxy_mcmc(obs_file, obsIVM_file, psf_file, psfIVM_file,
     kwargs.setdefault('burn', 3000)
 
     mc_model = multicomponent_model(obs_file, obsIVM_file,
-                                    psf_file, psfIVM_file,
+                                    psf_files, psfIVM_files,
                                     components=model_file,
                                     mag_zp=mag_zeropoint,
-                                    mask_file=mask_file)
-    sampler = MCMC(mc_model, db='pickle', name=output_name.format('db'))
-    sampler.sample(**kwargs)
+                                    mask_file=mask_file,
+                                    db='pickle',
+                                    name=output_name.format('db'))
+    mc_model.sample(**kwargs)
 
     ## Saves out to pickle file
-    sampler.db.close()
+    mc_model.db.close()
 
     # Write mean model output files
     obsHeader = pyfits.getheader(obs_file, ignore_missing_end=True)
-    write_mean_model(sampler, sampler.db, basename=output_name,
+    write_mean_model(mc_model, mc_model.db, basename=output_name,
                      filetypes=write_fits, header=obsHeader)
 
 
@@ -93,7 +95,18 @@ def write_mean_model(model, db, basename='mcmc', filetypes=('residual', ),
 
     # Set model stochastic values to their trace means
     for stoch in model.stochastics - model.observed_stochastics:
-        stoch.value = np.mean(db.trace(stoch.__name__)[samples_slice], axis=0)
+        trace = db.trace(stoch.__name__)[samples_slice]
+        # Discrete-valued stochastics should be set to most common value
+        if trace.dtype.kind in 'iu':
+            stoch.value = trace[np.bincount(trace).argmax(axis=0)]
+        else:
+            stoch.value = np.mean(trace, axis=0)
+
+    # Find name of PSF file used
+    psf_selector = [cont for cont in model.containers
+                    if isinstance(cont, PSFSelector)].pop()
+    header.set('PSFIMG', value=psf_selector.value.filename(),
+               comment='Maximum likelihood PSF image')
 
     # TODO: BPIC might be better, but more work to calculate
     # Calculate DIC
@@ -105,7 +118,8 @@ def write_mean_model(model, db, basename='mcmc', filetypes=('residual', ),
     # Save out requested file types
     for out_type in filetypes:
         try:
-            outputData = np.ma.filled(model.get_node(out_type).value)
+            outputData = np.ma.filled(model.get_node(out_type).value,
+                                      _bad_px_value)
         except AttributeError:
             warn(('Unable to find model parameter named {}. No output will ' +
                   'be written for file type.').format(out_type))
@@ -120,7 +134,7 @@ def _stats_as_header_cards(db, trace_names=None, trace_slice=slice(0, -1)):
     # TODO: better way to make keys. Maybe component.shortname(attr) etc.
     replace_pairs = (('_Sersic', 'SER'), ('_PSF', 'PSF'), ('_Sky', 'SKY'),
                      ('_reff', '_RE'), ('_index', '_N'), ('_axis_ratio', '_Q'),
-                     ('_angle', '_ANG'))
+                     ('_angle', '_ANG'), ('PSF_Index', 'PSF_IDX'))
     statscards = []
     for trace_name in sorted(trace_names):
         trace = db.trace(trace_name)[trace_slice]
@@ -129,6 +143,7 @@ def _stats_as_header_cards(db, trace_names=None, trace_slice=slice(0, -1)):
         key = trace_name
         for oldstr, newstr in replace_pairs:
             key = key.replace(oldstr, newstr)
+        # TODO: might prefer scientific notation for values
         try:
             val = '{:0.2f} +/- {:0.2f}'.format(mean, std)
         except ValueError:

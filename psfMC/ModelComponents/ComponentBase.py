@@ -43,7 +43,3 @@ class ComponentBase(ContainerBase):
 
     value = property(fget=_get_value,
                      doc='Copy of object with stochastics replaced by values')
-
-    @staticmethod
-    def from_tuple(tup):
-        return __class__.__init__(*tup)

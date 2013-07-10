@@ -24,7 +24,7 @@ Sersic(xy=Uniform(lower=center-(8,8), upper=center+(8,8)),
 # Second sersic profile, modeling the faint blob to the upper left of the quasar
 center = asarray((47, 87))
 Sersic(xy=Uniform(lower=center-(8,8), upper=center+(8,8)),
-       mag=Uniform(lower=22, upper=27.5),
+       mag=Uniform(lower=23.5, upper=25.5),
        reff=Uniform(lower=1.0, upper=4.0),
        index=Uniform(lower=0.5, upper=8.0),
        axis_ratio=Uniform(lower=0.7, upper=1.0),

@@ -10,8 +10,8 @@ except ImportError:
 
 magzp = {'F125W':26.2303, 'F160W':25.9463}
 
-obsfiles = ['examples/sci_J0005-0006.fits']
-psffiles = ['examples/sci_psf.fits']
+obsfiles = ['sci_J0005-0006.fits']
+psffiles = ['sci_psf.fits']
 
 for obsfile, psffile in zip(obsfiles, psffiles):
     obsIVMfile = obsfile.replace('sci', 'ivm')
@@ -24,7 +24,7 @@ for obsfile, psffile in zip(obsfiles, psffiles):
     model_galaxy_mcmc(obsfile, obsIVMfile, psffile, psfIVMfile,
                       model_file=model_file, mask_file=maskfile,
                       output_name=output_name, mag_zeropoint=magzp[filter],
-                      burn=500, iter=1000)
+                      burn=5000, iter=15000)
 
     db = pymc.database.pickle.load(output_name+'_db.pickle')
     for trace_name in ('0_Sky_adu', '1_PSF_mag', '2_Sersic_mag',

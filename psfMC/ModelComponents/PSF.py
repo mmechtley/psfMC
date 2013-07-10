@@ -1,5 +1,4 @@
 from numpy import outer, modf, clip
-from scipy.special import exp10
 from .ComponentBase import ComponentBase
 
 
