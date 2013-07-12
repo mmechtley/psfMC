@@ -82,10 +82,7 @@ def preprocess_obs(obs_data, obs_ivm, mask_reg=None):
 
     # Generate bad pixel mask. Bad pixels get 0 weight in weight map, and are
     # excluded from fitting
-    badpx = ~np.isfinite(obs_data) | ~np.isfinite(obs_ivm)
-    obs_data[badpx] = 0
-    obs_ivm[badpx] = 0
-    badpx |= (obs_ivm <= 0)
+    badpx = ~np.isfinite(obs_data) | ~np.isfinite(obs_ivm) | (obs_ivm <= 0)
 
     # Pre-compute variance map for observation. Bad pixels are given infinite
     # variance, since, when making the weight map, 1 / inf = 0.0
