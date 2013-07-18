@@ -25,8 +25,7 @@ class PSF(ComponentBase):
         shape = arr.shape
         fracs, ints = modf(clip(self.xy, (0, 0),
                                 (shape[1]-2, shape[0]-2)))
-        fluxarr = flux * outer((fracs[1], 1-fracs[1]),
-                               (fracs[0], 1-fracs[0]))
-        # print ints, fluxarr.shape
+        fluxarr = flux * outer((1-fracs[1], fracs[1]),
+                               (1-fracs[0], fracs[0]))
         arr[ints[1]:ints[1]+2, ints[0]:ints[0]+2] += fluxarr
         return arr
