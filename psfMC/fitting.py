@@ -139,8 +139,9 @@ def write_mean_model(model, db, basename='mcmc', filetypes=('residual', ),
 def _stats_as_header_cards(db, trace_names=None, trace_slice=slice(0, -1)):
     # TODO: better way to make keys. Maybe component.shortname(attr) etc.
     replace_pairs = (('_Sersic', 'SER'), ('_PSF', 'PSF'), ('_Sky', 'SKY'),
-                     ('_reff', '_RE'), ('_index', '_N'), ('_axis_ratio', '_Q'),
-                     ('_angle', '_ANG'), ('PSF_Index', 'PSF_IDX'))
+                     ('_reff', '_RE'), ('_b', 'B'), ('_index', '_N'),
+                     ('_axis_ratio', '_Q'), ('_angle', '_ANG'),
+                     ('PSF_Index', 'PSF_IDX'))
     statscards = []
     for trace_name in sorted(trace_names):
         trace = db.trace(trace_name)[trace_slice]
