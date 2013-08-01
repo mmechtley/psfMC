@@ -3,6 +3,7 @@ from warnings import warn
 
 import pyfits
 import numpy as np
+from pymc.StepMethods import AdaptiveMetropolis, DiscreteMetropolis
 
 from .models import multicomponent_model
 from .array_utils import _bad_px_value
@@ -69,6 +70,14 @@ def model_galaxy_mcmc(obs_file, obsIVM_file, psf_files, psfIVM_files,
                                     mask_file=mask_file,
                                     db='pickle',
                                     name=output_name.format('db'))
+
+    for stoch in mc_model.step_method_dict:
+        if 'xy' in stoch.__name__:
+            mc_model.use_step_method(AdaptiveMetropolis, stoch, interval=10)
+        if stoch.__name__ == 'PSF_Index':
+            mc_model.use_step_method(DiscreteMetropolis, stoch,
+                                     proposal_distribution='Prior')
+
     mc_model.sample(**kwargs)
 
     ## Saves out to pickle file
@@ -141,10 +150,10 @@ def _stats_as_header_cards(db, trace_names=None, trace_slice=slice(0, -1)):
         for oldstr, newstr in replace_pairs:
             key = key.replace(oldstr, newstr)
         try:
-            val = '{:0.3g} +/- {:0.3g}'.format(max_likely, std)
+            val = '{:0.4g} +/- {:0.4g}'.format(max_likely, std)
         except ValueError:
-            strmean = ','.join(['{:0.3g}'.format(dim) for dim in max_likely])
-            strstd = ','.join(['{:0.3g}'.format(dim) for dim in std])
+            strmean = ','.join(['{:0.4g}'.format(dim) for dim in max_likely])
+            strstd = ','.join(['{:0.4g}'.format(dim) for dim in std])
             val = '({}) +/- ({})'.format(strmean, strstd)
         statscards += [(key, val, 'psfMC model component')]
     return statscards

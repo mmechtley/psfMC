@@ -2,20 +2,21 @@ from __future__ import division
 import numpy as np
 from scipy.special import gamma
 from .ComponentBase import ComponentBase
-from ..array_utils import array_coords
+from ..array_utils import array_coords, debug_timer
+import numexpr as ne
 
 
 class Sersic(ComponentBase):
     """
     Sersic profile component
     """
-    def __init__(self, xy=None, mag=None, reff=None, index=None,
-                 axis_ratio=None, angle=None, angle_degrees=False):
+    def __init__(self, xy=None, mag=None, reff=None, reff_b=None,
+                 index=None, angle=None, angle_degrees=False):
         self.xy = xy
         self.mag = mag
         self.reff = reff
+        self.reff_b = reff_b
         self.index = index
-        self.axis_ratio = axis_ratio
         self.angle = angle
         self.angle_degrees = angle_degrees
         super(Sersic, self).__init__()
@@ -34,15 +35,14 @@ class Sersic(ComponentBase):
             kappa = self.kappa()
         if flux_tot is None:
             flux_tot = self.total_flux_adu(mag_zp)
-        return flux_tot / (2 * np.pi * self.reff**2 *
-                           self.axis_ratio *
+        return flux_tot / (2 * np.pi * self.reff * self.reff_b *
                            np.exp(kappa) * self.index *
                            np.power(kappa, -2*self.index) *
                            gamma(2*self.index))
 
     def kappa(self):
         """
-        Sersic profile exponent scaling factor, called either kappa or b_n
+        Sersic profile exponential scaling factor, called either kappa or b_n
         """
         return 1.9992*self.index - 0.3271
 
@@ -67,7 +67,7 @@ class Sersic(ComponentBase):
         # Matrix representation of n-D ellipse:
         # http://en.wikipedia.org/wiki/Ellipsoid
         M_inv_scale = np.diag((1/self.reff,
-                               1/(self.reff*self.axis_ratio)))
+                               1/self.reff_b))
         M_rot = np.asarray(((cos_ang, -sin_ang), (sin_ang, cos_ang)))
         # Inverse of a rotation matrix is its transpose
         M_inv_xform = np.dot(M_inv_scale, M_rot.T)
@@ -77,9 +77,11 @@ class Sersic(ComponentBase):
         radii = np.sqrt(np.sum(np.dot(M_inv_xform,
                                       (coords-self.xy).T)**2, axis=0))
         radii = radii.reshape(arr.shape)
-        # 1.4e-03 seconds for 128x128
-        # arr += sbeff * np.exp(-kappa * (np.power(radii, 1/self.index) - 1))
         # 7e-04 seconds for 128x128
-        arr += sbeff * np.exp(-kappa *
-                              (np.exp(np.log(radii)*(1/self.index)) - 1))
+        # arr += sbeff * np.exp(-kappa *
+        #                       (np.exp(np.log(radii)*(1/self.index)) - 1))
+
+        # 4e-04 seconds for 128x128
+        idx_exp = 1/self.index
+        arr += ne.evaluate('sbeff * exp(-kappa * exp(log(radii)*idx_exp) - 1)')
         return arr
