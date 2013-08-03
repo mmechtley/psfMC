@@ -33,6 +33,8 @@ class Sersic(ComponentBase):
 
     @staticmethod
     def ab_logp(major_axis, minor_axis):
+        # TODO: should be -inf but pymc doesn't like ZeroProbability
+        # try some functional form of q?
         return -1e200 if minor_axis > major_axis else 0
 
     def total_flux_adu(self, mag_zp):
@@ -80,8 +82,7 @@ class Sersic(ComponentBase):
 
         # Matrix representation of n-D ellipse:
         # http://en.wikipedia.org/wiki/Ellipsoid
-        M_inv_scale = np.diag((1/self.reff,
-                               1/self.reff_b))
+        M_inv_scale = np.diag((1/self.reff, 1/self.reff_b))
         M_rot = np.asarray(((cos_ang, -sin_ang), (sin_ang, cos_ang)))
         # Inverse of a rotation matrix is its transpose
         M_inv_xform = np.dot(M_inv_scale, M_rot.T)
