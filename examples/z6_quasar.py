@@ -28,8 +28,7 @@ for obsfile, psffile in zip(obsfiles, psffiles):
 
     db = pymc.database.pickle.load(output_name+'_db.pickle')
     for trace_name in ('0_Sky_adu', '1_PSF_mag', '2_Sersic_mag',
-                       '2_Sersic_reff', '2_Sersic_index', '2_Sersic_angle',
-                       '2_Sersic_axis_ratio'):
+                       '2_Sersic_reff', '2_Sersic_index', '2_Sersic_angle'):
         if pp is not None:
             pp.hist(db.trace(trace_name)[:], bins=20)
             pp.title(trace_name)

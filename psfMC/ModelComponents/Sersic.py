@@ -1,6 +1,7 @@
 from __future__ import division
 import numpy as np
 from scipy.special import gamma
+from pymc import Potential
 from .ComponentBase import ComponentBase
 from ..array_utils import array_coords, debug_timer
 import numexpr as ne
@@ -19,7 +20,20 @@ class Sersic(ComponentBase):
         self.index = index
         self.angle = angle
         self.angle_degrees = angle_degrees
+
+        self.axis_ratio_constraint = Potential(logp=Sersic.ab_logp,
+                                               name='axis_ratio_constraint',
+                                               parents={'major_axis': reff,
+                                                        'minor_axis': reff_b},
+                                               doc='Axis Ratio Constraint',
+                                               verbose=0,
+                                               cache_depth=2)
+
         super(Sersic, self).__init__()
+
+    @staticmethod
+    def ab_logp(major_axis, minor_axis):
+        return -1e200 if minor_axis > major_axis else 0
 
     def total_flux_adu(self, mag_zp):
         """
@@ -83,5 +97,5 @@ class Sersic(ComponentBase):
 
         # 4e-04 seconds for 128x128
         idx_exp = 1/self.index
-        arr += ne.evaluate('sbeff * exp(-kappa * exp(log(radii)*idx_exp) - 1)')
+        arr += ne.evaluate('sbeff * exp(-kappa * (exp(log(radii)*idx_exp) - 1))')
         return arr

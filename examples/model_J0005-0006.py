@@ -5,27 +5,29 @@ from psfMC.distributions import Normal, Uniform
 zp = 26.2303
 totalflux = -5.12 + zp
 center = asarray((64, 64))
+maxshift = asarray((8, 8))
 
 # We can treat the sky as an unknown component if the subtraction is uncertain
 Sky(adu=Normal(mu=0, tau=100))
 
 # Point source component
-PSF(xy=Uniform(lower=center-(8,8), upper=center+(8,8)),
+PSF(xy=Uniform(lower=center-maxshift, upper=center+maxshift),
     mag=Uniform(lower=totalflux-0.2, upper=totalflux+1.5))
 
 # Sersic profile, modeling the galaxy under the point source
-Sersic(xy=Uniform(lower=center-(8,8), upper=center+(8,8)),
+Sersic(xy=Uniform(lower=center-maxshift, upper=center+maxshift),
        mag=Uniform(lower=totalflux, upper=27.5),
-       reff=Uniform(lower=1.0, upper=12.0),
+       reff=Uniform(lower=2.0, upper=12.0),
+       reff_b=Uniform(lower=2.0, upper=12.0),
        index=Uniform(lower=0.5, upper=8),
-       axis_ratio=Uniform(lower=0.25, upper=1.0),
        angle=Uniform(lower=0, upper=180), angle_degrees=True)
 
 # Second sersic profile, modeling the faint blob to the upper left of the quasar
-center = asarray((47, 87))
-Sersic(xy=Uniform(lower=center-(8,8), upper=center+(8,8)),
-       mag=Uniform(lower=23.5, upper=25.5),
-       reff=Uniform(lower=1.0, upper=4.0),
-       index=Uniform(lower=0.5, upper=8.0),
-       axis_ratio=Uniform(lower=0.7, upper=1.0),
-       angle=Uniform(lower=0, upper=180), angle_degrees=True)
+center = asarray((46, 85.6))
+maxshift = asarray((2, 2))
+Sersic(xy=Uniform(lower=center-maxshift, upper=center+maxshift),
+       mag=Uniform(lower=24.0, upper=25.0),
+       reff=Uniform(lower=2.0, upper=4.0),
+       reff_b=Uniform(lower=2.0, upper=4.0),
+       index=Uniform(lower=0.25, upper=1.5),
+       angle=Uniform(lower=92, upper=132), angle_degrees=True)
