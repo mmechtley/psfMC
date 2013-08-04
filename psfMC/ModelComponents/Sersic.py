@@ -60,7 +60,10 @@ class Sersic(ComponentBase):
         """
         Sersic profile exponential scaling factor, called either kappa or b_n
         """
-        return 1.9992*self.index - 0.3271
+        # Expansion from Ciotti & Bertin 1999, A&A, 352, 447
+        n = self.index
+        return (2*n - 1/3 + 4/405*n**-1 + 46/25515*n**-2 + 131/1148175*n**-3
+                - 2194697/30690717750*n**-4)
 
     def add_to_array(self, arr, mag_zp, **kwargs):
         """

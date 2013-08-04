@@ -1,6 +1,8 @@
 from __future__ import division
 import pymc.distributions
+from pymc.Container import Container
 from pymc import CircVonMises as _CircVonMises
+from pymc import CircularStochastic
 
 # FIXME: can't use 'className' here, uses global variable instead of creating
 # function with literal
@@ -28,3 +30,11 @@ def VonMises(mu=None, kappa=None, **kwargs):
 
 def CircVonMises(mu=None, kappa=None, **kwargs):
     return _CircVonMises('', mu=mu, kappa=kappa, **kwargs)
+
+
+class CircUniform(CircularStochastic, pymc.distributions.Uniform):
+     def __init__(self, lower, upper, *args, **kwargs):
+         self.interval_parents = Container([upper, lower])
+         pymc.distributions.Uniform.__init__(self, name='',
+                                             lower=lower, upper=upper,
+                                             *args, **kwargs)
