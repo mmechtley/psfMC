@@ -1,10 +1,17 @@
 from __future__ import division
-from numpy import asarray, exp, cos, sin, deg2rad, sqrt, sum, log, pi, dot
+from warnings import warn
+from numpy import asarray, exp, cos, sin, deg2rad, sum, log, pi, dot
 from scipy.special import gamma
 from pymc import Potential
 from .ComponentBase import ComponentBase
 from ..array_utils import array_coords, debug_timer
-import numexpr as ne
+
+try:
+    import numexpr as ne
+except ImportError:
+    warn('numexpr module could not be imported. numexpr is recommended for ' +
+         'optimized (parallel) computation of Sersic profiles.')
+    ne = None
 
 
 class Sersic(ComponentBase):
@@ -35,7 +42,7 @@ class Sersic(ComponentBase):
 
     @staticmethod
     def ab_logp(major_axis, minor_axis):
-        # TODO: should be -inf but pymc doesn't like ZeroProbability
+        # FIXME: should be -inf but pymc doesn't like ZeroProbability
         # try some functional form of q?
         return -1e200 if minor_axis > major_axis else 0
 
@@ -81,6 +88,7 @@ class Sersic(ComponentBase):
         # multiplied by inverse rotation matrix (cos, sin, -sin, cos)
         M_inv_xform = asarray(((cos_ang/self.reff, sin_ang/self.reff),
                                (-sin_ang/self.reff_b, cos_ang/self.reff_b)))
+        # TODO: Might be room for optimization here?
         radii = sum(dot(M_inv_xform, (coords-self.xy).T)**2, axis=0)
         return radii
 
@@ -100,8 +108,6 @@ class Sersic(ComponentBase):
         flux_tot = self.total_flux_adu(mag_zp)
         sbeff = self.sb_eff_adu(mag_zp, flux_tot, kappa)
 
-        # TODO: I think there is room for speed improvement here
-        # 5.3e-04 seconds for 128x128
         sq_radii = self.coordinate_sq_radii(coords)
         sq_radii = sq_radii.reshape(arr.shape)
 
@@ -109,8 +115,9 @@ class Sersic(ComponentBase):
         # combined with the sersic power here
         r_power = 0.5/self.index
         # Optimization: exp(log(a)*b) is generally faster than a**b or pow(a,b)
-        # 7e-04 seconds for 128x128
-        # arr += sbeff * exp(-kappa * (exp(log(sq_radii)*r_power) - 1))
-        # 4e-04 seconds for 128x128
-        arr += ne.evaluate('sbeff * exp(-kappa * expm1(log(sq_radii)*r_power))')
+        if ne is not None:
+            ser_expr = 'sbeff * exp(-kappa * expm1(log(sq_radii)*r_power))'
+            arr += ne.evaluate(ser_expr)
+        else:
+            arr += sbeff * exp(-kappa * (exp(log(sq_radii)*r_power) - 1))
         return arr
