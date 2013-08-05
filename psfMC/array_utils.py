@@ -6,7 +6,6 @@ from math import fsum
 from warnings import warn
 
 
-_show_timing_info = False
 _timers = dict()
 
 _bad_px_value = 0
@@ -16,8 +15,6 @@ def debug_timer(step, name=''):
     """
     Hacky lightweight timer, for profiling model creation
     """
-    if not _show_timing_info:
-        return
     if step == 'start':
         _timers[name] = time.time()
     elif step == 'stop':
@@ -97,8 +94,8 @@ def preprocess_obs(obs_data, obs_ivm, mask_reg=None):
             exclude_px = ~regfilt.mask(obs_data.shape)
             badpx |= exclude_px
         except ImportError:
-            warn('pyregion could not be imported. Mask regions will be ' +
-                 'ignored.')
+            warn('pyregion module could not be imported. Mask regions will ' +
+                 'be ignored.')
 
     return obs_data, obs_var, badpx
 

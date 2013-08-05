@@ -1,5 +1,5 @@
 from __future__ import division
-import numpy as np
+from numpy import asarray, exp, cos, sin, deg2rad, sqrt, sum, log, pi, dot
 from scipy.special import gamma
 from pymc import Potential
 from .ComponentBase import ComponentBase
@@ -21,6 +21,8 @@ class Sersic(ComponentBase):
         self.angle = angle
         self.angle_degrees = angle_degrees
 
+        # Enforce major axis > minor axis.
+        # Otherwise rotation angle makes no sense.
         self.axis_ratio_constraint = Potential(logp=Sersic.ab_logp,
                                                name='axis_ratio_constraint',
                                                parents={'major_axis': reff,
@@ -51,9 +53,8 @@ class Sersic(ComponentBase):
             kappa = self.kappa()
         if flux_tot is None:
             flux_tot = self.total_flux_adu(mag_zp)
-        return flux_tot / (2 * np.pi * self.reff * self.reff_b *
-                           np.exp(kappa) * self.index *
-                           np.power(kappa, -2*self.index) *
+        return flux_tot / (pi * self.reff * self.reff_b * 2*self.index *
+                           exp(kappa + log(kappa) * -2*self.index) *
                            gamma(2*self.index))
 
     def kappa(self):
@@ -65,12 +66,30 @@ class Sersic(ComponentBase):
         return (2*n - 1/3 + 4/405*n**-1 + 46/25515*n**-2 + 131/1148175*n**-3
                 - 2194697/30690717750*n**-4)
 
+    def coordinate_sq_radii(self, coords):
+        """
+        Calculate the generalized square radii for an array of pixel
+        coordinates.
+        """
+        angle = deg2rad(self.angle) if self.angle_degrees else self.angle
+        # Correct for "position angle" CCW of up, instead of right
+        angle += 0.5*pi
+        sin_ang, cos_ang = sin(angle), cos(angle)
+
+        # Matrix representation of n-D ellipse: en.wikipedia.org/wiki/Ellipsoid
+        # M_inv_xform is inverse scale matrix (1/reff, 0, 0, 1/reff_b)
+        # multiplied by inverse rotation matrix (cos, sin, -sin, cos)
+        M_inv_xform = asarray(((cos_ang/self.reff, sin_ang/self.reff),
+                               (-sin_ang/self.reff_b, cos_ang/self.reff_b)))
+        radii = sum(dot(M_inv_xform, (coords-self.xy).T)**2, axis=0)
+        return radii
+
     def add_to_array(self, arr, mag_zp, **kwargs):
         """
         Add Sersic profile with supplied parameters to a numpy array. Array is
-        assumed to be in same units as the zero point, ie the brightness of a
-        pixel is:
-        m = -2.5*log(pixel value) + mag_zp
+        assumed to be in same units as the zero point, ie the surface brightness
+        per pixel is:
+        m = -2.5*log10(pixel value) + mag_zp
 
         :param arr: Numpy array to add sersic profile to
         :param mag_zp: Magnitude zeropoint (e.g. magnitude of 1 count/second)
@@ -80,26 +99,18 @@ class Sersic(ComponentBase):
         kappa = self.kappa()
         flux_tot = self.total_flux_adu(mag_zp)
         sbeff = self.sb_eff_adu(mag_zp, flux_tot, kappa)
-        angle = np.deg2rad(self.angle) if self.angle_degrees else self.angle
-        sin_ang, cos_ang = np.sin(angle), np.cos(angle)
-
-        # Matrix representation of n-D ellipse:
-        # http://en.wikipedia.org/wiki/Ellipsoid
-        M_inv_scale = np.diag((1/self.reff, 1/self.reff_b))
-        M_rot = np.asarray(((cos_ang, -sin_ang), (sin_ang, cos_ang)))
-        # Inverse of a rotation matrix is its transpose
-        M_inv_xform = np.dot(M_inv_scale, M_rot.T)
 
         # TODO: I think there is room for speed improvement here
         # 5.3e-04 seconds for 128x128
-        radii = np.sqrt(np.sum(np.dot(M_inv_xform,
-                                      (coords-self.xy).T)**2, axis=0))
-        radii = radii.reshape(arr.shape)
-        # 7e-04 seconds for 128x128
-        # arr += sbeff * np.exp(-kappa *
-        #                       (np.exp(np.log(radii)*(1/self.index)) - 1))
+        sq_radii = self.coordinate_sq_radii(coords)
+        sq_radii = sq_radii.reshape(arr.shape)
 
+        # Optimization: the square root to get to radii from square radii is
+        # combined with the sersic power here
+        r_power = 0.5/self.index
+        # Optimization: exp(log(a)*b) is generally faster than a**b or pow(a,b)
+        # 7e-04 seconds for 128x128
+        # arr += sbeff * exp(-kappa * (exp(log(sq_radii)*r_power) - 1))
         # 4e-04 seconds for 128x128
-        idx_exp = 1/self.index
-        arr += ne.evaluate('sbeff * exp(-kappa * (exp(log(radii)*idx_exp) - 1))')
+        arr += ne.evaluate('sbeff * exp(-kappa * expm1(log(sq_radii)*r_power))')
         return arr
