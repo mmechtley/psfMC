@@ -4,7 +4,7 @@ from numpy import asarray, exp, cos, sin, deg2rad, sum, log, pi, dot
 from scipy.special import gamma
 from pymc import Potential
 from .ComponentBase import ComponentBase
-from ..array_utils import array_coords, debug_timer
+from ..array_utils import array_coords
 
 try:
     import numexpr as ne
@@ -75,8 +75,10 @@ class Sersic(ComponentBase):
 
     def coordinate_sq_radii(self, coords):
         """
-        Calculate the generalized square radii for an array of pixel
+        Calculate the generalized ellipse square radii for an array of pixel
         coordinates.
+
+        :param coords: Nx2 array of point coordinates (in rows)
         """
         angle = deg2rad(self.angle) if self.angle_degrees else self.angle
         # Correct for "position angle" CCW of up, instead of right
@@ -96,8 +98,7 @@ class Sersic(ComponentBase):
         """
         Add Sersic profile with supplied parameters to a numpy array. Array is
         assumed to be in same units as the zero point, ie the surface brightness
-        per pixel is:
-        m = -2.5*log10(pixel value) + mag_zp
+        per pixel is: mag_per_sq_px = -2.5*log10(pixel_value) + mag_zp
 
         :param arr: Numpy array to add sersic profile to
         :param mag_zp: Magnitude zeropoint (e.g. magnitude of 1 count/second)
