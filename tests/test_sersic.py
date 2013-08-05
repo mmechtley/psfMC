@@ -67,7 +67,7 @@ if __name__ == '__main__':
     def timing_check():
         return ser.add_to_array(mcmodel, mag_zp=gfhdr["MAGZPT"], coords=coords)
 
-    print 'Checking timing, adding Sersic profile to 128x128 array'
+    print 'Timing, adding Sersic profile to 128x128 array'
     niter = 1000
     tottime = timeit(timing_check, number=niter)
     print 'Total: {:0.3f}s Each: {:0.3g}s'.format(tottime, tottime/niter)

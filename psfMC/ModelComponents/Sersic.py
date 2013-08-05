@@ -67,8 +67,8 @@ class Sersic(ComponentBase):
     def kappa(self):
         """
         Sersic profile exponential scaling factor, called either kappa or b_n
+        Uses analytic expansion from Ciotti & Bertin 1999, A&A, 352, 447
         """
-        # Expansion from Ciotti & Bertin 1999, A&A, 352, 447
         n = self.index
         return (2*n - 1/3 + 4/405*n**-1 + 46/25515*n**-2 + 131/1148175*n**-3
                 - 2194697/30690717750*n**-4)
@@ -102,7 +102,7 @@ class Sersic(ComponentBase):
 
         :param arr: Numpy array to add sersic profile to
         :param mag_zp: Magnitude zeropoint (e.g. magnitude of 1 count/second)
-        :param coords: Optional pre-computed x,y coordinates of each element
+        :param coords: Optional pre-computed x,y coordfinates of each element
         """
         coords = kwargs['coords'] if 'coords' in kwargs else array_coords(arr)
         kappa = self.kappa()
@@ -114,11 +114,11 @@ class Sersic(ComponentBase):
 
         # Optimization: the square root to get to radii from square radii is
         # combined with the sersic power here
-        r_power = 0.5/self.index
+        radius_pow = 0.5/self.index
         # Optimization: exp(log(a)*b) is generally faster than a**b or pow(a,b)
         if ne is not None:
-            ser_expr = 'sbeff * exp(-kappa * expm1(log(sq_radii)*r_power))'
+            ser_expr = 'sbeff * exp(-kappa * expm1(log(sq_radii)*radius_pow))'
             arr += ne.evaluate(ser_expr)
         else:
-            arr += sbeff * exp(-kappa * (exp(log(sq_radii)*r_power) - 1))
+            arr += sbeff * exp(-kappa * (exp(log(sq_radii)*radius_pow) - 1))
         return arr

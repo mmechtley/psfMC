@@ -2,7 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="f550eb5d-d804-46be-8e18-060ec19e5881" name="Default" comment="">
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/tests/sim.feedme" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/psfMC/ModelComponents/Sersic.py" afterPath="$PROJECT_DIR$/psfMC/ModelComponents/Sersic.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tests/test_sersic.py" afterPath="$PROJECT_DIR$/tests/test_sersic.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="psfMC.iws" />
@@ -11,19 +13,19 @@
     <file path="/models.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1374121460481" ignored="false" />
     <file path="/__init__.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1371947352772" ignored="false" />
     <file path="/tests.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368764844984" ignored="false" />
-    <file path="/Dummy.txt" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1375669413395" ignored="false" />
+    <file path="/Dummy.txt" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1375670536087" ignored="false" />
     <file path="/a.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368499802072" ignored="false" />
     <file path="/start_script.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368499810666" ignored="false" />
     <file path="/setup.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1373247725028" ignored="false" />
     <file path="/.gitignore" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368589678091" ignored="false" />
-    <file path="$PROJECT_DIR$/../../../WIP/z2quasars/fitting/psf_fit_byfocus.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1375514656084" ignored="false" />
+    <file path="$PROJECT_DIR$/../../../WIP/z2quasars/fitting/psf_fit_byfocus.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1375681159402" ignored="false" />
     <file path="/psf_fit_byfocus.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1374981204094" ignored="false" />
     <file path="/wxWindow.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1368594698157" ignored="false" />
     <file path="/a.dummy" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1375668805533" ignored="false" />
     <file path="$PROJECT_DIR$/../../lib/python2.7/site-packages/psfMC/fitting.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1374141322852" ignored="false" />
     <file path="/z6_quasar.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1369183959062" ignored="false" />
     <file path="/PSF.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1373404423538" ignored="false" />
-    <file path="/Sersic.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1375670385911" ignored="false" />
+    <file path="/Sersic.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1375678175629" ignored="false" />
     <file path="/Sky.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1369177480310" ignored="false" />
     <file path="/model_J0005-0006.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1375493112637" ignored="false" />
     <file path="/distributions.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1375516083107" ignored="false" />
@@ -165,12 +167,11 @@
     <file path="$PROJECT_DIR$/../../../WIP/z2quasars/data/make_stamps.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1374368278843" ignored="false" />
     <file path="$PROJECT_DIR$/../../../WIP/z2quasars/psf_data/make_stamps.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1374368306118" ignored="false" />
     <file path="/astroRMS.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1374307272775" ignored="false" />
-    <file path="$PROJECT_DIR$/../../lib/python2.7/site-packages/astroRMS.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1374307362783" ignored="false" />
     <file path="/plotsnr.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1374634248448" ignored="false" />
     <file path="$PROJECT_DIR$/../../bin/plotsnr.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1374634269294" ignored="false" />
     <file path="$PROJECT_DIR$/../../../WIP/filtshift/filtshift.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1375479354198" ignored="false" />
     <file path="/filtshift.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1375479353578" ignored="false" />
-    <file path="/test_sersic.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1375667476713" ignored="false" />
+    <file path="/test_sersic.py" changelist="f550eb5d-d804-46be-8e18-060ec19e5881" time="1375676633630" ignored="false" />
     <option name="TRACKING_ENABLED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -202,7 +203,7 @@
       <file leaf-file-name="Sersic.py" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/psfMC/ModelComponents/Sersic.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="78" column="20" selection-start="2893" selection-end="2893" vertical-scroll-proportion="0.086440675">
+            <state line="122" column="55" selection-start="5000" selection-end="5000" vertical-scroll-proportion="1.2050848">
               <folding>
                 <element signature="e#0#31#0" expanded="true" />
               </folding>
@@ -213,7 +214,7 @@
       <file leaf-file-name="test_sersic.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/tests/test_sersic.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="42" column="48" selection-start="1467" selection-end="1467" vertical-scroll-proportion="-12.16">
+            <state line="44" column="0" selection-start="1538" selection-end="1538" vertical-scroll-proportion="-13.36">
               <folding>
                 <element signature="e#0#18#0" expanded="true" />
               </folding>
@@ -252,8 +253,8 @@
         <option value="$PROJECT_DIR$/../../bin/plotchain.py" />
         <option value="$PROJECT_DIR$/examples/model_J0005-0006.py" />
         <option value="$PROJECT_DIR$/psfMC/distributions.py" />
-        <option value="$PROJECT_DIR$/tests/test_sersic.py" />
         <option value="$PROJECT_DIR$/psfMC/array_utils.py" />
+        <option value="$PROJECT_DIR$/tests/test_sersic.py" />
         <option value="$PROJECT_DIR$/psfMC/ModelComponents/Sersic.py" />
       </list>
     </option>
@@ -824,7 +825,11 @@
       <created>1375669418452</created>
       <updated>1375669418452</updated>
     </task>
-    <option name="localTasksCounter" value="76" />
+    <task id="LOCAL-00076" summary="Code cleanup">
+      <created>1375670413583</created>
+      <updated>1375670413583</updated>
+    </task>
+    <option name="localTasksCounter" value="77" />
     <servers />
   </component>
   <component name="TodoView" selected-index="0">
@@ -862,7 +867,7 @@
       <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32998884" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32998884" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.2917115" sideWeight="0.42474917" order="2" side_tool="true" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.30462864" sideWeight="0.73132664" order="1" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.2917115" sideWeight="0.73132664" order="1" side_tool="false" content_ui="combo" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.18729097" sideWeight="0.4994618" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
@@ -960,30 +965,6 @@
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/psfMC/ModelComponents/ComponentBase.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="26" column="30" selection-start="834" selection-end="834" vertical-scroll-proportion="0.44526628">
-          <folding>
-            <element signature="e#0#21#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$USER_HOME$/Downloads/CondorStemRunner.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="24" column="0" selection-start="622" selection-end="622" vertical-scroll-proportion="-0.83995324" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/.idea/psfMC.iml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="11" column="0" selection-start="355" selection-end="355" vertical-scroll-proportion="0.26273885" />
-      </provider>
-    </entry>
-    <entry file="file:///usr/local/scisoft/packages/python/lib/python2.7/site-packages/scipy/signal/signaltools.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="159" column="19" selection-start="5198" selection-end="5198" vertical-scroll-proportion="0.68341124" />
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/psfMC/ModelComponents/PSF.py">
       <provider selected="true" editor-type-id="text-editor">
         <state line="17" column="34" selection-start="498" selection-end="498" vertical-scroll-proportion="0.2843602" />
@@ -1031,13 +1012,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/psfMC/fitting.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="143" column="46" selection-start="6656" selection-end="6656" vertical-scroll-proportion="-15.84">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/psfMC/array_utils.py">
       <provider selected="true" editor-type-id="text-editor">
         <state line="97" column="31" selection-start="3273" selection-end="3273" vertical-scroll-proportion="0.44905213">
@@ -1052,18 +1026,55 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/tests/sim.feedme">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/psfMC/fitting.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="143" column="46" selection-start="6656" selection-end="6656" vertical-scroll-proportion="-15.84">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../../lib/python2.7/site-packages/astroRMS.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="282" column="29" selection-start="10705" selection-end="10705" vertical-scroll-proportion="0.0">
+          <folding>
+            <element signature="e#941#972#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/tests/test_sersic.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="42" column="48" selection-start="1467" selection-end="1467" vertical-scroll-proportion="-12.16">
+        <state line="44" column="0" selection-start="1538" selection-end="1538" vertical-scroll-proportion="-13.36">
           <folding>
             <element signature="e#0#18#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
+    <entry file="file://$USER_HOME$/Downloads/sersic-1.0.1/sersic/__init__.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="1" column="0" selection-start="40" selection-end="40" vertical-scroll-proportion="0.01726122">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/Downloads/sersic-1.0.1/sersic/sersic.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="-2.3294392">
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/psfMC/ModelComponents/Sersic.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="78" column="20" selection-start="2893" selection-end="2893" vertical-scroll-proportion="0.086440675">
+        <state line="122" column="55" selection-start="5000" selection-end="5000" vertical-scroll-proportion="1.2050848">
           <folding>
             <element signature="e#0#31#0" expanded="true" />
           </folding>
