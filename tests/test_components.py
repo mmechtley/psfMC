@@ -4,19 +4,21 @@ import pyfits
 import os
 import subprocess
 from math import fsum
-from psfMC.ModelComponents import Sersic
+from scipy.ndimage import shift
+from psfMC.ModelComponents import Sersic, PSF
 from psfMC.array_utils import array_coords
 from timeit import timeit
 
-_gfsim_file = 'gfsim.fits'
+_sersic_ref_file = 'gfsim.fits.gz'
+_psf_ref_shift = np.array((2.2, 2.7))
 
 
-if __name__ == '__main__':
-    if not os.path.exists(_gfsim_file):
+def test_sersic():
+    if not os.path.exists(_sersic_ref_file):
         subprocess.call(['galfit', 'sim.feedme'])
-    gfmodel = pyfits.getdata(_gfsim_file)
+    gfmodel = pyfits.getdata(_sersic_ref_file)
 
-    gfhdr = pyfits.getheader(_gfsim_file)
+    gfhdr = pyfits.getheader(_sersic_ref_file)
     for key in [key for key in gfhdr if key.startswith('1_')]:
         gfhdr[key] = float(gfhdr[key].split('+/-')[0])
     r_maj = gfhdr['1_RE']
@@ -70,4 +72,32 @@ if __name__ == '__main__':
     print 'Timing, adding Sersic profile to 128x128 array'
     niter = 1000
     tottime = timeit(timing_check, number=niter)
-    print 'Total: {:0.3f}s Each: {:0.3g}s'.format(tottime, tottime/niter)
+    print 'Total: {:0.3g}s Each: {:0.3g}s'.format(tottime, tottime / niter)
+
+
+def test_psf():
+    print 'Testing PSF component fractional positioning'
+    refarr = np.zeros((5, 5))
+    # can't put this on the array edge because of boundary modes?
+    refarr[1, 1] = 1.0
+    # must reverse for scipy.ndimage.shift, since arrays are row, col indexed
+    refarr = shift(refarr, _psf_ref_shift[::-1]-1, order=1)
+
+    testarr = np.zeros((5, 5))
+    psf = PSF(xy=_psf_ref_shift, mag=0)
+    psf.add_to_array(testarr, mag_zp=0)
+
+    assert np.allclose(refarr, testarr)
+
+    mcmodel = np.zeros((128, 128))
+    def timing_check():
+        return psf.add_to_array(mcmodel, mag_zp=0)
+
+    print 'Timing, adding PSF component to 128x128 array'
+    niter = 1000
+    tottime = timeit(timing_check, number=niter)
+    print 'Total: {:0.3g}s Each: {:0.3g}s'.format(tottime, tottime / niter)
+
+if __name__ == '__main__':
+    test_psf()
+    test_sersic()

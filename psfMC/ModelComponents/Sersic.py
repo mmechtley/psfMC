@@ -104,6 +104,7 @@ class Sersic(ComponentBase):
         :param mag_zp: Magnitude zeropoint (e.g. magnitude of 1 count/second)
         :param coords: Optional pre-computed x,y coordfinates of each element
         """
+        # FIXME: Central pixels still have up to 10% error compared to galfit
         coords = kwargs['coords'] if 'coords' in kwargs else array_coords(arr)
         kappa = self.kappa()
         flux_tot = self.total_flux_adu(mag_zp)
@@ -115,7 +116,7 @@ class Sersic(ComponentBase):
         # Optimization: the square root to get to radii from square radii is
         # combined with the sersic power here
         radius_pow = 0.5/self.index
-        # Optimization: exp(log(a)*b) is generally faster than a**b or pow(a,b)
+        # Optimization: exp(log(a)*b) is faster than a**b or pow(a,b)
         if ne is not None:
             ser_expr = 'sbeff * exp(-kappa * expm1(log(sq_radii)*radius_pow))'
             arr += ne.evaluate(ser_expr)
