@@ -1,9 +1,11 @@
 from __future__ import division
 from warnings import warn
+import os
 
 import pyfits
 import numpy as np
 from pymc.StepMethods import AdaptiveMetropolis, DiscreteMetropolis
+from pymc.database.pickle import load
 
 from .models import multicomponent_model
 from .array_utils import _bad_px_value
@@ -63,13 +65,14 @@ def model_galaxy_mcmc(obs_file, obsIVM_file, psf_files, psfIVM_files,
     kwargs.setdefault('iter', 6000)
     kwargs.setdefault('burn', 3000)
 
+    db_name = output_name.format('db')
     mc_model = multicomponent_model(obs_file, obsIVM_file,
                                     psf_files, psfIVM_files,
                                     components=model_file,
                                     mag_zp=mag_zeropoint,
                                     mask_file=mask_file,
                                     db='pickle',
-                                    name=output_name.format('db'))
+                                    name=db_name)
 
     for stoch in mc_model.step_method_dict:
         if 'xy' in stoch.__name__:
@@ -78,14 +81,19 @@ def model_galaxy_mcmc(obs_file, obsIVM_file, psf_files, psfIVM_files,
             mc_model.use_step_method(DiscreteMetropolis, stoch,
                                      proposal_distribution='Prior')
 
-    mc_model.sample(**kwargs)
+    db = mc_model.db
+    if not os.path.exists(db_name+'.pickle'):
+        mc_model.sample(**kwargs)
 
-    ## Saves out to pickle file
-    mc_model.db.close()
+        ## Saves out to pickle file
+        db.close()
+    else:
+        db = load(db_name+'.pickle')
+        warn('Database file already exists, skipping sampling')
 
     # Write mean model output files
     obsHeader = pyfits.getheader(obs_file, ignore_missing_end=True)
-    write_ml_model(mc_model, mc_model.db, basename=output_name,
+    write_ml_model(mc_model, db, basename=output_name,
                    filetypes=write_fits, header=obsHeader)
 
 
