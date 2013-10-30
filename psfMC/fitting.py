@@ -85,12 +85,12 @@ def model_galaxy_mcmc(obs_file, obsIVM_file, psf_files, psfIVM_files,
 
     # Write mean model output files
     obsHeader = pyfits.getheader(obs_file, ignore_missing_end=True)
-    write_mean_model(mc_model, mc_model.db, basename=output_name,
-                     filetypes=write_fits, header=obsHeader)
+    write_ml_model(mc_model, mc_model.db, basename=output_name,
+                   filetypes=write_fits, header=obsHeader)
 
 
-def write_mean_model(model, db, basename='mcmc', filetypes=('residual', ),
-                     samples_slice=slice(0, -1), header=None):
+def write_ml_model(model, db, basename='mcmc', filetypes=_default_filetypes,
+                   samples_slice=slice(0, -1), header=None):
     if header is None:
         header = pyfits.Header()
     if '{}' not in basename:
@@ -105,7 +105,8 @@ def write_mean_model(model, db, basename='mcmc', filetypes=('residual', ),
     # Set model stochastic values to their trace means
     for stoch in model.stochastics - model.observed_stochastics:
         trace = db.trace(stoch.__name__)[samples_slice]
-        stoch.value = _max_likelihood_value(trace)
+        #stoch.value = _max_likelihood_value(trace)
+        stoch.value = db.trace(stoch.__name__)[np.argmin(db.deviance[:])]
 
     # Find name of PSF file used
     psf_selector = [cont for cont in model.containers
