@@ -114,7 +114,8 @@ def write_ml_model(model, db, basename='mcmc', filetypes=_default_filetypes,
     for stoch in model.stochastics - model.observed_stochastics:
         trace = db.trace(stoch.__name__)[samples_slice]
         #stoch.value = _max_likelihood_value(trace)
-        stoch.value = db.trace(stoch.__name__)[np.argmin(db.deviance[:])]
+        best_index = np.argmin(db.trace('deviance')[:])
+        stoch.value = db.trace(stoch.__name__)[best_index]
 
     # Find name of PSF file used
     psf_selector = [cont for cont in model.containers

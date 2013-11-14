@@ -96,7 +96,8 @@ def test_psf():
     print 'Timing, adding PSF component to 128x128 array'
     niter = 1000
     tottime = timeit(timing_check, number=niter)
-    print 'Total: {:0.3g}s Each: {:0.3g}s'.format(tottime, tottime / niter)
+    print 'Total: {:0.3g}s n={:d} Each: {:0.3g}s'.format(tottime, niter,
+                                                         tottime / niter)
 
 if __name__ == '__main__':
     test_psf()
