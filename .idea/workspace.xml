@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="f550eb5d-d804-46be-8e18-060ec19e5881" name="Default" comment="">
+    <list default="true" id="f550eb5d-d804-46be-8e18-060ec19e5881" name="Default" comment="Masking">
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/psfMC/array_utils.py" afterPath="$PROJECT_DIR$/psfMC/array_utils.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/psfMC/fitting.py" afterPath="$PROJECT_DIR$/psfMC/fitting.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tests/test_components.py" afterPath="$PROJECT_DIR$/tests/test_components.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
@@ -17,7 +18,7 @@
   <component name="ChangesViewManager" flattened_view="true" show_ignored="false" />
   <component name="CoverageDataManager">
     <SUITE FILE_PATH="coverage/psfMC$Install_Module.coverage" NAME="Install Module Coverage Results" MODIFIED="1383706630783" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/psfMC$Run_Tests.coverage" NAME="Run Tests Coverage Results" MODIFIED="1384466608946" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tests" />
+    <SUITE FILE_PATH="coverage/psfMC$Run_Tests.coverage" NAME="Run Tests Coverage Results" MODIFIED="1384466856021" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tests" />
   </component>
   <component name="CreatePatchCommitExecutor">
     <option name="PATCH_PATH" value="" />
@@ -31,10 +32,10 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="fitting.py" pinned="false" current="false" current-in-tab="false">
+      <file leaf-file-name="fitting.py" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/psfMC/fitting.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="84" column="38" selection-start="4118" selection-end="4118" vertical-scroll-proportion="-7.48" vertical-offset="908" max-vertical-offset="2595">
+            <state line="48" column="72" selection-start="2444" selection-end="2444" vertical-scroll-proportion="0.5683123" vertical-offset="60" max-vertical-offset="2610">
               <folding />
             </state>
           </provider>
@@ -43,7 +44,7 @@
       <file leaf-file-name="models.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/psfMC/models.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="41" column="26" selection-start="1597" selection-end="1597" vertical-scroll-proportion="-12.6" vertical-offset="300" max-vertical-offset="1590">
+            <state line="29" column="69" selection-start="1120" selection-end="1120" vertical-scroll-proportion="-17.4" vertical-offset="0" max-vertical-offset="1590">
               <folding>
                 <element signature="e#0#31#0" expanded="true" />
               </folding>
@@ -51,10 +52,19 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="test_components.py" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="array_utils.py" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/psfMC/array_utils.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="121" column="7" selection-start="3877" selection-end="3877" vertical-scroll-proportion="-19.24" vertical-offset="1259" max-vertical-offset="2130">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="test_components.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/tests/test_components.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="96" column="16" selection-start="3393" selection-end="3393" vertical-scroll-proportion="0.7421203" vertical-offset="787" max-vertical-offset="1500">
+            <state line="71" column="27" selection-start="2548" selection-end="2548" vertical-scroll-proportion="-11.44" vertical-offset="644" max-vertical-offset="1515">
               <folding />
             </state>
           </provider>
@@ -82,7 +92,6 @@
         <option value="$PROJECT_DIR$/psfMC/ModelComponents/PSF.py" />
         <option value="$PROJECT_DIR$/examples/model_J0005-0006.py" />
         <option value="$PROJECT_DIR$/psfMC/distributions.py" />
-        <option value="$PROJECT_DIR$/psfMC/array_utils.py" />
         <option value="$PROJECT_DIR$/../../bin/plotsnr.py" />
         <option value="$PROJECT_DIR$/psfMC/ModelComponents/scrape_A_H.py" />
         <option value="$PROJECT_DIR$/scrape_A_H.py" />
@@ -91,9 +100,10 @@
         <option value="$PROJECT_DIR$/tests/test_sersic.py" />
         <option value="$PROJECT_DIR$/psfMC/models.py" />
         <option value="$PROJECT_DIR$/psfMC/__init__.py" />
-        <option value="$PROJECT_DIR$/psfMC/fitting.py" />
         <option value="$PROJECT_DIR$/../../bin/plotchain.py" />
         <option value="$PROJECT_DIR$/tests/test_components.py" />
+        <option value="$PROJECT_DIR$/psfMC/fitting.py" />
+        <option value="$PROJECT_DIR$/psfMC/array_utils.py" />
       </list>
     </option>
   </component>
@@ -842,7 +852,11 @@
       <created>1383121264294</created>
       <updated>1383121264295</updated>
     </task>
-    <option name="localTasksCounter" value="83" />
+    <task id="LOCAL-00083" summary="Fixed test output. Code cleanup in fitting.">
+      <created>1384466774367</created>
+      <updated>1384466774367</updated>
+    </task>
+    <option name="localTasksCounter" value="84" />
     <servers />
   </component>
   <component name="TodoView" selected-index="0">
@@ -881,7 +895,7 @@
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32998884" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.2917115" sideWeight="0.42474917" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.2974359" sideWeight="0.81277055" order="1" side_tool="false" content_ui="combo" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.18722944" sideWeight="0.4994618" order="8" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.18722944" sideWeight="0.4994618" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32887402" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
@@ -899,7 +913,6 @@
     <option name="myTodoPanelSettings">
       <TodoPanelSettings />
     </option>
-    <MESSAGE value="Fixed masking bug, MASKING FINALLY WORKS" />
     <MESSAGE value="Updated mask fill value to bad pixel value" />
     <MESSAGE value="Changed bad pixel fill value" />
     <MESSAGE value="Fixed bug in Sersic profile SB calculation" />
@@ -924,7 +937,8 @@
     <MESSAGE value="Problem identified for odd-sized arrays when doing fourier convolution" />
     <MESSAGE value="maximum likelihood model now just really uses the sample with the maximum likelihood (min deviance)" />
     <MESSAGE value="Skip sampling and just rewrite ML models if database exists" />
-    <option name="LAST_COMMIT_MESSAGE" value="Skip sampling and just rewrite ML models if database exists" />
+    <MESSAGE value="Fixed test output. Code cleanup in fitting." />
+    <option name="LAST_COMMIT_MESSAGE" value="Fixed test output. Code cleanup in fitting." />
     <option name="MAKE_NEW_CHANGELIST_ACTIVE" value="true" />
   </component>
   <component name="XDebuggerManager">
@@ -950,11 +964,6 @@
     <entry file="file://$PROJECT_DIR$/setup.py">
       <provider selected="true" editor-type-id="text-editor">
         <state line="5" column="52" selection-start="184" selection-end="184" vertical-scroll-proportion="0.08886256" vertical-offset="0" max-vertical-offset="0" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/tests/sim.feedme">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="0" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/../../lib/python2.7/site-packages/astroRMS.py">
@@ -984,13 +993,6 @@
         <state line="25" column="48" selection-start="827" selection-end="827" vertical-scroll-proportion="0.4315305" vertical-offset="0" max-vertical-offset="0" />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/psfMC/array_utils.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="41" column="4" selection-start="1075" selection-end="1075" vertical-scroll-proportion="-11.92" vertical-offset="242" max-vertical-offset="1860">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/psfMC/__init__.py">
       <provider selected="true" editor-type-id="text-editor">
         <state line="1" column="38" selection-start="93" selection-end="93" vertical-scroll-proportion="0.017221585" vertical-offset="0" max-vertical-offset="871">
@@ -1012,25 +1014,42 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/psfMC/fitting.py">
+    <entry file="file://$PROJECT_DIR$/tests/sim.feedme">
+      <provider editor-type-id="com.intellij.persistence.database.editor.CsvTableFileEditorProvider">
+        <state />
+      </provider>
       <provider selected="true" editor-type-id="text-editor">
-        <state line="84" column="38" selection-start="4118" selection-end="4118" vertical-scroll-proportion="-7.48" vertical-offset="908" max-vertical-offset="2595">
+        <state line="42" column="42" selection-start="2178" selection-end="2178" vertical-scroll-proportion="0.76293105" vertical-offset="99" max-vertical-offset="795">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tests/test_components.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="71" column="27" selection-start="2548" selection-end="2548" vertical-scroll-proportion="-11.44" vertical-offset="644" max-vertical-offset="1515">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/psfMC/models.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="41" column="26" selection-start="1597" selection-end="1597" vertical-scroll-proportion="-12.6" vertical-offset="300" max-vertical-offset="1590">
+        <state line="29" column="69" selection-start="1120" selection-end="1120" vertical-scroll-proportion="-17.4" vertical-offset="0" max-vertical-offset="1590">
           <folding>
             <element signature="e#0#31#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/tests/test_components.py">
+    <entry file="file://$PROJECT_DIR$/psfMC/array_utils.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="96" column="16" selection-start="3393" selection-end="3393" vertical-scroll-proportion="0.7421203" vertical-offset="787" max-vertical-offset="1500">
+        <state line="121" column="7" selection-start="3877" selection-end="3877" vertical-scroll-proportion="-19.24" vertical-offset="1259" max-vertical-offset="2130">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/psfMC/fitting.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="48" column="72" selection-start="2444" selection-end="2444" vertical-scroll-proportion="0.5683123" vertical-offset="60" max-vertical-offset="2610">
           <folding />
         </state>
       </provider>

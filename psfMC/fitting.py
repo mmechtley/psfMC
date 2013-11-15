@@ -43,9 +43,10 @@ def model_galaxy_mcmc(obs_file, obsIVM_file, psf_files, psfIVM_files,
     :param mag_zeropoint: Magnitude zeropoint, i.e. the magnitude of one ADU,
         whether in electrons per second (as with published HST zeropoints) or
         whatever funky units the data use.
-    :param mask_file: Optional ds9 region file defining the fitting region.
-        This can be used to exclude bad pixels or interloper objects, or
-        confine fitting to a smaller region of a large image.
+    :param mask_file: Optional file defining the fitting region. This can be
+        used to exclude bad pixels or interloper objects, or confine fitting
+        to a smaller region of a large image. Supplied in either fits format
+        (where nonzero values indicate exclusion), or ds9 region format.
     :param output_name: Base name for output files (no file extension). By
         default, files are written out containing the raw model, convolved
         model, combined IVM 1/(1/obsIVM + 1/modelIVM), residual of

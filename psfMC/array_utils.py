@@ -67,7 +67,7 @@ def norm_psf(psf_data, psf_ivm):
     return psf_data / psf_sum, psf_ivm * psf_sum**2
 
 
-def preprocess_obs(obs_data, obs_ivm, mask_reg=None):
+def preprocess_obs(obs_data, obs_ivm, mask_file=None):
     """
     Opens data and weight maps for both observations and PSF, masks out bad
     pixels, and normalizes the PSF for convolution
@@ -87,17 +87,35 @@ def preprocess_obs(obs_data, obs_ivm, mask_reg=None):
 
     # Add masking regions to bad pixel mask. We leave their variance alone, to
     # facilitate photometry later
-    if mask_reg is not None:
-        try:
-            import pyregion as preg
-            regfilt = preg.open(mask_reg).as_imagecoord(obs_hdr).get_filter()
-            exclude_px = ~regfilt.mask(obs_data.shape)
+    if mask_file is not None:
+        exclude_px = mask_from_file(mask_file, obs_hdr, obs_data.shape)
+        if exclude_px is not None:
             badpx |= exclude_px
-        except ImportError:
-            warn('pyregion module could not be imported. Mask regions will ' +
-                 'be ignored.')
 
     return obs_data, obs_var, badpx
+
+
+def mask_from_file(mask_file, obs_hdr, shape):
+    """
+    Create bad pixel mask from a file. File can be supplied in fits format
+    (nonzero pixels denoting exclusion), or in ds9 region format.
+    """
+    try:
+        return pyfits.getdata(mask_file).astype(bool)
+    except IOError:
+        pass  # When not in fits format
+
+    try:
+        import pyregion as preg
+        regfilt = preg.open(mask_file).as_imagecoord(obs_hdr).get_filter()
+        return ~regfilt.mask(shape)
+    except ImportError:
+        warn('pyregion module could not be imported. ds9 region format masks ' +
+             'will be ignored.')
+    except UnicodeDecodeError:
+        pass  # When not ds9 region format
+
+    return None
 
 
 def preprocess_psf(psf_data, psf_ivm, pad_to_shape=None):
