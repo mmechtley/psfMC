@@ -1,4 +1,3 @@
-from __future__ import division
 import pymc.distributions
 from pymc.Container import Container
 from pymc import CircularStochastic

@@ -67,7 +67,7 @@ def multicomponent_model(obs_data, obs_ivm, psf_data, psf_ivm,
 
     @deterministic(plot=False, trace=False)
     def composite_ivm(obs_var=obs_var, psf=psf_select, raw_model=raw_model):
-        # compute model variance
+        # Model and observation variances are independent, so additive
         # FIXME: odd sizes (127x127) cause this to screw up in one dimension?
         model_var = convolve(raw_model**2, psf.variance())
         compIVM = 1 / (model_var + obs_var)
