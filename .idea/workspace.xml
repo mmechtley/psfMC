@@ -3,7 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" id="f550eb5d-d804-46be-8e18-060ec19e5881" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/psfMC/distributions.py" afterPath="$PROJECT_DIR$/psfMC/distributions.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/psfMC/models.py" afterPath="$PROJECT_DIR$/psfMC/models.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="psfMC.iws" />
@@ -55,7 +54,7 @@
       <file leaf-file-name="distributions.py" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/psfMC/distributions.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="21" column="61" selection-start="892" selection-end="892" vertical-scroll-proportion="0.36165327" vertical-offset="0" max-vertical-offset="871">
+            <state line="25" column="0" selection-start="909" selection-end="909" vertical-scroll-proportion="0.4305396" vertical-offset="0" max-vertical-offset="871">
               <folding>
                 <element signature="e#0#31#0" expanded="true" />
               </folding>
@@ -874,7 +873,11 @@
       <created>1384551883722</created>
       <updated>1384551883722</updated>
     </task>
-    <option name="localTasksCounter" value="85" />
+    <task id="LOCAL-00085" summary="FIxed import of pymc distributions">
+      <created>1384555955212</created>
+      <updated>1384555955213</updated>
+    </task>
+    <option name="localTasksCounter" value="86" />
     <servers />
   </component>
   <component name="TodoView" selected-index="0">
@@ -931,7 +934,6 @@
     <option name="myTodoPanelSettings">
       <TodoPanelSettings />
     </option>
-    <MESSAGE value="Changed bad pixel fill value" />
     <MESSAGE value="Fixed bug in Sersic profile SB calculation" />
     <MESSAGE value="formatting cleanup" />
     <MESSAGE value="docstring" />
@@ -956,7 +958,8 @@
     <MESSAGE value="Skip sampling and just rewrite ML models if database exists" />
     <MESSAGE value="Fixed test output. Code cleanup in fitting." />
     <MESSAGE value="Masking can now be done using fits file or ds9 region" />
-    <option name="LAST_COMMIT_MESSAGE" value="Masking can now be done using fits file or ds9 region" />
+    <MESSAGE value="FIxed import of pymc distributions" />
+    <option name="LAST_COMMIT_MESSAGE" value="FIxed import of pymc distributions" />
     <option name="MAKE_NEW_CHANGELIST_ACTIVE" value="true" />
   </component>
   <component name="XDebuggerManager">
@@ -1072,7 +1075,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/psfMC/distributions.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="21" column="61" selection-start="892" selection-end="892" vertical-scroll-proportion="0.36165327" vertical-offset="0" max-vertical-offset="871">
+        <state line="25" column="0" selection-start="909" selection-end="909" vertical-scroll-proportion="0.4305396" vertical-offset="0" max-vertical-offset="871">
           <folding>
             <element signature="e#0#31#0" expanded="true" />
           </folding>
