@@ -1,12 +1,10 @@
 from __future__ import division
-import numpy as np
 from pymc import deterministic, Normal
 from pymc.MCMC import MCMC
 from .array_utils import *
 from .ModelComponents import Sky, PSF
 from .ModelComponents.PSFSelector import PSFSelector
 from .model_parser import component_list_from_file
-# import matplotlib.pyplot as pp
 
 
 def multicomponent_model(obs_data, obs_ivm, psf_data, psf_ivm,
