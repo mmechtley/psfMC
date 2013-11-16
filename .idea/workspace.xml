@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="f550eb5d-d804-46be-8e18-060ec19e5881" name="Default" comment="">
+    <list default="true" id="f550eb5d-d804-46be-8e18-060ec19e5881" name="Default" comment="Added Schechter distribution">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/psfMC/distributions.py" afterPath="$PROJECT_DIR$/psfMC/distributions.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/psfMC/models.py" afterPath="$PROJECT_DIR$/psfMC/models.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="psfMC.iws" />
@@ -41,10 +40,10 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="models.py" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="models.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/psfMC/models.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="69" column="70" selection-start="2602" selection-end="2602" vertical-scroll-proportion="0.41446614" vertical-offset="674" max-vertical-offset="1560">
+            <state line="69" column="70" selection-start="2602" selection-end="2602" vertical-scroll-proportion="-14.44" vertical-offset="674" max-vertical-offset="1560">
               <folding>
                 <element signature="e#0#31#0" expanded="true" />
               </folding>
@@ -52,10 +51,10 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="distributions.py" pinned="false" current="false" current-in-tab="false">
+      <file leaf-file-name="distributions.py" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/psfMC/distributions.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="24" column="0" selection-start="877" selection-end="877" vertical-scroll-proportion="-14.4" vertical-offset="0" max-vertical-offset="450">
+            <state line="29" column="37" selection-start="1037" selection-end="1037" vertical-scroll-proportion="0.42105263" vertical-offset="195" max-vertical-offset="765">
               <folding>
                 <element signature="e#0#25#0" expanded="true" />
               </folding>
@@ -95,8 +94,8 @@
         <option value="$PROJECT_DIR$/tests/test_components.py" />
         <option value="$PROJECT_DIR$/psfMC/fitting.py" />
         <option value="$PROJECT_DIR$/psfMC/array_utils.py" />
-        <option value="$PROJECT_DIR$/psfMC/distributions.py" />
         <option value="$PROJECT_DIR$/psfMC/models.py" />
+        <option value="$PROJECT_DIR$/psfMC/distributions.py" />
       </list>
     </option>
   </component>
@@ -882,7 +881,11 @@
       <created>1384556066803</created>
       <updated>1384556066804</updated>
     </task>
-    <option name="localTasksCounter" value="87" />
+    <task id="LOCAL-00087" summary="cleanup">
+      <created>1384556301382</created>
+      <updated>1384556301383</updated>
+    </task>
+    <option name="localTasksCounter" value="88" />
     <servers />
   </component>
   <component name="TodoView" selected-index="0">
@@ -909,7 +912,7 @@
     <frame x="10" y="22" width="975" height="967" extended-state="0" />
     <editor active="true" />
     <layout>
-      <window_info id="Documentation" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32575756" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" x="142" y="111" width="761" height="482" />
+      <window_info id="Documentation" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.32575756" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" x="142" y="111" width="761" height="482" />
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.26867336" sideWeight="0.4994618" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
@@ -920,7 +923,7 @@
       <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32998884" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32998884" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.2917115" sideWeight="0.42474917" order="2" side_tool="true" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.2974359" sideWeight="0.81277055" order="1" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.2974359" sideWeight="0.67424244" order="1" side_tool="false" content_ui="combo" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.18722944" sideWeight="0.4994618" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
@@ -939,7 +942,6 @@
     <option name="myTodoPanelSettings">
       <TodoPanelSettings />
     </option>
-    <MESSAGE value="Fixed bug in Sersic profile SB calculation" />
     <MESSAGE value="formatting cleanup" />
     <MESSAGE value="docstring" />
     <MESSAGE value="Changed bad pixel fill value to 0. (Weight remains unchanged). Modified example model file." />
@@ -964,7 +966,8 @@
     <MESSAGE value="Fixed test output. Code cleanup in fitting." />
     <MESSAGE value="Masking can now be done using fits file or ds9 region" />
     <MESSAGE value="FIxed import of pymc distributions" />
-    <option name="LAST_COMMIT_MESSAGE" value="FIxed import of pymc distributions" />
+    <MESSAGE value="cleanup" />
+    <option name="LAST_COMMIT_MESSAGE" value="cleanup" />
     <option name="MAKE_NEW_CHANGELIST_ACTIVE" value="true" />
   </component>
   <component name="XDebuggerManager">
@@ -1069,20 +1072,20 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/psfMC/distributions.py">
+    <entry file="file://$PROJECT_DIR$/psfMC/models.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="24" column="0" selection-start="877" selection-end="877" vertical-scroll-proportion="-14.4" vertical-offset="0" max-vertical-offset="450">
+        <state line="69" column="70" selection-start="2602" selection-end="2602" vertical-scroll-proportion="-14.44" vertical-offset="674" max-vertical-offset="1560">
           <folding>
-            <element signature="e#0#25#0" expanded="true" />
+            <element signature="e#0#31#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/psfMC/models.py">
+    <entry file="file://$PROJECT_DIR$/psfMC/distributions.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="69" column="70" selection-start="2602" selection-end="2602" vertical-scroll-proportion="0.41446614" vertical-offset="674" max-vertical-offset="1560">
+        <state line="29" column="37" selection-start="1037" selection-end="1037" vertical-scroll-proportion="0.42105263" vertical-offset="195" max-vertical-offset="765">
           <folding>
-            <element signature="e#0#31#0" expanded="true" />
+            <element signature="e#0#25#0" expanded="true" />
           </folding>
         </state>
       </provider>
