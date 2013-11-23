@@ -2,7 +2,14 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="f550eb5d-d804-46be-8e18-060ec19e5881" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/psfMC/fitting.py" afterPath="$PROJECT_DIR$/psfMC/fitting.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/tests/gfsim_n0.5.fits.gz" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/tests/gfsim_n1.0.fits.gz" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/tests/gfsim_n3.1.fits.gz" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/tests/gfsim_n4.0.fits.gz" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/tests/gfsim_n6.5.fits.gz" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/tests/gfsim.fits.gz" afterPath="" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tests/sim.feedme" afterPath="$PROJECT_DIR$/tests/sim.feedme" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tests/test_components.py" afterPath="$PROJECT_DIR$/tests/test_components.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="psfMC.iws" />
@@ -17,8 +24,8 @@
   <component name="CoverageDataManager">
     <SUITE FILE_PATH="coverage/psfMC$Install_Module.coverage" NAME="Install Module Coverage Results" MODIFIED="1384915495597" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/psfMC$test_priors.coverage" NAME="test_priors Coverage Results" MODIFIED="1384731965743" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tests" />
-    <SUITE FILE_PATH="coverage/psfMC$Run_Tests.coverage" NAME="Run Tests Coverage Results" MODIFIED="1384466856021" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tests" />
-    <SUITE FILE_PATH="coverage/psfMC$distributions.coverage" NAME="distributions Coverage Results" MODIFIED="1384554168071" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/psfMC" />
+    <SUITE FILE_PATH="coverage/psfMC$Run_Tests.coverage" NAME="Run Tests Coverage Results" MODIFIED="1385242771867" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tests" />
+    <SUITE FILE_PATH="coverage/psfMC$distributions.coverage" NAME="distributions Coverage Results" MODIFIED="1385241927853" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/psfMC" />
   </component>
   <component name="CreatePatchCommitExecutor">
     <option name="PATCH_PATH" value="" />
@@ -32,10 +39,10 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="fitting.py" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="fitting.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/psfMC/fitting.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="91" column="9" selection-start="4373" selection-end="4373" vertical-scroll-proportion="0.41331804" vertical-offset="840" max-vertical-offset="2625">
+            <state line="91" column="9" selection-start="4373" selection-end="4373" vertical-scroll-proportion="-14.4" vertical-offset="840" max-vertical-offset="2625">
               <folding />
             </state>
           </provider>
@@ -44,7 +51,7 @@
       <file leaf-file-name="models.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/psfMC/models.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="69" column="70" selection-start="2602" selection-end="2602" vertical-scroll-proportion="-14.44" vertical-offset="674" max-vertical-offset="1560">
+            <state line="70" column="46" selection-start="2649" selection-end="2649" vertical-scroll-proportion="-14.44" vertical-offset="689" max-vertical-offset="1560">
               <folding>
                 <element signature="e#0#31#0" expanded="true" />
               </folding>
@@ -52,35 +59,10 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="distributions.py" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/psfMC/distributions.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="31" column="40" selection-start="1130" selection-end="1130" vertical-scroll-proportion="-6.32" vertical-offset="307" max-vertical-offset="1005">
-              <folding>
-                <element signature="e#0#25#0" expanded="true" />
-                <marker date="1384731892000" expanded="true" signature="266:465" placeholder="..." />
-                <marker date="1384731892000" expanded="true" signature="1081:1579" placeholder="..." />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="test_priors.py" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/tests/test_priors.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="23" column="0" selection-start="789" selection-end="789" vertical-scroll-proportion="-13.8" vertical-offset="0" max-vertical-offset="435">
-              <folding>
-                <marker date="1384731961000" expanded="true" signature="0:91" placeholder="import ..." />
-                <marker date="1384731961000" expanded="true" signature="115:739" placeholder="..." />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="test_components.py" pinned="false" current="false" current-in-tab="false">
+      <file leaf-file-name="test_components.py" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/tests/test_components.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="20" column="46" selection-start="545" selection-end="545" vertical-scroll-proportion="-12.0" vertical-offset="0" max-vertical-offset="1650">
+            <state line="44" column="35" selection-start="1508" selection-end="1508" vertical-scroll-proportion="0.39609644" vertical-offset="315" max-vertical-offset="2100">
               <folding>
                 <element signature="e#0#18#0" expanded="true" />
               </folding>
@@ -116,12 +98,12 @@
         <option value="$PROJECT_DIR$/tests/test_sersic.py" />
         <option value="$PROJECT_DIR$/psfMC/__init__.py" />
         <option value="$PROJECT_DIR$/../../bin/plotchain.py" />
-        <option value="$PROJECT_DIR$/tests/test_components.py" />
         <option value="$PROJECT_DIR$/psfMC/array_utils.py" />
         <option value="$PROJECT_DIR$/psfMC/models.py" />
         <option value="$PROJECT_DIR$/psfMC/distributions.py" />
         <option value="$PROJECT_DIR$/tests/test_priors.py" />
         <option value="$PROJECT_DIR$/psfMC/fitting.py" />
+        <option value="$PROJECT_DIR$/tests/test_components.py" />
       </list>
     </option>
   </component>
@@ -280,7 +262,7 @@
       <recent name="$PROJECT_DIR$/examples" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.Install Module">
+  <component name="RunManager" selected="Python.Run Tests">
     <configuration default="false" name="Unittests in test_components" type="tests" factoryName="Unittests" temporary="true">
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -322,7 +304,9 @@
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/psfMC/distributions.py" />
       <option name="PARAMETERS" value="" />
       <RunnerSettings RunnerId="PyDebugRunner" />
+      <RunnerSettings RunnerId="PythonRunner" />
       <ConfigurationWrapper RunnerId="PyDebugRunner" />
+      <ConfigurationWrapper RunnerId="PythonRunner" />
       <method />
     </configuration>
     <configuration default="false" name="test_priors" type="PythonConfigurationType" factoryName="Python" temporary="true">
@@ -554,8 +538,8 @@
     </list>
     <recent_temporary>
       <list size="3">
-        <item index="0" class="java.lang.String" itemvalue="Python.test_priors" />
-        <item index="1" class="java.lang.String" itemvalue="Python.distributions" />
+        <item index="0" class="java.lang.String" itemvalue="Python.distributions" />
+        <item index="1" class="java.lang.String" itemvalue="Python.test_priors" />
         <item index="2" class="java.lang.String" itemvalue="Python tests.Unittests in test_components" />
       </list>
     </recent_temporary>
@@ -940,7 +924,11 @@
       <created>1384732008615</created>
       <updated>1384732008616</updated>
     </task>
-    <option name="localTasksCounter" value="90" />
+    <task id="LOCAL-00090" summary="Ability to run multiple chains">
+      <created>1385240851823</created>
+      <updated>1385240851824</updated>
+    </task>
+    <option name="localTasksCounter" value="91" />
     <servers />
   </component>
   <component name="TodoView" selected-index="0">
@@ -970,6 +958,7 @@
       <window_info id="Documentation" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32575756" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" x="142" y="111" width="761" height="482" />
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.26867336" sideWeight="0.4994618" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32792208" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.39935064" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.18729097" sideWeight="0.50053823" order="1" side_tool="true" content_ui="tabs" />
@@ -978,11 +967,10 @@
       <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32998884" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32998884" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.2917115" sideWeight="0.42474917" order="2" side_tool="true" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.2974359" sideWeight="0.81277055" order="1" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.2974359" sideWeight="0.6720779" order="1" side_tool="false" content_ui="combo" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.18722944" sideWeight="0.4994618" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32887402" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="3" side_tool="false" content_ui="combo" />
@@ -997,7 +985,6 @@
     <option name="myTodoPanelSettings">
       <TodoPanelSettings />
     </option>
-    <MESSAGE value="Changed bad pixel fill value to 0. (Weight remains unchanged). Modified example model file." />
     <MESSAGE value="Models can now provide multiple PSFs, allowing MCMC to select the most likely one. Masked regions no longer have their pixels set to a special value. Zero-weight pixels are properly propagated into the composite inverse variance map." />
     <MESSAGE value="Unified maximum likelihood calculations. Changed header output values to 'general' numeric, ie scientific when needed." />
     <MESSAGE value="Fixed fits header comments." />
@@ -1022,7 +1009,8 @@
     <MESSAGE value="cleanup" />
     <MESSAGE value="Added Schechter distribution" />
     <MESSAGE value="Schechter distribution test (currently broken)" />
-    <option name="LAST_COMMIT_MESSAGE" value="Schechter distribution test (currently broken)" />
+    <MESSAGE value="Ability to run multiple chains" />
+    <option name="LAST_COMMIT_MESSAGE" value="Ability to run multiple chains" />
     <option name="MAKE_NEW_CHANGELIST_ACTIVE" value="true" />
   </component>
   <component name="XDebuggerManager">
@@ -1034,11 +1022,6 @@
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/setup.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="5" column="52" selection-start="184" selection-end="184" vertical-scroll-proportion="0.08886256" vertical-offset="0" max-vertical-offset="0" />
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/../../lib/python2.7/site-packages/astroRMS.py">
       <provider selected="true" editor-type-id="text-editor">
         <state line="282" column="29" selection-start="10705" selection-end="10705" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="0" />
@@ -1087,16 +1070,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/tests/sim.feedme">
-      <provider editor-type-id="com.intellij.persistence.database.editor.CsvTableFileEditorProvider">
-        <state />
-      </provider>
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="42" column="42" selection-start="2178" selection-end="2178" vertical-scroll-proportion="0.76293105" vertical-offset="99" max-vertical-offset="795">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/psfMC/array_utils.py">
       <provider selected="true" editor-type-id="text-editor">
         <state line="121" column="7" selection-start="3877" selection-end="3877" vertical-scroll-proportion="0.5522388" vertical-offset="1259" max-vertical-offset="2130">
@@ -1104,49 +1077,65 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/tests/test_components.py">
+    <entry file="file://$PROJECT_DIR$/psfMC/fitting.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="20" column="46" selection-start="545" selection-end="545" vertical-scroll-proportion="-12.0" vertical-offset="0" max-vertical-offset="1650">
+        <state line="91" column="9" selection-start="4373" selection-end="4373" vertical-scroll-proportion="-14.4" vertical-offset="840" max-vertical-offset="2625">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tests/test_priors.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="23" column="0" selection-start="789" selection-end="789" vertical-scroll-proportion="0.39609644" vertical-offset="0" max-vertical-offset="871">
           <folding>
             <element signature="e#0#18#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/tests/test_priors.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="23" column="0" selection-start="789" selection-end="789" vertical-scroll-proportion="-13.8" vertical-offset="0" max-vertical-offset="435">
-          <folding>
-            <marker date="1384731961000" expanded="true" signature="0:91" placeholder="import ..." />
-            <marker date="1384731961000" expanded="true" signature="115:739" placeholder="..." />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/psfMC/distributions.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="31" column="40" selection-start="1130" selection-end="1130" vertical-scroll-proportion="-6.32" vertical-offset="307" max-vertical-offset="1005">
+        <state line="31" column="40" selection-start="1130" selection-end="1130" vertical-scroll-proportion="0.5338691" vertical-offset="0" max-vertical-offset="1005">
           <folding>
             <element signature="e#0#25#0" expanded="true" />
-            <marker date="1384731892000" expanded="true" signature="266:465" placeholder="..." />
-            <marker date="1384731892000" expanded="true" signature="1081:1579" placeholder="..." />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/psfMC/models.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="69" column="70" selection-start="2602" selection-end="2602" vertical-scroll-proportion="-14.44" vertical-offset="674" max-vertical-offset="1560">
+        <state line="70" column="46" selection-start="2649" selection-end="2649" vertical-scroll-proportion="-14.44" vertical-offset="689" max-vertical-offset="1560">
           <folding>
             <element signature="e#0#31#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/psfMC/fitting.py">
+    <entry file="file://$PROJECT_DIR$/tests/sim.feedme">
+      <provider editor-type-id="com.intellij.persistence.database.editor.CsvTableFileEditorProvider">
+        <state />
+      </provider>
       <provider selected="true" editor-type-id="text-editor">
-        <state line="91" column="9" selection-start="4373" selection-end="4373" vertical-scroll-proportion="0.41331804" vertical-offset="840" max-vertical-offset="2625">
+        <state line="4" column="9" selection-start="239" selection-end="288" vertical-scroll-proportion="0.0862069" vertical-offset="0" max-vertical-offset="795">
           <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../../../WIP/z6BrightQuasars/simulated/gfgrid.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="45" column="13" selection-start="1240" selection-end="1240" vertical-scroll-proportion="0.9507042" vertical-offset="0" max-vertical-offset="2445">
+          <folding>
+            <element signature="e#136#167#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tests/test_components.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="44" column="35" selection-start="1508" selection-end="1508" vertical-scroll-proportion="0.39609644" vertical-offset="315" max-vertical-offset="2100">
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>

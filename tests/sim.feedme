@@ -2,7 +2,7 @@
 ===============================================================================
 # IMAGE and GALFIT CONTROL PARAMETERS
 A) none                # Input data image (FITS file)
-B) gfsim.fits          # Output data image block
+B) gfsim_n6.5.fits # Output data image block
 C) none                # Sigma image name (made from data if blank or "none") 
 #D) psf.fits           # Input PSF image and (optional) diffusion kernel
 #E) 5                  # PSF fine sampling factor relative to data 
@@ -35,7 +35,7 @@ P) 1                   # Choose: 0=optimize, 1=model, 2=imgblock, 3=subcomps
  1) 64.5  64.5 1 1        #  position x, y
  3) 21.72 1               #  Integrated magnitude	
  4) 6.3 1                 #  R_e (half-light radius)   [pix]
- 5) 3.2 1                 #  Sersic index n (de Vaucouleurs n=4) 
+5) 6.5 1 #  Sersic index n (de Vaucouleurs n=4) 
  6) 0.0000      0          #     ----- 
  7) 0.0000      0          #     ----- 
  8) 0.0000      0          #     ----- 
