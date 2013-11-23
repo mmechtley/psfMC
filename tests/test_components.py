@@ -63,9 +63,10 @@ def test_sersic(index=4):
     radii = np.sqrt(ser.coordinate_sq_radii(coords))
     radii = radii.reshape(mcmodel.shape)
 
-    sbeff = ser.sb_eff_adu(mag_zp=gfhdr['MAGZPT'])
+    #sbeff = ser.sb_eff_adu(mag_zp=gfhdr['MAGZPT'])
 
-    print 'Commanded magnitude: {:0.2f}'.format(gfhdr['1_MAG'])
+    print 'Commanded magnitude: {:0.2f} n={:0.1f}'.format(
+        gfhdr['1_MAG'], index)
     for model, name in [(gfmodel, 'Galfit'), (mcmodel, ' psfMC')]:
         inside = fsum(model[radii <= 1])
         outside = fsum(model[radii >= 1])
@@ -77,13 +78,13 @@ def test_sersic(index=4):
     frac_error = abs_error / gfmodel
 
     pp.figure(figsize=(7, 3.5))
-    errs = [(abs_error, 'Absolute Error'), (frac_error, 'Fractional Error')]
+    errs = [(abs_error, 'Error'), (frac_error, 'Fractional Error')]
     for step, (err_arr, title) in enumerate(errs):
         pp.subplot((121+step))
         pp.imshow(err_arr, interpolation='nearest', origin='lower')
         pp.colorbar()
         pp.contour(err_arr, levels=[0, ], colors='black')
-        pp.contour(np.abs(frac_error), levels=[0.01, ], colors='white')
+        pp.contour(frac_error, levels=[-0.01, 0.01], colors='white')
         pp.contour(radii, levels=[1, ], colors='SeaGreen')
         pp.title(title)
 
@@ -96,7 +97,7 @@ def test_sersic(index=4):
     pp.show()
 
     def timing_check():
-        return ser.add_to_array(mcmodel, mag_zp=gfhdr["MAGZPT"], coords=coords)
+        return ser.add_to_array(mcmodel, mag_zp=gfhdr['MAGZPT'], coords=coords)
 
     print 'Timing, adding Sersic profile to 128x128 array'
     niter = 1000
@@ -120,6 +121,7 @@ def test_psf():
     assert np.allclose(refarr, testarr)
 
     mcmodel = np.zeros((128, 128))
+
     def timing_check():
         return psf.add_to_array(mcmodel, mag_zp=0)
 
@@ -131,5 +133,5 @@ def test_psf():
 
 if __name__ == '__main__':
     test_psf()
-    for index in (0.5, 1.0, 3.1, 4.0, 6.5):
-        test_sersic(index=index)
+    for idx in (0.5, 1.0, 3.1, 4.0, 6.5):
+        test_sersic(index=idx)
