@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="f550eb5d-d804-46be-8e18-060ec19e5881" name="Default" comment="Test Sersic profiles for multiple n values">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tests/test_components.py" afterPath="$PROJECT_DIR$/tests/test_components.py" />
+    <list default="true" id="f550eb5d-d804-46be-8e18-060ec19e5881" name="Default" comment="">
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/psfMC/models.py" afterPath="$PROJECT_DIR$/psfMC/models.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="psfMC.iws" />
@@ -41,22 +42,13 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="models.py" pinned="false" current="false" current-in-tab="false">
+      <file leaf-file-name="models.py" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/psfMC/models.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="70" column="46" selection-start="2649" selection-end="2649" vertical-scroll-proportion="-14.44" vertical-offset="689" max-vertical-offset="1560">
+            <state line="98" column="0" selection-start="3755" selection-end="3755" vertical-scroll-proportion="0.8966705" vertical-offset="689" max-vertical-offset="1560">
               <folding>
                 <element signature="e#0#31#0" expanded="true" />
               </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="test_components.py" pinned="false" current="true" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/tests/test_components.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="83" column="52" selection-start="3078" selection-end="3078" vertical-scroll-proportion="0.8710602" vertical-offset="487" max-vertical-offset="1980">
-              <folding />
             </state>
           </provider>
         </entry>
@@ -90,11 +82,11 @@
         <option value="$PROJECT_DIR$/psfMC/__init__.py" />
         <option value="$PROJECT_DIR$/../../bin/plotchain.py" />
         <option value="$PROJECT_DIR$/psfMC/array_utils.py" />
-        <option value="$PROJECT_DIR$/psfMC/models.py" />
         <option value="$PROJECT_DIR$/psfMC/distributions.py" />
         <option value="$PROJECT_DIR$/tests/test_priors.py" />
         <option value="$PROJECT_DIR$/psfMC/fitting.py" />
         <option value="$PROJECT_DIR$/tests/test_components.py" />
+        <option value="$PROJECT_DIR$/psfMC/models.py" />
       </list>
     </option>
   </component>
@@ -117,7 +109,7 @@
         </expanded-state>
         <selected-state>
           <State>
-            <id>PyPackageRequirementsInspection</id>
+            <id>PyShadowingNamesInspection</id>
           </State>
         </selected-state>
       </profile-state>
@@ -231,7 +223,7 @@
     <property name="options.splitter.main.proportions" value="0.3" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="recentsLimit" value="5" />
-    <property name="options.lastSelected" value="preferences.toDoOptions" />
+    <property name="options.lastSelected" value="Errors" />
     <property name="restartRequiresConfirmation" value="true" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$/../../../WIP/z6FaintQuasars" />
     <property name="FullScreen" value="false" />
@@ -923,7 +915,11 @@
       <created>1385242887729</created>
       <updated>1385242887730</updated>
     </task>
-    <option name="localTasksCounter" value="92" />
+    <task id="LOCAL-00092" summary="Fixed Sersic test output">
+      <created>1385244150871</created>
+      <updated>1385244150872</updated>
+    </task>
+    <option name="localTasksCounter" value="93" />
     <servers />
   </component>
   <component name="TodoView" selected-index="0">
@@ -963,7 +959,7 @@
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32998884" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.2917115" sideWeight="0.42474917" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.2974359" sideWeight="0.81277055" order="1" side_tool="false" content_ui="combo" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.18722944" sideWeight="0.4994618" order="8" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.18722944" sideWeight="0.4994618" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
@@ -980,7 +976,6 @@
     <option name="myTodoPanelSettings">
       <TodoPanelSettings />
     </option>
-    <MESSAGE value="Unified maximum likelihood calculations. Changed header output values to 'general' numeric, ie scientific when needed." />
     <MESSAGE value="Fixed fits header comments." />
     <MESSAGE value="Set OBJECT keyword in header" />
     <MESSAGE value="Set nan/inf pixels to 0 with 0 weight during fitting." />
@@ -1005,7 +1000,8 @@
     <MESSAGE value="Schechter distribution test (currently broken)" />
     <MESSAGE value="Ability to run multiple chains" />
     <MESSAGE value="Test Sersic profiles for multiple n values" />
-    <option name="LAST_COMMIT_MESSAGE" value="Test Sersic profiles for multiple n values" />
+    <MESSAGE value="Fixed Sersic test output" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fixed Sersic test output" />
     <option name="MAKE_NEW_CHANGELIST_ACTIVE" value="true" />
   </component>
   <component name="XDebuggerManager">
@@ -1072,13 +1068,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/psfMC/fitting.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="91" column="9" selection-start="4373" selection-end="4373" vertical-scroll-proportion="-14.4" vertical-offset="840" max-vertical-offset="2625">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/tests/test_priors.py">
       <provider selected="true" editor-type-id="text-editor">
         <state line="23" column="0" selection-start="789" selection-end="789" vertical-scroll-proportion="0.39609644" vertical-offset="0" max-vertical-offset="871">
@@ -1093,15 +1082,6 @@
         <state line="31" column="40" selection-start="1130" selection-end="1130" vertical-scroll-proportion="0.5338691" vertical-offset="0" max-vertical-offset="1005">
           <folding>
             <element signature="e#0#25#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/psfMC/models.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="70" column="46" selection-start="2649" selection-end="2649" vertical-scroll-proportion="-14.44" vertical-offset="689" max-vertical-offset="1560">
-          <folding>
-            <element signature="e#0#31#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -1127,8 +1107,24 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/tests/test_components.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="83" column="52" selection-start="3078" selection-end="3078" vertical-scroll-proportion="0.8710602" vertical-offset="487" max-vertical-offset="1980">
+        <state line="67" column="31" selection-start="2374" selection-end="2374" vertical-scroll-proportion="0.5272206" vertical-offset="487" max-vertical-offset="1980">
           <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/psfMC/fitting.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="91" column="9" selection-start="4373" selection-end="4373" vertical-scroll-proportion="-14.4" vertical-offset="840" max-vertical-offset="2625">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/psfMC/models.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="98" column="0" selection-start="3755" selection-end="3755" vertical-scroll-proportion="0.8966705" vertical-offset="689" max-vertical-offset="1560">
+          <folding>
+            <element signature="e#0#31#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>

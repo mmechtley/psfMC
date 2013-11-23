@@ -70,8 +70,8 @@ def multicomponent_model(obs_data, obs_ivm, psf_data, psf_ivm,
         # Model and observation variances are independent, so additive
         # FIXME: odd sizes (127x127) cause this to screw up in one dimension?
         model_var = convolve(raw_model**2, psf.variance())
-        compIVM = 1 / (model_var + obs_var)
-        return compIVM
+        comp_ivm = 1 / (model_var + obs_var)
+        return comp_ivm
 
     @deterministic(plot=False, trace=False)
     def residual(obs_data=obs_data, convolved_model=convolved_model):
