@@ -20,7 +20,7 @@ def model_galaxy_mcmc(obs_file, obsIVM_file, psf_files, psfIVM_files,
                       model_file=None, mag_zeropoint=0,
                       mask_file=None, output_name=None,
                       write_fits=_default_filetypes,
-                      **kwargs):
+                      chains=1, **kwargs):
     """
     Model the light distribution of a galaxy or galaxies using multi-component
     Markov Chain Monte Carlo parameter estimation.
@@ -84,7 +84,8 @@ def model_galaxy_mcmc(obs_file, obsIVM_file, psf_files, psfIVM_files,
 
     db = mc_model.db
     if not os.path.exists(db_name+'.pickle'):
-        mc_model.sample(**kwargs)
+        for chain_num in xrange(chains):
+            mc_model.sample(**kwargs)
 
         ## Saves out to pickle file
         db.close()
