@@ -53,7 +53,7 @@ def potential_scale_reduction(chains):
                    _within_variance(all_samps))
 
 
-def effective_samples(chains):
+def num_effective_samples(chains):
     """
     The effective number of samples, ie the number of samples corrected for
     Markov Chain sample autocorrelation. As noted by Gelman, if the number of

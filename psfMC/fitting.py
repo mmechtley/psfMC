@@ -59,10 +59,10 @@ def model_galaxy_mcmc(obs_file, obsIVM_file, psf_files, psfIVM_files,
         pyMC documentation.
     """
     if output_name is None:
-        output_name = obs_file.replace('.fits', '')
+        output_name = 'out_' + obs_file.replace('.fits', '').replace('.gz', '')
     output_name += '_{}'
 
-    # TODO: Set these based on total number of unknown components
+    # TODO: Set these based on total number of unknown components?
     kwargs.setdefault('iter', 6000)
     kwargs.setdefault('burn', 3000)
 
@@ -112,6 +112,7 @@ def write_ml_model(model, db, basename='mcmc', filetypes=_default_filetypes,
                                         trace_slice=samples_slice)
     header.extend(statscards)
 
+    # TODO: best of all the chains
     # Set model stochastic values to their trace means
     for stoch in model.stochastics - model.observed_stochastics:
         trace = db.trace(stoch.__name__)[samples_slice]
