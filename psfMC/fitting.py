@@ -95,12 +95,16 @@ def model_galaxy_mcmc(obs_file, obsIVM_file, psf_files, psfIVM_files,
 
     # Write mean model output files
     obsHeader = pyfits.getheader(obs_file, ignore_missing_end=True)
-    write_ml_model(mc_model, db, basename=output_name,
+    write_mp_model(mc_model, db, basename=output_name,
                    filetypes=write_fits, header=obsHeader)
 
 
-def write_ml_model(model, db, basename='mcmc', filetypes=_default_filetypes,
+def write_mp_model(model, db, basename='mcmc', filetypes=_default_filetypes,
                    samples_slice=slice(0, -1), header=None):
+    """
+    Writes out the Maximum Posterior (MP) model for a supplied model and trace
+    database
+    """
     if header is None:
         header = pyfits.Header()
     if '{}' not in basename:
@@ -126,7 +130,7 @@ def write_ml_model(model, db, basename='mcmc', filetypes=_default_filetypes,
     header.set('PSF_IMG', value=psf_selector.value.filename(),
                comment='psfMC maximum likelihood PSF image')
 
-    # TODO: BPIC might be better, but more work to calculate
+    # TODO: BPIC might be nice also, but more work to calculate
     # Calculate DIC
     mean_dev = np.mean(db.trace('deviance')[samples_slice], axis=0)
     dic = 2*mean_dev - model.deviance
