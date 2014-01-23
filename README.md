@@ -4,7 +4,7 @@ psfMC
 MCMC 2D surface brightness modeling for quasar host galaxies
 
 Usage is provided in docstrings. My Ph.D. dissertation contains a more detailed discussion of the problem (simultaneous modeling of quasar point sources and host galaxies) and why I have made specific design decisions. My dissertation, *Markov Chain Monte Carlo Modeling of High-Redshift Quasar Host Galaxies in Hubble Space Telescope Imaging*, is freely available at the following URL:
-http://biphenyl.org/papers/mechtleydis.pdf
+http://biphenyl.org/papers/mmechtleydis.pdf
 
 The current master branch is an **alpha** release. There are still some known bugs and planned features for an inital release. These are noted in the code currently (FIXME/TODO/etc), but will be migrated to the github issue system.
 
