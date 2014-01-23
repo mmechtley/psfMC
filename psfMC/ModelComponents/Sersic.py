@@ -104,7 +104,7 @@ class Sersic(ComponentBase):
         :param mag_zp: Magnitude zeropoint (e.g. magnitude of 1 count/second)
         :param coords: Optional pre-computed x,y coordfinates of each element
         """
-        # FIXME: Central pixels still have up to 10% error compared to galfit
+        # FIXME: Central pixels still have significant error compared to galfit
         coords = kwargs['coords'] if 'coords' in kwargs else array_coords(arr)
         kappa = self.kappa()
         flux_tot = self.total_flux_adu(mag_zp)

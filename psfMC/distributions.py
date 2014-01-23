@@ -58,5 +58,5 @@ def _rschechter(alpha=-1.0, mstar=0.0, faint_cutoff=None, size=None):
     return -2.5*log10(lratio) + mstar
 
 
-Schechter = stochastic_from_dist('Schechter', logp=_schechter_like,
-                                 random=_rschechter)
+#Schechter = stochastic_from_dist('Schechter', logp=_schechter_like,
+#                                 random=_rschechter)
