@@ -153,6 +153,13 @@ def write_mp_model(model, db, basename='mcmc', filetypes=_default_filetypes,
                        clobber=True, output_verify='fix')
 
 
+def write_weighted_model(model, db, basename='mcmc',
+                         filetypes=_default_filetypes,
+                         samples_slice=slice(0, -1), header=None):
+
+    return
+
+
 def _stats_as_header_cards(db, trace_names=None, trace_slice=slice(0, -1)):
     # TODO: better way to make keys. Maybe component.shortname(attr) etc.
     replace_pairs = (('_Sersic', 'SER'), ('_PSF', 'PSF'), ('_Sky', 'SKY'),
