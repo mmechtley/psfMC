@@ -67,9 +67,9 @@ class Sersic(ComponentBase):
         Returns the surface brightness (in flux units per pixel) at re
         """
         if kappa is None:
-            kappa = self.kappa(self.index)
+            kappa = Sersic.kappa(self.index)
         if flux_tot is None:
-            flux_tot = self.total_flux_adu(self.mag, mag_zp)
+            flux_tot = Sersic.total_flux_adu(self.mag, mag_zp)
         return flux_tot / (pi * self.reff * self.reff_b * 2*self.index *
                            exp(kappa + log(kappa) * -2*self.index) *
                            gamma(2*self.index))
@@ -107,8 +107,8 @@ class Sersic(ComponentBase):
         """
         # FIXME: Central pixels still have significant error compared to galfit
         coords = kwargs['coords'] if 'coords' in kwargs else array_coords(arr)
-        kappa = self.kappa(self.index)
-        flux_tot = self.total_flux_adu(self.mag, mag_zp)
+        kappa = Sersic.kappa(self.index)
+        flux_tot = Sersic.total_flux_adu(self.mag, mag_zp)
         sbeff = self.sb_eff_adu(mag_zp, flux_tot, kappa)
 
         sq_radii = self.coordinate_sq_radii(coords)
@@ -116,43 +116,8 @@ class Sersic(ComponentBase):
 
         # Optimization: the square root to get to radii from square radii is
         # combined with the sersic power here
-        radius_pow = 0.5/self.index
+        radius_pow = 0.5 / self.index
         # Optimization: exp(log(a)*b) is faster than a**b or pow(a,b)
-        if ne is not None:
-            ser_expr = 'sbeff * exp(-kappa * expm1(log(sq_radii)*radius_pow))'
-            arr += ne.evaluate(ser_expr)
-        else:
-            arr += sbeff * exp(-kappa * (exp(log(sq_radii)*radius_pow) - 1))
-        return arr
-
-    @staticmethod
-    def add_to_array_from_params(x, y, mag, index, reff, reff_b, angle,
-                                 arr=None, mag_zp=0.0, **kwargs):
-        """
-        Static version of add_to_array for use with fast batch calculations
-        (e.g. calculating the weighted posterior model)
-        """
-        # TODO: Improve code re-use between static version and methods above.
-        if arr is None:
-            raise ValueError('Must supply an array to accumulate to using arr=')
-        coords = kwargs['coords'] if 'coords' in kwargs else array_coords(arr)
-        kappa = Sersic.kappa(index)
-        flux_tot = Sersic.total_flux_adu(mag, mag_zp)
-
-        # Copied from sb_eff_adu()
-        sbeff = flux_tot / (pi * reff * reff_b * 2*index *
-                            exp(kappa + log(kappa) * -2*index) * gamma(2*index))
-
-        # Copied from coordinate_sq_radii()
-        angle += 0.5*pi
-        sin_ang, cos_ang = sin(angle), cos(angle)
-        M_inv_xform = asarray(((cos_ang / reff, sin_ang / reff),
-                               (-sin_ang / reff_b, cos_ang / reff_b)))
-        sq_radii = sum(dot(M_inv_xform, (coords - (x, y)).T)**2, axis=0)
-        sq_radii = sq_radii.reshape(arr.shape)
-
-        # Copied from add_to_array()
-        radius_pow = 0.5/index
         if ne is not None:
             ser_expr = 'sbeff * exp(-kappa * expm1(log(sq_radii)*radius_pow))'
             arr += ne.evaluate(ser_expr)
