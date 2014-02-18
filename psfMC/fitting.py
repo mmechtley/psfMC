@@ -87,7 +87,7 @@ def model_galaxy_mcmc(obs_file, obsIVM_file, psf_files, psfIVM_files,
         for chain_num in xrange(chains):
             mc_model.sample(**kwargs)
 
-        ## Saves out to pickle file
+        # Saves out to pickle file
         db.close()
     else:
         db = load(db_name+'.pickle')
@@ -95,9 +95,7 @@ def model_galaxy_mcmc(obs_file, obsIVM_file, psf_files, psfIVM_files,
 
     # Write mean model output files
     obs_header = pyfits.getheader(obs_file, ignore_missing_end=True)
-    write_mp_model(mc_model, db, basename=output_name,
-                   filetypes=write_fits, header=obs_header)
-    write_weighted_model(mc_model, db, basename='weighted_{}',
+    write_weighted_model(mc_model, db, basename=output_name,
                          filetypes=write_fits, header=obs_header)
 
 
@@ -151,6 +149,7 @@ def write_mp_model(model, db, basename='out_{}', filetypes=_default_filetypes,
         pyfits.writeto(basename.format(out_type + '.fits'),
                        output_data.copy(), header=header,
                        clobber=True, output_verify='fix')
+    return
 
 def write_weighted_model(model, db, basename='out_{}',
                          filetypes=_default_filetypes,
@@ -169,12 +168,15 @@ def write_weighted_model(model, db, basename='out_{}',
                                         trace_slice=samples_slice)
     header.extend(statscards)
 
+    print 'Creating weighted posterior models'
     output_data = dict([(ftype, None) for ftype in filetypes])
     total_samples = 0
     for chain in xrange(db.chains):
         chain_samples = db.trace('deviance', chain).length()
         total_samples += chain_samples
         for sample in xrange(chain_samples):
+            print 'Processing chain {:d}: {:d}% \r'.format(
+                chain, 100 * sample // chain_samples),
             # Set values of all stochastics
             for stoch in model.stochastics - model.observed_stochastics:
                 stoch.value = db.trace(stoch.__name__, chain)[sample]
@@ -183,16 +185,17 @@ def write_weighted_model(model, db, basename='out_{}',
                 # TODO: try/except to handle unknown output types?
                 if output_data[ftype] is None:
                     output_data[ftype] = np.ma.filled(
-                        model.get_node(ftype).value, _bad_px_value)
+                        model.get_node(ftype).value, _bad_px_value).copy()
                 else:
                     output_data[ftype] += np.ma.filled(
                         model.get_node(ftype).value, _bad_px_value)
+    print ''
     # Now transform sum into average
     for ftype in filetypes:
         output_data[ftype] /= total_samples
         header.set('OBJECT', value=ftype)
         pyfits.writeto(basename.format(ftype + '.fits'),
-                       output_data[ftype].copy(), header=header,
+                       output_data[ftype], header=header,
                        clobber=True, output_verify='fix')
     return
 
