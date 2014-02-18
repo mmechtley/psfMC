@@ -99,6 +99,7 @@ def model_galaxy_mcmc(obs_file, obsIVM_file, psf_files, psfIVM_files,
     save_posterior_model(mc_model, db, output_name=output_name,
                          filetypes=write_fits, header=obs_header)
 
+
 def save_posterior_model(model, db, output_name='out_{}', mode='weighted',
                          filetypes=_default_filetypes, header=None):
     """
@@ -182,6 +183,7 @@ def save_posterior_model(model, db, output_name='out_{}', mode='weighted',
                        clobber=True, output_verify='fix')
     return
 
+
 def _stats_as_header_cards(db, trace_names=None):
     """
     Collates statistics about the trace database, and returns them in 3-tuple
@@ -224,6 +226,7 @@ def _stats_as_header_cards(db, trace_names=None):
     statscards += [('MDL_DIC', dic, 'psfMC Deviance Information Criterion')]
 
     return statscards
+
 
 def _max_posterior_sample(db):
     """
