@@ -100,16 +100,27 @@ def model_galaxy_mcmc(obs_file, obsIVM_file, psf_files, psfIVM_files,
                          filetypes=write_fits, header=obs_header)
 
 def save_posterior_model(model, db, output_name='out_{}', mode='weighted',
-                         filetypes=_default_filetypes,
-                         samples_slice=slice(0, -1), header=None):
+                         filetypes=_default_filetypes, header=None):
     """
-    Writes out the weighted posterior model ("weighted average model"). Since
+    Writes out the posterior model images. Two modes are supported: Maximum a
+    posteriori (maximum or MAP) and "weighted average" (weighted). Since
     each MCMC trace represents (ideally) unbiased draws from the posterior
-    distribution, this is simply the (per-pixel) mean of all sample images. The
-    "weighting" is handled by the fact that more probable locations in parameter
-    space will be more densely populated with samples. Sample autocorrelation
-    should be moot, since such correlations are distributed roughly equally in
-    parameter space.
+    distribution, the weighted images are simply the (per-pixel) mean of all
+    sample images. The "weighting" is handled by the fact that more probable
+    locations in parameter space will be more densely populated with samples.
+    Sample autocorrelation should be moot, since such correlations are
+    distributed roughly equally in parameter space.
+
+    :param model: psfMC model object (MCMC sampler) that defines the model
+    :param db: psfMC trace database that defines the (possibly multichain)
+               sequence of samples
+    :param output_name: base name for output files (no extension)
+    :param mode: Either "maximum" or "MAP" (both do MAP), or "weighted".
+                 Default is weighted
+    :param filetypes: list of filetypes to save out (see model_galaxy_mcmc
+                      documentation for a list of possible types
+    :param header: base fits header to include with each image, e.g. a copy of
+                   the header from the original data
     """
     if header is None:
         header = pyfits.Header()
@@ -118,8 +129,7 @@ def save_posterior_model(model, db, output_name='out_{}', mode='weighted',
 
     stoch_names = [stoch.__name__ for stoch
                    in model.stochastics - model.observed_stochastics]
-    statscards = _stats_as_header_cards(db, trace_names=stoch_names,
-                                        trace_slice=samples_slice)
+    statscards = _stats_as_header_cards(db, trace_names=stoch_names)
     header.extend(statscards)
     best_chain, best_samp = header['MPCHAIN'], header['MPSAMP']
 
@@ -172,7 +182,7 @@ def save_posterior_model(model, db, output_name='out_{}', mode='weighted',
                        clobber=True, output_verify='fix')
     return
 
-def _stats_as_header_cards(db, trace_names=None, trace_slice=slice(0, -1)):
+def _stats_as_header_cards(db, trace_names=None):
     """
     Collates statistics about the trace database, and returns them in 3-tuple
     key-value-comment format suitable for extending a fits header
@@ -188,7 +198,7 @@ def _stats_as_header_cards(db, trace_names=None, trace_slice=slice(0, -1)):
                   ('MPSAMP', best_samp,
                    'Sample index of maximum posterior model')]
     for trace_name in sorted(trace_names):
-        combined_samps = [db.trace(trace_name, chain)[trace_slice]
+        combined_samps = [db.trace(trace_name, chain)[:]
                           for chain in xrange(db.chains)]
         combined_samps = np.concatenate(combined_samps)
         max_post_val = db.trace(trace_name, best_chain)[best_samp]
@@ -206,7 +216,7 @@ def _stats_as_header_cards(db, trace_names=None, trace_slice=slice(0, -1)):
 
     # TODO: BPIC might be nice also, but more work to calculate
     # Calculate DIC
-    combined_dev = [db.trace('deviance', chain)[trace_slice]
+    combined_dev = [db.trace('deviance', chain)[:]
                     for chain in xrange(db.chains)]
     combined_dev = np.concatenate(combined_dev)
     mean_dev = np.mean(combined_dev, axis=0)
