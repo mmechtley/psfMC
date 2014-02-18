@@ -93,139 +93,143 @@ def model_galaxy_mcmc(obs_file, obsIVM_file, psf_files, psfIVM_files,
         db = load(db_name+'.pickle')
         warn('Database file already exists, skipping sampling')
 
-    # Write mean model output files
+    # Write model output files
+    # TODO: Encode sampler arguments (nchains iter burn etc) in header
     obs_header = pyfits.getheader(obs_file, ignore_missing_end=True)
-    write_weighted_model(mc_model, db, basename=output_name,
+    save_posterior_model(mc_model, db, output_name=output_name,
                          filetypes=write_fits, header=obs_header)
 
-
-def write_mp_model(model, db, basename='out_{}', filetypes=_default_filetypes,
-                   samples_slice=slice(0, -1), header=None):
-    """
-    Writes out the Maximum Posterior (MP) model for a supplied model and trace
-    database
-    """
-    if header is None:
-        header = pyfits.Header()
-    if '{}' not in basename:
-        basename += '_{}'
-
-    stoch_names = [stoch.__name__ for stoch
-                   in model.stochastics - model.observed_stochastics]
-    statscards = _stats_as_header_cards(db, trace_names=stoch_names,
-                                        trace_slice=samples_slice)
-    header.extend(statscards)
-
-    # TODO: best of all the chains
-    # Set model stochastic values to their trace means
-    for stoch in model.stochastics - model.observed_stochastics:
-        best_index = np.argmin(db.trace('deviance')[:])
-        stoch.value = db.trace(stoch.__name__)[best_index]
-
-    # Find name of PSF file used
-    psf_selector = [cont for cont in model.containers
-                    if isinstance(cont, PSFSelector)].pop()
-    header.set('PSF_IMG', value=psf_selector.value.filename(),
-               comment='psfMC maximum likelihood PSF image')
-
-    # TODO: BPIC might be nice also, but more work to calculate
-    # Calculate DIC
-    mean_dev = np.mean(db.trace('deviance')[samples_slice], axis=0)
-    dic = 2*mean_dev - model.deviance
-    header.set('MDL_DIC', value=dic,
-               comment='psfMC Deviance Information Criterion')
-
-    # Save out requested file types
-    for out_type in filetypes:
-        try:
-            output_data = np.ma.filled(model.get_node(out_type).value,
-                                       _bad_px_value)
-        except AttributeError:
-            warn(('Unable to find model parameter named {}. No output will ' +
-                  'be written for file type.').format(out_type))
-            continue
-
-        header.set('OBJECT', value=out_type)
-        pyfits.writeto(basename.format(out_type + '.fits'),
-                       output_data.copy(), header=header,
-                       clobber=True, output_verify='fix')
-    return
-
-def write_weighted_model(model, db, basename='out_{}',
+def save_posterior_model(model, db, output_name='out_{}', mode='weighted',
                          filetypes=_default_filetypes,
                          samples_slice=slice(0, -1), header=None):
     """
-    Write out the weighted model (average of all samples)
+    Writes out the weighted posterior model ("weighted average model"). Since
+    each MCMC trace represents (ideally) unbiased draws from the posterior
+    distribution, this is simply the (per-pixel) mean of all sample images. The
+    "weighting" is handled by the fact that more probable locations in parameter
+    space will be more densely populated with samples. Sample autocorrelation
+    should be moot, since such correlations are distributed roughly equally in
+    parameter space.
     """
     if header is None:
         header = pyfits.Header()
-    if '{}' not in basename:
-        basename += '_{}'
+    if '{}' not in output_name:
+        output_name += '_{}'
 
     stoch_names = [stoch.__name__ for stoch
                    in model.stochastics - model.observed_stochastics]
     statscards = _stats_as_header_cards(db, trace_names=stoch_names,
                                         trace_slice=samples_slice)
     header.extend(statscards)
+    best_chain, best_samp = header['MPCHAIN'], header['MPSAMP']
 
-    print 'Creating weighted posterior models'
+    # Record the name of the PSF file used
+    psf_selector = [cont for cont in model.containers
+                    if isinstance(cont, PSFSelector)].pop()
+    model.get_node('PSF_Index').value = \
+        db.trace('PSF_Index', best_chain)[best_samp]
+    header.set('PSF_IMG', value=psf_selector.value.filename(),
+               comment='PSF image of maximum posterior model')
+
+    print 'Saving posterior models'
+    # TODO: try/except to handle unknown output types?
     output_data = dict([(ftype, None) for ftype in filetypes])
-    total_samples = 0
-    for chain in xrange(db.chains):
-        chain_samples = db.trace('deviance', chain).length()
-        total_samples += chain_samples
-        for sample in xrange(chain_samples):
-            print 'Processing chain {:d}: {:d}% \r'.format(
-                chain, 100 * sample // chain_samples),
-            # Set values of all stochastics
-            for stoch in model.stochastics - model.observed_stochastics:
-                stoch.value = db.trace(stoch.__name__, chain)[sample]
-            # Accumulate output arrays
-            for ftype in filetypes:
-                # TODO: try/except to handle unknown output types?
-                if output_data[ftype] is None:
-                    output_data[ftype] = np.ma.filled(
-                        model.get_node(ftype).value, _bad_px_value).copy()
-                else:
-                    output_data[ftype] += np.ma.filled(
-                        model.get_node(ftype).value, _bad_px_value)
-    print ''
-    # Now transform sum into average
+    if mode in ('maximum', 'MAP'):
+        # Set stochastics to their MAP values
+        for stoch in model.stochastics - model.observed_stochastics:
+            stoch.value = db.trace(stoch.__name__, best_chain)[best_samp]
+        for ftype in filetypes:
+            output_data[ftype] = np.ma.filled(
+                model.get_node(ftype).value, _bad_px_value).copy()
+    else:
+        total_samples = 0
+        for chain in xrange(db.chains):
+            chain_samples = db.trace('deviance', chain).length()
+            total_samples += chain_samples
+            for sample in xrange(chain_samples):
+                print 'Processing chain {:d}: {:d}% \r'.format(
+                    chain, 100 * sample // chain_samples),
+                # Set values of all stochastics
+                for stoch in model.stochastics - model.observed_stochastics:
+                    stoch.value = db.trace(stoch.__name__, chain)[sample]
+                # Accumulate output arrays
+                for ftype in filetypes:
+                    if output_data[ftype] is None:
+                        output_data[ftype] = np.ma.filled(
+                            model.get_node(ftype).value, _bad_px_value).copy()
+                    else:
+                        output_data[ftype] += np.ma.filled(
+                            model.get_node(ftype).value, _bad_px_value)
+        for ftype in filetypes:
+            output_data[ftype] /= total_samples
+        print ''
+
+    # Now  save the files
     for ftype in filetypes:
-        output_data[ftype] /= total_samples
         header.set('OBJECT', value=ftype)
-        pyfits.writeto(basename.format(ftype + '.fits'),
+        pyfits.writeto(output_name.format(ftype + '.fits'),
                        output_data[ftype], header=header,
                        clobber=True, output_verify='fix')
     return
 
 def _stats_as_header_cards(db, trace_names=None, trace_slice=slice(0, -1)):
+    """
+    Collates statistics about the trace database, and returns them in 3-tuple
+    key-value-comment format suitable for extending a fits header
+    """
     # TODO: better way to make keys. Maybe component.shortname(attr) etc.
     replace_pairs = (('_Sersic', 'SER'), ('_PSF', 'PSF'), ('_Sky', 'SKY'),
                      ('_reff', '_RE'), ('_b', 'B'), ('_index', '_N'),
                      ('_axis_ratio', '_Q'), ('_angle', '_ANG'),
                      ('PSF_Index', 'PSF_IDX'))
-    statscards = []
+    best_chain, best_samp = _max_posterior_sample(db)
+    statscards = [('MPCHAIN', best_chain,
+                   'Chain index of maximum posterior model'),
+                  ('MPSAMP', best_samp,
+                   'Sample index of maximum posterior model')]
     for trace_name in sorted(trace_names):
-        trace = db.trace(trace_name)[trace_slice]
-        max_likely = _max_likelihood_value(trace)
-        std = np.std(trace, axis=0)
+        combined_samps = [db.trace(trace_name, chain)[trace_slice]
+                          for chain in xrange(db.chains)]
+        combined_samps = np.concatenate(combined_samps)
+        max_post_val = db.trace(trace_name, best_chain)[best_samp]
+        std = np.std(combined_samps, axis=0)
         key = trace_name
         for oldstr, newstr in replace_pairs:
             key = key.replace(oldstr, newstr)
         try:
-            val = '{:0.4g} +/- {:0.4g}'.format(max_likely, std)
+            val = '{:0.4g} +/- {:0.4g}'.format(max_post_val, std)
         except ValueError:
-            strmean = ','.join(['{:0.4g}'.format(dim) for dim in max_likely])
+            strmean = ','.join(['{:0.4g}'.format(dim) for dim in max_post_val])
             strstd = ','.join(['{:0.4g}'.format(dim) for dim in std])
             val = '({}) +/- ({})'.format(strmean, strstd)
         statscards += [(key, val, 'psfMC model component')]
+
+    # TODO: BPIC might be nice also, but more work to calculate
+    # Calculate DIC
+    combined_dev = [db.trace('deviance', chain)[trace_slice]
+                    for chain in xrange(db.chains)]
+    combined_dev = np.concatenate(combined_dev)
+    mean_dev = np.mean(combined_dev, axis=0)
+    dic = 2*mean_dev - db.trace('deviance', best_chain)[best_samp]
+    statscards += [('MDL_DIC', dic, 'psfMC Deviance Information Criterion')]
+
     return statscards
 
-
-def _max_likelihood_value(trace):
-    # Discrete-valued stochastics should be set to most common value
-    if trace.dtype.kind in 'iu':
-        return trace[np.bincount(trace).argmax(axis=0)]
-    else:
-        return np.mean(trace, axis=0)
+def _max_posterior_sample(db):
+    """
+    Maximum posterior sample is the sample that minimizes the model deviance
+    (i.e. has the highest posterior probability)
+    Returns the index of the chain the sample occurs in, and the index of the
+    sample within that chain
+    """
+    min_chain = -1
+    min_sample = -1
+    min_deviance = 0
+    for chain in xrange(db.chains):
+        chain_min_sample = np.argmin(db.trace('deviance', chain)[:])
+        chain_min_deviance = db.trace('deviance', chain)[chain_min_sample]
+        if chain_min_deviance < min_deviance:
+            min_deviance = chain_min_deviance
+            min_sample = chain_min_sample
+            min_chain = chain
+    return min_chain, min_sample
