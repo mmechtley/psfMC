@@ -94,12 +94,14 @@ def model_galaxy_mcmc(obs_file, obsIVM_file, psf_files, psfIVM_files,
         warn('Database file already exists, skipping sampling')
 
     # Write mean model output files
-    obsHeader = pyfits.getheader(obs_file, ignore_missing_end=True)
+    obs_header = pyfits.getheader(obs_file, ignore_missing_end=True)
     write_mp_model(mc_model, db, basename=output_name,
-                   filetypes=write_fits, header=obsHeader)
+                   filetypes=write_fits, header=obs_header)
+    write_weighted_model(mc_model, db, basename='weighted_{}',
+                         filetypes=write_fits, header=obs_header)
 
 
-def write_mp_model(model, db, basename='mcmc', filetypes=_default_filetypes,
+def write_mp_model(model, db, basename='out_{}', filetypes=_default_filetypes,
                    samples_slice=slice(0, -1), header=None):
     """
     Writes out the Maximum Posterior (MP) model for a supplied model and trace
@@ -119,8 +121,6 @@ def write_mp_model(model, db, basename='mcmc', filetypes=_default_filetypes,
     # TODO: best of all the chains
     # Set model stochastic values to their trace means
     for stoch in model.stochastics - model.observed_stochastics:
-        trace = db.trace(stoch.__name__)[samples_slice]
-        #stoch.value = _max_likelihood_value(trace)
         best_index = np.argmin(db.trace('deviance')[:])
         stoch.value = db.trace(stoch.__name__)[best_index]
 
@@ -140,8 +140,8 @@ def write_mp_model(model, db, basename='mcmc', filetypes=_default_filetypes,
     # Save out requested file types
     for out_type in filetypes:
         try:
-            outputData = np.ma.filled(model.get_node(out_type).value,
-                                      _bad_px_value)
+            output_data = np.ma.filled(model.get_node(out_type).value,
+                                       _bad_px_value)
         except AttributeError:
             warn(('Unable to find model parameter named {}. No output will ' +
                   'be written for file type.').format(out_type))
@@ -149,16 +149,52 @@ def write_mp_model(model, db, basename='mcmc', filetypes=_default_filetypes,
 
         header.set('OBJECT', value=out_type)
         pyfits.writeto(basename.format(out_type + '.fits'),
-                       outputData.copy(), header=header,
+                       output_data.copy(), header=header,
                        clobber=True, output_verify='fix')
 
-
-def write_weighted_model(model, db, basename='mcmc',
+def write_weighted_model(model, db, basename='out_{}',
                          filetypes=_default_filetypes,
                          samples_slice=slice(0, -1), header=None):
+    """
+    Write out the weighted model (average of all samples)
+    """
+    if header is None:
+        header = pyfits.Header()
+    if '{}' not in basename:
+        basename += '_{}'
 
+    stoch_names = [stoch.__name__ for stoch
+                   in model.stochastics - model.observed_stochastics]
+    statscards = _stats_as_header_cards(db, trace_names=stoch_names,
+                                        trace_slice=samples_slice)
+    header.extend(statscards)
+
+    output_data = dict([(ftype, None) for ftype in filetypes])
+    total_samples = 0
+    for chain in xrange(db.chains):
+        chain_samples = db.trace('deviance', chain).length()
+        total_samples += chain_samples
+        for sample in xrange(chain_samples):
+            # Set values of all stochastics
+            for stoch in model.stochastics - model.observed_stochastics:
+                stoch.value = db.trace(stoch.__name__, chain)[sample]
+            # Accumulate output arrays
+            for ftype in filetypes:
+                # TODO: try/except to handle unknown output types?
+                if output_data[ftype] is None:
+                    output_data[ftype] = np.ma.filled(
+                        model.get_node(ftype).value, _bad_px_value)
+                else:
+                    output_data[ftype] += np.ma.filled(
+                        model.get_node(ftype).value, _bad_px_value)
+    # Now transform sum into average
+    for ftype in filetypes:
+        output_data[ftype] /= total_samples
+        header.set('OBJECT', value=ftype)
+        pyfits.writeto(basename.format(ftype + '.fits'),
+                       output_data[ftype].copy(), header=header,
+                       clobber=True, output_verify='fix')
     return
-
 
 def _stats_as_header_cards(db, trace_names=None, trace_slice=slice(0, -1)):
     # TODO: better way to make keys. Maybe component.shortname(attr) etc.
