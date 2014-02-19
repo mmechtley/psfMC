@@ -166,6 +166,9 @@ def save_posterior_model(model, db, output_name='out_{}', mode='weighted',
                     stoch.value = db.trace(stoch.__name__, chain)[sample]
                 # Accumulate output arrays
                 for ftype in filetypes:
+                    # FIXME: composite_ivm is special, currently wrong
+                    # (should be inverse of mean of variances, currently mean of
+                    # inverse variances
                     if output_data[ftype] is None:
                         output_data[ftype] = np.ma.filled(
                             model.get_node(ftype).value, _bad_px_value).copy()
