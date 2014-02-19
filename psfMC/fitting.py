@@ -159,8 +159,8 @@ def save_posterior_model(model, db, output_name='out_{}', mode='weighted',
             total_samples += chain_samples
             for sample in xrange(chain_samples):
                 if sample % (chain_samples // 100) == 0:
-                    print 'Processing chain {:d}: {:d}% \r'.format(
-                        chain, 100 * sample // chain_samples),
+                    print 'Processing chain {:d}: {:d}%'.format(
+                        chain, 100 * sample // chain_samples)
                 # Set values of all stochastics
                 for stoch in model.stochastics - model.observed_stochastics:
                     stoch.value = db.trace(stoch.__name__, chain)[sample]
@@ -174,7 +174,6 @@ def save_posterior_model(model, db, output_name='out_{}', mode='weighted',
                             model.get_node(ftype).value, _bad_px_value)
         for ftype in filetypes:
             output_data[ftype] /= total_samples
-        print ''
 
     # Now  save the files
     for ftype in filetypes:
