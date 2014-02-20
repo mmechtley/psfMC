@@ -118,9 +118,10 @@ def mask_from_file(mask_file, obs_hdr, shape):
     return None
 
 
-def preprocess_psf(psf_data, psf_ivm, pad_to_shape=None):
+def preprocess_psf(psf_data, psf_ivm):
     """
-    Read in a PSF & IVM, mask bad pixels, normalize kernel, and pre-FFT
+    Read in a PSF & IVM, mask bad pixels, normalize kernel
+    Return the normed data and a corresponding (non-inverse) variance map
     """
     psf_data = pyfits.getdata(psf_data, ignore_missing_end=True)
     psf_ivm = pyfits.getdata(psf_ivm, ignore_missing_end=True)
@@ -131,12 +132,31 @@ def preprocess_psf(psf_data, psf_ivm, pad_to_shape=None):
     psf_data[badpx] = 0
     psf_ivm[badpx] = 0
 
-    # Normalize the PSF kernel
+    # Normalize the PSF kernel, then return data and variance map
     psf_data, psf_ivm = norm_psf(psf_data, psf_ivm)
-
-    # pad the psf arrays to the same size as the data, precompute fft
     psf_var = np.where(psf_ivm <= 0, 0, 1 / psf_ivm)
+    return psf_data, psf_var
+
+
+def pre_fft_psf(psf_data, psf_var, pad_to_shape=None):
+    """
+    Pre-compute (real) Fourier transforms of input PSFs and their variance maps,
+    padding to the given size if needed
+    """
     f_psf = pad_and_rfft_image(psf_data, pad_to_shape)
     f_psf_var = pad_and_rfft_image(psf_var, pad_to_shape)
-
     return f_psf, f_psf_var
+
+
+def calculate_psf_variability(psf_data, psf_vars):
+    """
+    Take a set of normalized PSFs and their corresponding variance maps, measure
+    the inter-PSF (i.e. PSF variability/mismatch) variance map, and propagate
+    its contribution into the individual variance maps.
+    """
+    if len(psf_data) == 1:
+        return psf_data, psf_vars
+    mismatch_var = np.var(psf_data, axis=0)
+    # Add contribution of PSF mismatch to all individual (inverse) variance maps
+    psf_vars = [var + mismatch_var for var in psf_vars]
+    return psf_data, psf_vars
