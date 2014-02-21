@@ -34,10 +34,10 @@ def multicomponent_model(obs_data, obs_ivm, psf_data, psf_ivm,
     data_var_pairs = [preprocess_psf(psf, ivm) for psf, ivm
                       in zip(psf_data, psf_ivm)]
     # Include error contribution from mismatch
-    psf_data, psf_vars = calculate_psf_variability(*zip(*data_var_pairs))
+    data_var_lists = calculate_psf_variability(*zip(*data_var_pairs))
     # Pre-FFT all psf models to save on per-sample computation
     psf_list, var_list = zip(*[pre_fft_psf(psf, var, obs_data.shape)
-                               for psf, var in zip(psf_data, psf_vars)])
+                               for psf, var in zip(*data_var_lists)])
     psf_select = PSFSelector(psf_list, var_list, filenames=psf_data)
 
     # pre-compute data x,y coordinates
