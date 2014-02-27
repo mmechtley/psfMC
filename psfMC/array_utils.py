@@ -157,6 +157,6 @@ def calculate_psf_variability(psf_data, psf_vars):
     if len(psf_data) == 1:
         return psf_data, psf_vars
     mismatch_var = np.var(psf_data, axis=0)
-    # Add contribution of PSF mismatch to all individual (inverse) variance maps
+    # Add contribution of PSF mismatch to all individual variance maps
     psf_vars = [var + mismatch_var for var in psf_vars]
     return psf_data, psf_vars
