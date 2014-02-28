@@ -152,7 +152,7 @@ def save_posterior_model(model, db, output_name='out_{}', mode='weighted',
         for ftype in filetypes:
             output_data[ftype] = np.ma.filled(
                 model.get_node(ftype).value, _bad_px_value).copy()
-    else:
+    elif mode in ('weighted',):
         total_samples = 0
         for chain in xrange(db.chains):
             chain_samples = db.trace('deviance', chain).length()
@@ -171,13 +171,17 @@ def save_posterior_model(model, db, output_name='out_{}', mode='weighted',
                     if output_data[ftype] is None:
                         output_data[ftype] = np.zeros_like(sample_data)
                     if ftype in ('composite_ivm',):
-                        sample_data = 1/sample_data
+                        sample_data = 1 / sample_data
                     output_data[ftype] += sample_data
         # Take the mean
         for ftype in filetypes:
             output_data[ftype] /= total_samples
             if ftype in ('composite_ivm',):
                 output_data[ftype] = 1 / output_data[ftype]
+    else:
+        warn('Unknown posterior output mode ({}). '.format(mode) +
+             'Posterior model images will not be saved.')
+        return
 
     # Now  save the files
     for ftype in filetypes:
