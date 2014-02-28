@@ -143,7 +143,14 @@ def save_posterior_model(model, db, output_name='out_{}', mode='weighted',
                comment='PSF image of maximum posterior model')
 
     print 'Saving posterior models'
-    # TODO: try/except to handle unknown output types?
+    # Check to ensure we understand all the requested file types
+    determ_names = [node.__name__ for node in model.deterministics]
+    unknown_determs = set(filetypes) - set(determ_names)
+    if len(unknown_determs) != 0:
+        warn('Unknown filetypes requested: {} '.format(unknown_determs) +
+        'Output images will not be generated for these types.')
+        filetypes = set(filetypes) - unknown_determs
+
     output_data = dict([(ftype, None) for ftype in filetypes])
     if mode in ('maximum', 'MAP'):
         # Set stochastics to their MAP values
