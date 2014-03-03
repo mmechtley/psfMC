@@ -287,4 +287,4 @@ def _section_header(section_name):
     Blank fits header cards for a section header. As in drizzle, one blank line,
     a line with the section name as the card comment, then one more blank.
     """
-    return [('', '', ''), ('', '', section_name), ('', '', '')]
+    return [('', ' ', ''), ('', ' ', section_name), ('', ' ', '')]
