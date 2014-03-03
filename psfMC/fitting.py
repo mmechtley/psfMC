@@ -33,7 +33,10 @@ def model_galaxy_mcmc(obs_file, obsIVM_file, psf_files, psfIVM_files,
         the object, as with multidrizzle ERR weight maps. Consider using
         astroRMS module to include correlated noise in resampled images
     :param psf_files: Filename(s) or pyfits HDU containing the PSF for the
-        model. This should be e.g. a high S/N star
+        model. This should be e.g. a high S/N star. If multiple PSF images are
+        supplied, the PSF image is treated as a free parameter. Additionally,
+        the inter-PSF variance (from breathing or other variability) will be
+        calculated propagated into the PSF variance maps.
     :param psfIVM_files: Filename(s) or pyfits HDU containing the PSF's inverse
         variance (weight map). Must include poisson noise from the object, such
         as multidrizzle ERR weight maps
@@ -94,7 +97,6 @@ def model_galaxy_mcmc(obs_file, obsIVM_file, psf_files, psfIVM_files,
         warn('Database file already exists, skipping sampling')
 
     # Write model output files
-    # TODO: Encode sampler arguments (nchains iter burn etc) in header
     obs_header = pyfits.getheader(obs_file, ignore_missing_end=True)
     save_posterior_model(mc_model, db, output_name=output_name,
                          filetypes=write_fits, header=obs_header)
@@ -143,7 +145,14 @@ def save_posterior_model(model, db, output_name='out_{}', mode='weighted',
                comment='PSF image of maximum posterior model')
 
     print 'Saving posterior models'
-    # TODO: try/except to handle unknown output types?
+    # Check to ensure we understand all the requested file types
+    determ_names = [node.__name__ for node in model.deterministics]
+    unknown_determs = set(filetypes) - set(determ_names)
+    if len(unknown_determs) != 0:
+        warn('Unknown filetypes requested: {} '.format(unknown_determs) +
+             'Output images will not be generated for these types.')
+        filetypes = set(filetypes) - unknown_determs
+
     output_data = dict([(ftype, None) for ftype in filetypes])
     if mode in ('maximum', 'MAP'):
         # Set stochastics to their MAP values
@@ -152,7 +161,7 @@ def save_posterior_model(model, db, output_name='out_{}', mode='weighted',
         for ftype in filetypes:
             output_data[ftype] = np.ma.filled(
                 model.get_node(ftype).value, _bad_px_value).copy()
-    else:
+    elif mode in ('weighted',):
         total_samples = 0
         for chain in xrange(db.chains):
             chain_samples = db.trace('deviance', chain).length()
@@ -166,17 +175,22 @@ def save_posterior_model(model, db, output_name='out_{}', mode='weighted',
                     stoch.value = db.trace(stoch.__name__, chain)[sample]
                 # Accumulate output arrays
                 for ftype in filetypes:
-                    # FIXME: composite_ivm is special, currently wrong
-                    # (should be inverse of mean of variances, currently mean of
-                    # inverse variances
+                    sample_data = np.ma.filled(model.get_node(ftype).value,
+                                               _bad_px_value)
                     if output_data[ftype] is None:
-                        output_data[ftype] = np.ma.filled(
-                            model.get_node(ftype).value, _bad_px_value).copy()
-                    else:
-                        output_data[ftype] += np.ma.filled(
-                            model.get_node(ftype).value, _bad_px_value)
+                        output_data[ftype] = np.zeros_like(sample_data)
+                    if ftype in ('composite_ivm',):
+                        sample_data = 1 / sample_data
+                    output_data[ftype] += sample_data
+        # Take the mean
         for ftype in filetypes:
             output_data[ftype] /= total_samples
+            if ftype in ('composite_ivm',):
+                output_data[ftype] = 1 / output_data[ftype]
+    else:
+        warn('Unknown posterior output mode ({}). '.format(mode) +
+             'Posterior model images will not be saved.')
+        return
 
     # Now  save the files
     for ftype in filetypes:
@@ -187,21 +201,39 @@ def save_posterior_model(model, db, output_name='out_{}', mode='weighted',
     return
 
 
+# TODO: better way to make keys. Maybe component.shortname(attr) etc.
+# String translation table to change trace names to FITS header keys
+_replace_pairs = (('_Sersic', 'SER'), ('_PSF', 'PSF'), ('_Sky', 'SKY'),
+                 ('_reff', '_RE'), ('_b', 'B'), ('_index', '_N'),
+                 ('_axis_ratio', '_Q'), ('_angle', '_ANG'),
+                 ('PSF_Index', 'PSF_IDX'))
+
+
 def _stats_as_header_cards(db, trace_names=None):
     """
     Collates statistics about the trace database, and returns them in 3-tuple
     key-value-comment format suitable for extending a fits header
     """
-    # TODO: better way to make keys. Maybe component.shortname(attr) etc.
-    replace_pairs = (('_Sersic', 'SER'), ('_PSF', 'PSF'), ('_Sky', 'SKY'),
-                     ('_reff', '_RE'), ('_b', 'B'), ('_index', '_N'),
-                     ('_axis_ratio', '_Q'), ('_angle', '_ANG'),
-                     ('PSF_Index', 'PSF_IDX'))
+    # First get information about the sampler run parameters
+    statscards = _section_header('psfMC MCMC SAMPLER PARAMETERS')
+    samp_info = db.getstate()['sampler']
+    statscards += [
+        ('MCITER', samp_info['_iter'], 'number of samples (incl. burn-in)'),
+        ('MCBURN', samp_info['_burn'], 'number of burn-in (discarded) samples'),
+        ('MCCHAINS', db.chains, 'number of chains run'),
+        ('MCTHIN', samp_info['_thin'], 'thin interval (retain every nth)'),
+        ('MCTUNE', samp_info['_tune_throughout'],
+         'Are AdaptiveMetropolis tuned after burn-in?'),
+        ('MCTUNE_N', samp_info['_tune_interval'],
+         'AdaptiveMetropolis tuning interval')]
+
+    # Now collect information about the posterior model
+    statscards += _section_header('psfMC POSTERIOR MODEL INFORMATION')
     best_chain, best_samp = _max_posterior_sample(db)
-    statscards = [('MPCHAIN', best_chain,
-                   'Chain index of maximum posterior model'),
-                  ('MPSAMP', best_samp,
-                   'Sample index of maximum posterior model')]
+    statscards += [('MPCHAIN', best_chain,
+                    'Chain index of maximum posterior model'),
+                   ('MPSAMP', best_samp,
+                    'Sample index of maximum posterior model')]
     for trace_name in sorted(trace_names):
         combined_samps = [db.trace(trace_name, chain)[:]
                           for chain in xrange(db.chains)]
@@ -209,7 +241,7 @@ def _stats_as_header_cards(db, trace_names=None):
         max_post_val = db.trace(trace_name, best_chain)[best_samp]
         std = np.std(combined_samps, axis=0)
         key = trace_name
-        for oldstr, newstr in replace_pairs:
+        for oldstr, newstr in _replace_pairs:
             key = key.replace(oldstr, newstr)
         try:
             val = '{:0.4g} +/- {:0.4g}'.format(max_post_val, std)
@@ -226,7 +258,7 @@ def _stats_as_header_cards(db, trace_names=None):
     combined_dev = np.concatenate(combined_dev)
     mean_dev = np.mean(combined_dev, axis=0)
     dic = 2*mean_dev - db.trace('deviance', best_chain)[best_samp]
-    statscards += [('MDL_DIC', dic, 'psfMC Deviance Information Criterion')]
+    statscards += [('MDL_DIC', dic, 'Deviance Information Criterion')]
 
     return statscards
 
@@ -249,3 +281,11 @@ def _max_posterior_sample(db):
             min_sample = chain_min_sample
             min_chain = chain
     return min_chain, min_sample
+
+
+def _section_header(section_name):
+    """
+    Blank fits header cards for a section header. As in drizzle, one blank line,
+    a line with the section name as the card comment, then one more blank.
+    """
+    return [('', ' ', ''), ('', ' ', section_name), ('', ' ', '')]
