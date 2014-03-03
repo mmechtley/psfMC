@@ -202,6 +202,7 @@ def save_posterior_model(model, db, output_name='out_{}', mode='weighted',
 
 
 # TODO: better way to make keys. Maybe component.shortname(attr) etc.
+# String translation table to change trace names to FITS header keys
 _replace_pairs = (('_Sersic', 'SER'), ('_PSF', 'PSF'), ('_Sky', 'SKY'),
                  ('_reff', '_RE'), ('_b', 'B'), ('_index', '_N'),
                  ('_axis_ratio', '_Q'), ('_angle', '_ANG'),
@@ -257,7 +258,7 @@ def _stats_as_header_cards(db, trace_names=None):
     combined_dev = np.concatenate(combined_dev)
     mean_dev = np.mean(combined_dev, axis=0)
     dic = 2*mean_dev - db.trace('deviance', best_chain)[best_samp]
-    statscards += [('MDL_DIC', dic, 'psfMC Deviance Information Criterion')]
+    statscards += [('MDL_DIC', dic, 'Deviance Information Criterion')]
 
     return statscards
 
