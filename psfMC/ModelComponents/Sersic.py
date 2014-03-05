@@ -124,3 +124,41 @@ class Sersic(ComponentBase):
         else:
             arr += sbeff * exp(-kappa * (exp(log(sq_radii)*radius_pow) - 1))
         return arr
+
+    def _grad_array(self, arr, mag_zp, **kwargs):
+        coords = kwargs['coords'] if 'coords' in kwargs else array_coords(arr)
+        kappa = Sersic.kappa(self.index)
+        flux_tot = Sersic.total_flux_adu(self.mag, mag_zp)
+        sbeff = self.sb_eff_adu(mag_zp, flux_tot, kappa)
+
+        sq_radii = self.coordinate_sq_radii(coords)
+        sq_radii = sq_radii.reshape(arr.shape)
+
+        # Optimization: the square root to get to radii from square radii is
+        # combined with the sersic power here
+        radius_pow = 0.5 / self.index
+        # Optimization: exp(log(a)*b) is faster than a**b or pow(a,b)
+        out_arr = sbeff * -kappa * radius_pow * sq_radii**(radius_pow - 1) * \
+                  exp(-kappa * (exp(log(sq_radii)*radius_pow) - 1))
+        return out_arr
+
+    def add_to_array_spline(self, arr, mag_zp, **kwargs):
+        coords = kwargs['coords'] if 'coords' in kwargs else array_coords(arr)
+        coords -= 0.5
+        kappa = Sersic.kappa(self.index)
+        flux_tot = Sersic.total_flux_adu(self.mag, mag_zp)
+        sbeff = self.sb_eff_adu(mag_zp, flux_tot, kappa)
+
+        sq_radii = self.coordinate_sq_radii(coords)
+        sq_radii = sq_radii.reshape(arr.shape)
+
+        # Optimization: the square root to get to radii from square radii is
+        # combined with the sersic power here
+        radius_pow = 0.5 / self.index
+        # Optimization: exp(log(a)*b) is faster than a**b or pow(a,b)
+        if ne is not None:
+            ser_expr = 'sbeff * exp(-kappa * expm1(log(sq_radii)*radius_pow))'
+            arr += ne.evaluate(ser_expr)
+        else:
+            arr += sbeff * exp(-kappa * (exp(log(sq_radii)*radius_pow) - 1))
+        return arr
