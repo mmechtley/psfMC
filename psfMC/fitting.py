@@ -133,7 +133,7 @@ def save_posterior_model(model, db, output_name='out_{}', mode='weighted',
     stoch_names = [stoch.__name__ for stoch
                    in model.stochastics - model.observed_stochastics]
     statscards = _stats_as_header_cards(db, trace_names=stoch_names)
-    header.extend(statscards)
+    header.extend(statscards, end=True)
     best_chain, best_samp = header['MPCHAIN'], header['MPSAMP']
 
     # Record the name of the PSF file used
@@ -286,6 +286,6 @@ def _max_posterior_sample(db):
 def _section_header(section_name):
     """
     Blank fits header cards for a section header. As in drizzle, one blank line,
-    a line with the section name as the card comment, then one more blank.
+    a line with the section name as a comment, then one more blank.
     """
-    return [('', ' ', ''), ('', ' ', section_name), ('', ' ', '')]
+    return [('', '', ''), ('', '/ ' + section_name, ''), ('', '', '')]
