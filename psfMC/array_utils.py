@@ -49,13 +49,14 @@ def convolve(img, fourier_kernel):
     return np.fft.ifftshift(np.fft.irfft2(np.fft.rfft2(img) * fourier_kernel))
 
 
-def array_coords(arr):
+def array_coords(shape=(1, 1)):
     """
-    Returns arr.size x 2 array of x, y coordinates for each cell in arr
+    Returns prod(shape) x 2 array of x, y coordinates for each cell in array
+    with dimensions like shape
     """
-    coords = [np.arange(arr.size) % arr.shape[1],
-              np.arange(arr.size) // arr.shape[1]]
-    return np.transpose(coords).astype(arr.dtype)
+    indexes = np.arange(np.product(shape))
+    coords = [indexes % shape[1], indexes // shape[1]]
+    return np.transpose(coords).astype('float64')
 
 
 def norm_psf(psf_data, psf_ivm):

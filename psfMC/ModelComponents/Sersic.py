@@ -1,6 +1,6 @@
 from __future__ import division
 from warnings import warn
-from numpy import asarray, exp, cos, sin, deg2rad, sum, log, pi, dot
+from numpy import asarray, exp, cos, sin, deg2rad, sum, log, pi, dot, abs
 from scipy.special import gamma
 from pymc import Potential
 from .ComponentBase import ComponentBase
@@ -105,8 +105,8 @@ class Sersic(ComponentBase):
         :param mag_zp: Magnitude zeropoint (e.g. magnitude of 1 count/second)
         :param coords: Optional pre-computed x,y coordfinates of each element
         """
-        # FIXME: Central pixels still have significant error compared to galfit
-        coords = kwargs['coords'] if 'coords' in kwargs else array_coords(arr)
+        coords = kwargs['coords'] if 'coords' in kwargs \
+            else array_coords(arr.shape)
         kappa = Sersic.kappa(self.index)
         flux_tot = Sersic.total_flux_adu(self.mag, mag_zp)
         sbeff = self.sb_eff_adu(mag_zp, flux_tot, kappa)
@@ -120,7 +120,30 @@ class Sersic(ComponentBase):
         # Optimization: exp(log(a)*b) is faster than a**b or pow(a,b)
         if ne is not None:
             ser_expr = 'sbeff * exp(-kappa * expm1(log(sq_radii)*radius_pow))'
-            arr += ne.evaluate(ser_expr)
+            sb = ne.evaluate(ser_expr)
         else:
-            arr += sbeff * exp(-kappa * (exp(log(sq_radii)*radius_pow) - 1))
+            sb = sbeff * exp(-kappa * (exp(log(sq_radii)*radius_pow) - 1))
+        # estimate distance of the pixel center of mass from the pixel center
+        # in units of reff
+        grad = Sersic._normed_grad(sq_radii, radius_pow, kappa)
+        # TODO: delta_r should change per-pixel based on ellipse params
+        # Find the barycenter offset from the center within a pixel-sized
+        # trapezoid having a top with the given normed gradient, units of reff.
+        delta_r = 1 / self.reff
+        bary_offset = delta_r**2 / 12 * grad
+        arr += sb * (1 + grad * bary_offset)
         return arr
+
+    @staticmethod
+    def _normed_grad(sq_radii, radius_pow, kappa):
+        """
+        The normalized gradient array (normed grad * surf brightness = grad) for
+        a Sersic profile with given square radii array, radius power (0.5/n) and
+        Sersic coefficient kappa
+        """
+        if ne is not None:
+            grad_expr = '-kappa * 2*radius_pow * ' \
+                        'exp(log(sq_radii)*(radius_pow - 0.5))'
+            return ne.evaluate(grad_expr)
+        else:
+            return -kappa * 2*radius_pow * exp(log(sq_radii)*(radius_pow - 0.5))
