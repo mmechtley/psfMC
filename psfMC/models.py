@@ -41,7 +41,7 @@ def multicomponent_model(obs_data, obs_ivm, psf_data, psf_ivm,
     psf_select = PSFSelector(psf_list, var_list, filenames=psf_data)
 
     # pre-compute data x,y coordinates
-    data_coords = array_coords(obs_data)
+    data_coords = array_coords(obs_data.shape)
 
     model_comps = []
     stochastics = []

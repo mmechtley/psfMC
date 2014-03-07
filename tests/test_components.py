@@ -53,7 +53,7 @@ def test_sersic(index=4):
     r_min = r_maj*gfhdr['1_AR']
 
     mcmodel = np.zeros_like(gfmodel)
-    coords = array_coords(mcmodel)
+    coords = array_coords(mcmodel.shape)
     ser = Sersic(xy=(gfhdr['1_XC']-1, gfhdr['1_YC']-1),
                  mag=gfhdr['1_MAG'], index=gfhdr['1_N'],
                  reff=r_maj, reff_b=r_min,
@@ -62,8 +62,6 @@ def test_sersic(index=4):
 
     radii = np.sqrt(ser.coordinate_sq_radii(coords))
     radii = radii.reshape(mcmodel.shape)
-
-    #sbeff = ser.sb_eff_adu(mag_zp=gfhdr['MAGZPT'])
 
     print 'Commanded magnitude: {:0.2f} n={:0.1f}'.format(
         gfhdr['1_MAG'], index)
