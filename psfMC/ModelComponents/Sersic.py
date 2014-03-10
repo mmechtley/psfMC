@@ -87,12 +87,12 @@ class Sersic(ComponentBase):
         sin_ang, cos_ang = sin(angle), cos(angle)
 
         # Matrix representation of n-D ellipse: en.wikipedia.org/wiki/Ellipsoid
-        # M_inv_xform is inverse scale matrix (1/reff, 0, 0, 1/reff_b)
+        # inv_xform is inverse scale matrix (1/reff, 0, 0, 1/reff_b)
         # multiplied by inverse rotation matrix (cos, sin, -sin, cos)
-        M_inv_xform = asarray(((cos_ang/self.reff, sin_ang/self.reff),
-                               (-sin_ang/self.reff_b, cos_ang/self.reff_b)))
+        inv_xform = asarray(((cos_ang/self.reff, sin_ang/self.reff),
+                             (-sin_ang/self.reff_b, cos_ang/self.reff_b)))
         # TODO: Might be room for optimization here?
-        radii = sum(dot(M_inv_xform, (coords-self.xy).T)**2, axis=0)
+        radii = sum(dot(inv_xform, (coords-self.xy).T)**2, axis=0)
         return radii
 
     def add_to_array(self, arr, mag_zp, **kwargs):

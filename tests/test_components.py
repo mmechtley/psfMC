@@ -16,10 +16,19 @@ _psf_ref_shift = np.array((2.2, 2.7))
 
 
 def _replace_galfit_param(name, value, object=1, fit=True):
+    """
+    Replaces a parameter value in the galfit configuration file.
+    :param name: parameter name, without the following parenthesis
+    :param value: new value for the parameter. Best provided as a string
+    :param object: For object parameters, which object to change. Galfit
+                   numbering, whichs starts with 1. Non-object params (e.g. B)
+                   should use default object=1
+    :param fit: Whether to fit the parameter (True) or hold fixed (False)
+    """
     name, value = str(name), str(value)
     with open(_sim_feedme) as f:
         gf_file = f.readlines()
-    ## Control parameters only occur once, so 0th index is fine.
+    # Control parameters only occur once, so 0th index is fine.
     loc = [i for i in range(len(gf_file)) if
            gf_file[i].strip().startswith(name+')')][object-1]
     param_str = gf_file[loc]
@@ -37,6 +46,10 @@ def _replace_galfit_param(name, value, object=1, fit=True):
 
 
 def test_sersic(index=4):
+    """
+    Test un-convolved (raw) Sersic profile against reference (GalFit)
+    implementation. Right now, all parameters except index are held fixed.
+    """
     sersic_ref_file = _sersic_ref_file.format(index)
     if not os.path.exists(sersic_ref_file):
         nozip_name = sersic_ref_file.replace('.gz', '')
@@ -105,6 +118,11 @@ def test_sersic(index=4):
 
 
 def test_psf():
+    """
+    Test un-convolved PSF model (flux split between 1-4 pixels via sub-pixel
+    shifting) vs reference implementation (scipy.ndimage.shift with bilinear
+    interpolation)
+    """
     print 'Testing PSF component fractional positioning'
     refarr = np.zeros((5, 5))
     # can't put this on the array edge because of boundary modes?
