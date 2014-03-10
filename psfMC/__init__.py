@@ -1,4 +1,4 @@
-__version__ = 'v1.0a1'
+__version__ = 'v1.0b1'
 
 from .fitting import model_galaxy_mcmc, save_posterior_model
 from .models import multicomponent_model

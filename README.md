@@ -10,7 +10,7 @@ Usage is provided in docstrings. My Ph.D. thesis contains a more detailed discus
 A journal article is forthcoming, but if you use psfMC in the meantime, please cite it as:
 Mechtley, M. 2014, PhD thesis, Arizona State Univ.
 
-The current master branch is an **alpha** release. There are still some known bugs and planned features for an inital release. These are noted in the code currently (FIXME/TODO/etc), but will be migrated to the github issue system.
+The current master branch is a **beta** release. No additional features are planned for the 1.0 release, and additional bugfixes are considered low priority (may make it in or may not).
 
 Dependencies
 ------------
