@@ -127,8 +127,8 @@ class Sersic(ComponentBase):
         # in units of reff
         grad = Sersic._normed_grad(sq_radii, radius_pow, kappa)
         # TODO: should delta_r change per-pixel based on ellipse params?
-        # Find the barycenter offset from the center within a pixel-sized
-        # trapezoid having a top with the given normed gradient, units of reff.
+        # Find the barycenter offset from the center (units of reff) within the
+        # pixel-sized trapezoid having a top with the given normed gradient.
         delta_r = 1 / self.reff
         bary_offset = delta_r**2 / 12 * grad
         arr += sb * (1 + grad * bary_offset)
