@@ -126,7 +126,7 @@ class Sersic(ComponentBase):
         # estimate distance of the pixel center of mass from the pixel center
         # in units of reff
         grad = Sersic._normed_grad(sq_radii, radius_pow, kappa)
-        # TODO: delta_r should change per-pixel based on ellipse params
+        # TODO: should delta_r change per-pixel based on ellipse params?
         # Find the barycenter offset from the center within a pixel-sized
         # trapezoid having a top with the given normed gradient, units of reff.
         delta_r = 1 / self.reff
@@ -139,8 +139,11 @@ class Sersic(ComponentBase):
         """
         The normalized gradient array (normed grad * surf brightness = grad) for
         a Sersic profile with given square radii array, radius power (0.5/n) and
-        Sersic coefficient kappa
+        Sersic coefficient kappa. The sign is negative, i.e. the formal gradient
+        with respect to r as r increases outward.
         """
+        # Since square radius is supplied instead of radius, need to be careful
+        # about the powers
         if ne is not None:
             grad_expr = '-kappa * 2*radius_pow * ' \
                         'exp(log(sq_radii)*(radius_pow - 0.5))'
