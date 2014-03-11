@@ -143,7 +143,7 @@ class Sersic(ComponentBase):
         with respect to r as r increases outward.
         """
         # Since square radius is supplied instead of radius, need to be careful
-        # about the powers
+        # about the powers (sqrt happens first so applies to both 1/n and -1)
         if ne is not None:
             grad_expr = '-kappa * 2*radius_pow * ' \
                         'exp(log(sq_radii)*(radius_pow - 0.5))'
