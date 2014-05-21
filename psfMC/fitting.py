@@ -4,12 +4,13 @@ import os
 
 import pyfits
 import numpy as np
+import pymc
 from pymc.StepMethods import AdaptiveMetropolis, DiscreteMetropolis
-from pymc.database.pickle import load
 
 from .models import multicomponent_model
 from .array_utils import _bad_px_value
 from .ModelComponents.PSFSelector import PSFSelector
+from .analysis import max_posterior_sample, calculate_dic
 
 
 _default_filetypes = ('raw_model', 'convolved_model', 'composite_ivm',
@@ -20,7 +21,7 @@ def model_galaxy_mcmc(obs_file, obsIVM_file, psf_files, psfIVM_files,
                       model_file=None, mag_zeropoint=0,
                       mask_file=None, output_name=None,
                       write_fits=_default_filetypes,
-                      chains=1, **kwargs):
+                      chains=1, backend='pickle', **kwargs):
     """
     Model the light distribution of a galaxy or galaxies using multi-component
     Markov Chain Monte Carlo parameter estimation.
@@ -56,6 +57,7 @@ def model_galaxy_mcmc(obs_file, obsIVM_file, psf_files, psfIVM_files,
         observation - model, and the MCMC trace database.
     :param write_fits: List of which fits file types to write. By default, raw
         (unconvolved) model, convolved model, model IVM, and residual.
+    :param backend: PyMC database backend to use. pickle is default
     :param kwargs: Further keyword arguments are passed to pyMC.MCMC.sample, and
         can be used to control number of MCMC samples, burn-in period, etc.
         Useful parameters include iter=, burn=, tune_interval=, thin=, etc. See
@@ -75,7 +77,7 @@ def model_galaxy_mcmc(obs_file, obsIVM_file, psf_files, psfIVM_files,
                                     components=model_file,
                                     mag_zp=mag_zeropoint,
                                     mask_file=mask_file,
-                                    db='pickle',
+                                    db=backend,
                                     name=db_name)
 
     for stoch in mc_model.step_method_dict:
@@ -86,14 +88,17 @@ def model_galaxy_mcmc(obs_file, obsIVM_file, psf_files, psfIVM_files,
                                      proposal_distribution='Prior')
 
     db = mc_model.db
-    if not os.path.exists(db_name+'.pickle'):
+    if not os.path.exists(db_name+'.'+backend):
         for chain_num in xrange(chains):
             mc_model.sample(**kwargs)
 
         # Saves out to pickle file
         db.close()
     else:
-        db = load(db_name+'.pickle')
+        back_module = getattr(pymc.database, backend)
+        db = back_module.load(db_name+'.'+backend)
+        db.connect_model(mc_model)
+        mc_model.db = db
         warn('Database file already exists, skipping sampling')
 
     # Write model output files
@@ -155,24 +160,19 @@ def save_posterior_model(model, db, output_name='out_{}', mode='weighted',
 
     output_data = dict([(ftype, None) for ftype in filetypes])
     if mode in ('maximum', 'MAP'):
-        # Set stochastics to their MAP values
-        for stoch in model.stochastics - model.observed_stochastics:
-            stoch.value = db.trace(stoch.__name__, best_chain)[best_samp]
+        model.remember(chain=best_chain, trace_index=best_samp)
         for ftype in filetypes:
             output_data[ftype] = np.ma.filled(
                 model.get_node(ftype).value, _bad_px_value).copy()
+
     elif mode in ('weighted',):
         total_samples = 0
         for chain in xrange(db.chains):
             chain_samples = db.trace('deviance', chain).length()
             total_samples += chain_samples
             for sample in xrange(chain_samples):
-                if sample % (chain_samples // 100) == 0:
-                    print 'Processing chain {:d}: {:d}%'.format(
-                        chain, 100 * sample // chain_samples)
-                # Set values of all stochastics
-                for stoch in model.stochastics - model.observed_stochastics:
-                    stoch.value = db.trace(stoch.__name__, chain)[sample]
+                _print_progress(sample, chain, chain_samples)
+                model.remember(chain=chain, trace_index=sample)
                 # Accumulate output arrays
                 for ftype in filetypes:
                     sample_data = np.ma.filled(model.get_node(ftype).value,
@@ -187,6 +187,7 @@ def save_posterior_model(model, db, output_name='out_{}', mode='weighted',
             output_data[ftype] /= total_samples
             if ftype in ('composite_ivm',):
                 output_data[ftype] = 1 / output_data[ftype]
+
     else:
         warn('Unknown posterior output mode ({}). '.format(mode) +
              'Posterior model images will not be saved.')
@@ -229,16 +230,16 @@ def _stats_as_header_cards(db, trace_names=None):
 
     # Now collect information about the posterior model
     statscards += _section_header('psfMC POSTERIOR MODEL INFORMATION')
-    best_chain, best_samp = _max_posterior_sample(db)
+    best_chain, best_sample = max_posterior_sample(db)
     statscards += [('MPCHAIN', best_chain,
                     'Chain index of maximum posterior model'),
-                   ('MPSAMP', best_samp,
+                   ('MPSAMP', best_sample,
                     'Sample index of maximum posterior model')]
     for trace_name in sorted(trace_names):
         combined_samps = [db.trace(trace_name, chain)[:]
                           for chain in xrange(db.chains)]
         combined_samps = np.concatenate(combined_samps)
-        max_post_val = db.trace(trace_name, best_chain)[best_samp]
+        max_post_val = db.trace(trace_name, best_chain)[best_sample]
         std = np.std(combined_samps, axis=0)
         key = trace_name
         for oldstr, newstr in _replace_pairs:
@@ -251,36 +252,10 @@ def _stats_as_header_cards(db, trace_names=None):
             val = '({}) +/- ({})'.format(strmean, strstd)
         statscards += [(key, val, 'psfMC model component')]
 
-    # TODO: BPIC might be nice also, but more work to calculate
-    # Calculate DIC
-    combined_dev = [db.trace('deviance', chain)[:]
-                    for chain in xrange(db.chains)]
-    combined_dev = np.concatenate(combined_dev)
-    mean_dev = np.mean(combined_dev, axis=0)
-    dic = 2*mean_dev - db.trace('deviance', best_chain)[best_samp]
+    dic = calculate_dic(db, best_chain, best_sample)
     statscards += [('MDL_DIC', dic, 'Deviance Information Criterion')]
 
     return statscards
-
-
-def _max_posterior_sample(db):
-    """
-    Maximum posterior sample is the sample that minimizes the model deviance
-    (i.e. has the highest posterior probability)
-    Returns the index of the chain the sample occurs in, and the index of the
-    sample within that chain
-    """
-    min_chain = -1
-    min_sample = -1
-    min_deviance = 0
-    for chain in xrange(db.chains):
-        chain_min_sample = np.argmin(db.trace('deviance', chain)[:])
-        chain_min_deviance = db.trace('deviance', chain)[chain_min_sample]
-        if chain_min_deviance < min_deviance:
-            min_deviance = chain_min_deviance
-            min_sample = chain_min_sample
-            min_chain = chain
-    return min_chain, min_sample
 
 
 def _section_header(section_name):
@@ -289,3 +264,10 @@ def _section_header(section_name):
     a line with the section name as a comment, then one more blank.
     """
     return [('', '', ''), ('', '/ ' + section_name, ''), ('', '', '')]
+
+
+def _print_progress(sample, chain, chain_samples):
+    if sample % (chain_samples // 100) == 0:
+        print 'Processing chain {:d}: {:d}%'.format(
+            chain, 100 * sample // chain_samples)
+    return
