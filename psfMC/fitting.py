@@ -71,14 +71,22 @@ def model_galaxy_mcmc(obs_file, obsIVM_file, psf_files, psfIVM_files,
     kwargs.setdefault('iter', 6000)
     kwargs.setdefault('burn', 3000)
 
+    # Open database if it exists, otherwise pass backend to create a new one
     db_name = output_name.format('db')
+    if os.path.exists(db_name+'.'+backend):
+        back_module = getattr(pymc.database, backend)
+        db = back_module.load(db_name+'.'+backend)
+    else:
+        db = backend
+
     mc_model = multicomponent_model(obs_file, obsIVM_file,
                                     psf_files, psfIVM_files,
                                     components=model_file,
                                     mag_zp=mag_zeropoint,
                                     mask_file=mask_file,
-                                    db=backend,
+                                    db=db,
                                     name=db_name)
+    db = mc_model.db
 
     for stoch in mc_model.step_method_dict:
         if 'xy' in stoch.__name__:
@@ -87,18 +95,12 @@ def model_galaxy_mcmc(obs_file, obsIVM_file, psf_files, psfIVM_files,
             mc_model.use_step_method(DiscreteMetropolis, stoch,
                                      proposal_distribution='Prior')
 
-    db = mc_model.db
-    if not os.path.exists(db_name+'.'+backend):
+    # TODO: Add support for resuming. For now, skip sampling if chains exist
+    if db.chains == 0:
         for chain_num in xrange(chains):
             mc_model.sample(**kwargs)
-
-        # Saves out to pickle file
         db.close()
     else:
-        back_module = getattr(pymc.database, backend)
-        db = back_module.load(db_name+'.'+backend)
-        db.connect_model(mc_model)
-        mc_model.db = db
         warn('Database file already exists, skipping sampling')
 
     # Write model output files
@@ -154,8 +156,8 @@ def save_posterior_model(model, db, output_name='out_{}', mode='weighted',
     determ_names = [node.__name__ for node in model.deterministics]
     unknown_determs = set(filetypes) - set(determ_names)
     if len(unknown_determs) != 0:
-        warn('Unknown filetypes requested: {} '.format(unknown_determs) +
-             'Output images will not be generated for these types.')
+        warn('Unknown filetypes requested: {} Output images will not be '
+             'generated for these types.'.format(unknown_determs))
         filetypes = set(filetypes) - unknown_determs
 
     output_data = dict([(ftype, None) for ftype in filetypes])
@@ -163,7 +165,7 @@ def save_posterior_model(model, db, output_name='out_{}', mode='weighted',
         model.remember(chain=best_chain, trace_index=best_samp)
         for ftype in filetypes:
             output_data[ftype] = np.ma.filled(
-                model.get_node(ftype).value, _bad_px_value).copy()
+                model.get_node(ftype).value, _bad_px_value)
 
     elif mode in ('weighted',):
         total_samples = 0
@@ -189,8 +191,8 @@ def save_posterior_model(model, db, output_name='out_{}', mode='weighted',
                 output_data[ftype] = 1 / output_data[ftype]
 
     else:
-        warn('Unknown posterior output mode ({}). '.format(mode) +
-             'Posterior model images will not be saved.')
+        warn('Unknown posterior output mode ({}). Posterior model images will '
+             'not be saved.'.format(mode))
         return
 
     # Now  save the files
@@ -231,10 +233,9 @@ def _stats_as_header_cards(db, trace_names=None):
     # Now collect information about the posterior model
     statscards += _section_header('psfMC POSTERIOR MODEL INFORMATION')
     best_chain, best_sample = max_posterior_sample(db)
-    statscards += [('MPCHAIN', best_chain,
-                    'Chain index of maximum posterior model'),
-                   ('MPSAMP', best_sample,
-                    'Sample index of maximum posterior model')]
+    statscards += [
+        ('MPCHAIN', best_chain, 'Chain index of maximum posterior model'),
+        ('MPSAMP', best_sample, 'Sample index of maximum posterior model')]
     for trace_name in sorted(trace_names):
         combined_samps = [db.trace(trace_name, chain)[:]
                           for chain in xrange(db.chains)]
