@@ -98,6 +98,8 @@ def model_galaxy_mcmc(obs_file, obsIVM_file, psf_files, psfIVM_files,
     # TODO: Add support for resuming. For now, skip sampling if chains exist
     if db.chains == 0:
         for chain_num in xrange(chains):
+            # Sampler.sample already calls seed(), so no need to manually
+            # randomize the starting position
             mc_model.sample(**kwargs)
         db.close()
     else:

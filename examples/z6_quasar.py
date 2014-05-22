@@ -24,7 +24,7 @@ for obsfile, psffile in zip(obsfiles, psffiles):
     model_galaxy_mcmc(obsfile, obsIVMfile, psffile, psfIVMfile,
                       model_file=model_file, mask_file=maskfile,
                       output_name=output_name, mag_zeropoint=magzp[filter],
-                      burn=2500, iter=5000, chains=4)
+                      burn=5000, iter=10000, chains=4)
 
     db = pymc.database.pickle.load(output_name+'_db.pickle')
     for trace_name in ('0_Sky_adu', '1_PSF_mag', '2_Sersic_mag',
