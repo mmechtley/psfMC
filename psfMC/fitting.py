@@ -10,7 +10,7 @@ from pymc.StepMethods import AdaptiveMetropolis, DiscreteMetropolis
 from .models import multicomponent_model
 from .array_utils import _bad_px_value
 from .ModelComponents.PSFSelector import PSFSelector
-from .analysis import max_posterior_sample, calculate_dic
+from .analysis import max_posterior_sample, calculate_dic, chains_are_converged
 
 
 _default_filetypes = ('raw_model', 'convolved_model', 'composite_ivm',
@@ -97,13 +97,31 @@ def model_galaxy_mcmc(obs_file, obsIVM_file, psf_files, psfIVM_files,
 
     # TODO: Add support for resuming. For now, skip sampling if chains exist
     if db.chains == 0:
-        for chain_num in xrange(chains):
-            # Sampler.sample already calls seed(), so no need to manually
-            # randomize the starting position
-            mc_model.sample(**kwargs)
+        samp_iter = 0
+        while True:
+            # TODO: Is there a way to delete old chains? Otherwise need to make
+            # sure Rhat is calculated only for last nchains
+            for chain_num in xrange(chains):
+                # re-load the last state from this chain's previous iteration
+                if samp_iter > 0:
+                    mc_model.remember(chain=(samp_iter-1)*chain_num,
+                                      trace_index=-1)
+                # Sampler.sample already calls seed(), so no need to manually
+                # randomize the starting position
+                mc_model.sample(**kwargs)
+
+            iter_chains = range(samp_iter*chains, (samp_iter+1)*chains)
+
+            if chains_are_converged(mc_model, chains=iter_chains):
+                break
+            else:
+                samp_iter += 1
+                warn('Not yet converged, resampling (iteration {:d})'.format(samp_iter))
         db.close()
     else:
         warn('Database file already exists, skipping sampling')
+
+    print pymc.gelman_rubin(mc_model)
 
     # Write model output files
     obs_header = pyfits.getheader(obs_file, ignore_missing_end=True)

@@ -29,7 +29,7 @@ def _within_variance(chains):
     return np.mean(col_vars)  # 1 / nchains implicit in mean
 
 
-def _marginal_posterior_variance(chains):
+def _pooled_posterior_variance(chains):
     """
     Weight average of the within-chain variance and the between-chain variance
     Gelman 2nd edition pg. 303 (Eqn. 11.3)
@@ -43,8 +43,9 @@ def _marginal_posterior_variance(chains):
 
 def potential_scale_reduction(chains):
     """
-    So-called R-hat, the square root of the ratio of the marginal posterior
-    variance to the within-chain variance.
+    So-called R-hat or Potential Scale Reduction Factor (PSRF), the square root
+    of the ratio of the marginal posterior variance to the within-chain
+    variance.
     Gelman 2nd edition pg. 304
     Brooks & Gelman 1998 eq. 1.1
     :param chains: list of two or more traces (numpy arrays) to analyze
@@ -54,8 +55,12 @@ def potential_scale_reduction(chains):
     nsamples, nchains = all_samps.shape
     psrf_scale = (nchains + 1) / nchains
     psrf_offset = (1 - nsamples) / (nchains * nsamples)  # negation absorbed
-    return np.sqrt(psrf_scale * _marginal_posterior_variance(all_samps) /
-                   _within_variance(all_samps) + psrf_offset)
+    pooled_var = _pooled_posterior_variance(all_samps)
+    within_var = _within_variance(all_samps)
+    if within_var == 0:
+        return 1.0
+    else:
+        return np.sqrt(psrf_scale * pooled_var / within_var + psrf_offset)
 
 
 def num_effective_samples(chains):
@@ -63,15 +68,21 @@ def num_effective_samples(chains):
     The effective number of samples, ie the number of samples corrected for
     Markov Chain sample autocorrelation. As noted by Gelman, if the number of
     chains is small, this is a crude estimate because the sampling variability
-    is high.
-    Usually reported as min(n_eff, nsamps*nchains).
+    is high. Always reports min(neff, nsamples * nchains) so as not to claim the
+    sampling is more effieicent than random.
     Gelman 2nd edition pg. 306 (Eqn. 11.4)
     :param chains: list of two or more traces (numpy arrays) to analyze
     """
     all_samps = np.column_stack(chains)
     nsamples, nchains = all_samps.shape
-    return nsamples * nchains * _marginal_posterior_variance(all_samps) / \
-        _between_variance(all_samps)
+    pooled_var = _pooled_posterior_variance(all_samps)
+    between_var = _between_variance(all_samps)
+    # Avoid nan (no between-chain variance) or claim that sampling is better
+    # than random (pooled var over-estimate greater than real between-chain)
+    if between_var == 0 or pooled_var > between_var:
+        return nsamples * nchains
+    else:
+        return nsamples * nchains * pooled_var / between_var
 
 
 def max_posterior_sample(db):
@@ -109,3 +120,43 @@ def calculate_dic(db, best_chain=None, best_sample=None):
     combined_dev = np.concatenate(combined_dev)
     mean_dev = np.mean(combined_dev, axis=0)
     return 2*mean_dev - db.trace('deviance', best_chain)[best_sample]
+
+
+def chains_are_converged(model, chains=None, stochastics=None, psrf_tol=0.05,
+                         verbose=1):
+    """
+    Checks whether chains are converged by calculating the Gelman-Rubin
+    Potential Scale Reduction Factor (PSRF) for all traced stochastics
+    :param model: model to test
+    :param chains: sequence of chain indexes to compare, e.g. [4,5,6,7]
+    :param stochastics: List of stochastic (trace) names to consider. If None,
+        all traces will be considered.
+    :param psrf_tol: Tolerance on PSRF (how close to 1.0 they must be)
+    """
+    if chains is None:
+        chains = range(model.chains)
+    if stochastics is None:
+        # TODO: should this be model.generations?
+        stochastics = [stoch.__name__ for stoch
+                       in model.stochastics - model.observed_stochastics]
+
+    def is_converged(stoch):
+        """
+        Test whether a single stochastic is converged (PSRF is within tolerance)
+        """
+        traces = [model.trace(stoch, chain=cnum)[:] for cnum in chains]
+        # Handle multi-dimensional trace variables (like xy center of PSF)
+        if len(traces[0].shape) > 1:
+            dims = traces[0].shape[1]
+            psrf = [potential_scale_reduction([trace[:, dim] for
+                                               trace in traces])
+                    for dim in range(dims)]
+            psrf = np.array(psrf)
+        else:
+            psrf = potential_scale_reduction(traces)
+        if verbose > 0:
+            print stoch, psrf
+        # Converged when psrf is within tolerance
+        return np.all(np.abs(psrf - 1) < psrf_tol)
+
+    return all([is_converged(stoch) for stoch in stochastics])

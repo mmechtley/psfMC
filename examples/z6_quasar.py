@@ -8,7 +8,8 @@ try:
 except ImportError:
     pp = None
 
-magzp = {'F125W':26.2303, 'F160W':25.9463}
+magzp = {'F125W': 26.2303, 'F160W': 25.9463}
+mc_args = {'burn': 5000, 'iter': 10000, 'chains': 4, 'tune_interval': 250}
 
 obsfiles = ['sci_J0005-0006.fits']
 psffiles = ['sci_psf.fits']
@@ -16,15 +17,15 @@ psffiles = ['sci_psf.fits']
 for obsfile, psffile in zip(obsfiles, psffiles):
     obsIVMfile = obsfile.replace('sci', 'ivm')
     psfIVMfile = psffile.replace('sci', 'ivm')
-    maskfile = obsfile.replace('sci', 'mask').replace('.fits','.reg')
+    maskfile = obsfile.replace('sci', 'mask').replace('.fits', '.reg')
     model_file = obsfile.replace('sci', 'model').replace('.fits', '.py')
     output_name = obsfile.replace('sci', 'out').replace('.fits', '')
 
-    filter = pyfits.getval(obsfile, 'FILTER')
+    filt = pyfits.getval(obsfile, 'FILTER')
     model_galaxy_mcmc(obsfile, obsIVMfile, psffile, psfIVMfile,
                       model_file=model_file, mask_file=maskfile,
-                      output_name=output_name, mag_zeropoint=magzp[filter],
-                      burn=5000, iter=10000, chains=4)
+                      output_name=output_name, mag_zeropoint=magzp[filt],
+                      **mc_args)
 
     db = pymc.database.pickle.load(output_name+'_db.pickle')
     for trace_name in ('0_Sky_adu', '1_PSF_mag', '2_Sersic_mag',
