@@ -85,17 +85,19 @@ def num_effective_samples(chains):
         return nsamples * nchains * pooled_var / between_var
 
 
-def max_posterior_sample(db):
+def max_posterior_sample(db, chains=None):
     """
     Maximum posterior sample is the sample that minimizes the model deviance
     (i.e. has the highest posterior probability)
     Returns the index of the chain the sample occurs in, and the index of the
     sample within that chain
     """
+    if chains is None:
+        chains = range(db.chains)
     min_chain = -1
     min_sample = -1
     min_deviance = 0
-    for chain in xrange(db.chains):
+    for chain in chains:
         chain_min_sample = np.argmin(db.trace('deviance', chain)[:])
         chain_min_deviance = db.trace('deviance', chain)[chain_min_sample]
         if chain_min_deviance < min_deviance:
@@ -105,7 +107,7 @@ def max_posterior_sample(db):
     return min_chain, min_sample
 
 
-def calculate_dic(db, best_chain=None, best_sample=None):
+def calculate_dic(db, best_chain=None, best_sample=None, chains=None):
     """
     Calculates the Deviance Information Criterion for the posterior, defined as
     twice the expected deviance minus the deviance of the expectation value.
@@ -113,10 +115,11 @@ def calculate_dic(db, best_chain=None, best_sample=None):
     lowest deviance.
     """
     # TODO: BPIC might be nice also, but more work to calculate
+    if chains is None:
+        chains = range(db.chains)
     if best_chain is None or best_sample is None:
-        best_chain, best_sample = max_posterior_sample(db)
-    combined_dev = [db.trace('deviance', chain)[:]
-                    for chain in xrange(db.chains)]
+        best_chain, best_sample = max_posterior_sample(db, chains=chains)
+    combined_dev = [db.trace('deviance', chain)[:] for chain in chains]
     combined_dev = np.concatenate(combined_dev)
     mean_dev = np.mean(combined_dev, axis=0)
     return 2*mean_dev - db.trace('deviance', best_chain)[best_sample]

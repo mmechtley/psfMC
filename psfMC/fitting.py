@@ -133,7 +133,8 @@ def model_galaxy_mcmc(obs_file, obsIVM_file, psf_files, psfIVM_files,
 
 
 def save_posterior_model(model, output_name='out_{}', mode='weighted',
-                         filetypes=_default_filetypes, header=None):
+                         filetypes=_default_filetypes, header=None,
+                         chains=None):
     """
     Writes out the posterior model images. Two modes are supported: Maximum a
     posteriori (maximum or MAP) and "weighted average" (weighted). Since
@@ -153,15 +154,20 @@ def save_posterior_model(model, output_name='out_{}', mode='weighted',
         documentation for a list of possible types
     :param header: base fits header to include with each image, e.g. a copy of
         the header from the original data
+    :param chains: List of chain indexes that sample the final posterior (e.g.
+        if initial chains had not converged)
     """
     if header is None:
         header = pyfits.Header()
     if '{}' not in output_name:
         output_name += '_{}'
+    if chains is None:
+        chains = range(model.db.chains)
 
     stoch_names = [stoch.__name__ for stoch
                    in model.stochastics - model.observed_stochastics]
-    statscards = _stats_as_header_cards(model.db, trace_names=stoch_names)
+    statscards = _stats_as_header_cards(model.db, trace_names=stoch_names,
+                                        chains=chains)
     header.extend(statscards, end=True)
     best_chain, best_samp = header['MAPCHAIN'], header['MAPSAMP']
 
@@ -191,7 +197,7 @@ def save_posterior_model(model, output_name='out_{}', mode='weighted',
 
     elif mode in ('weighted',):
         total_samples = 0
-        for chain in xrange(model.db.chains):
+        for chain in chains:
             chain_samples = model.db.trace('deviance', chain).length()
             total_samples += chain_samples
             for sample in xrange(chain_samples):
@@ -234,7 +240,7 @@ _replace_pairs = (('_Sersic', 'SER'), ('_PSF', 'PSF'), ('_Sky', 'SKY'),
                  ('PSF_Index', 'PSF_IDX'))
 
 
-def _stats_as_header_cards(db, trace_names=None):
+def _stats_as_header_cards(db, trace_names=None, chains=None):
     """
     Collates statistics about the trace database, and returns them in 3-tuple
     key-value-comment format suitable for extending a fits header
@@ -245,7 +251,7 @@ def _stats_as_header_cards(db, trace_names=None):
     statscards += [
         ('MCITER', samp_info['_iter'], 'number of samples (incl. burn-in)'),
         ('MCBURN', samp_info['_burn'], 'number of burn-in (discarded) samples'),
-        ('MCCHAINS', db.chains, 'number of chains run'),
+        ('MCCHAINS', len(chains), 'number of chains run'),
         ('MCTHIN', samp_info['_thin'], 'thin interval (retain every nth)'),
         ('MCTUNE', samp_info['_tune_throughout'],
          'Are AdaptiveMetropolis tuned after burn-in?'),
@@ -254,13 +260,12 @@ def _stats_as_header_cards(db, trace_names=None):
 
     # Now collect information about the posterior model
     statscards += _section_header('psfMC POSTERIOR MODEL INFORMATION')
-    best_chain, best_sample = max_posterior_sample(db)
+    best_chain, best_sample = max_posterior_sample(db, chains)
     statscards += [
         ('MAPCHAIN', best_chain, 'Chain index of maximum posterior model'),
         ('MAPSAMP', best_sample, 'Sample index of maximum posterior model')]
     for trace_name in sorted(trace_names):
-        combined_samps = [db.trace(trace_name, chain)[:]
-                          for chain in xrange(db.chains)]
+        combined_samps = [db.trace(trace_name, chain)[:] for chain in chains]
         combined_samps = np.concatenate(combined_samps)
         max_post_val = db.trace(trace_name, best_chain)[best_sample]
         std = np.std(combined_samps, axis=0)
@@ -275,7 +280,7 @@ def _stats_as_header_cards(db, trace_names=None):
             val = '({}) +/- ({})'.format(strmean, strstd)
         statscards += [(key, val, 'psfMC model component')]
 
-    dic = calculate_dic(db, best_chain, best_sample)
+    dic = calculate_dic(db, best_chain, best_sample, chains)
     statscards += [('MDL_DIC', dic, 'Deviance Information Criterion')]
 
     return statscards
