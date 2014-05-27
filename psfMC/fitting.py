@@ -17,7 +17,7 @@ _default_filetypes = ('raw_model', 'convolved_model', 'composite_ivm',
                       'residual', 'point_source_subtracted')
 
 
-def model_galaxy_mcmc(obs_file, obsIVM_file, psf_files, psfIVM_files,
+def model_galaxy_mcmc(obs_file, obsivm_file, psf_files, psfivm_files,
                       model_file=None, mag_zeropoint=0,
                       mask_file=None, output_name=None,
                       write_fits=_default_filetypes,
@@ -31,7 +31,7 @@ def model_galaxy_mcmc(obs_file, obsIVM_file, psf_files, psfIVM_files,
     :param obs_file: Filename or pyfits HDU containing the observed image, in
         the units specified by the magnitude zeropoint, (usually) electrons per
         second for HST observations).
-    :param obsIVM_file: Filename or pyfits HDU containing the observed image's
+    :param obsivm_file: Filename or pyfits HDU containing the observed image's
         inverse variance (weight) map. Must already include poisson noise from
         the object, as with multidrizzle ERR weight maps. Consider using
         astroRMS module to include correlated noise in resampled images
@@ -40,7 +40,7 @@ def model_galaxy_mcmc(obs_file, obsIVM_file, psf_files, psfIVM_files,
         supplied, the PSF image is treated as a free parameter. Additionally,
         the inter-PSF variance (from breathing or other variability) will be
         calculated propagated into the PSF variance maps.
-    :param psfIVM_files: Filename(s) or pyfits HDU containing the PSF's inverse
+    :param psfivm_files: Filename(s) or pyfits HDU containing the PSF's inverse
         variance (weight map). Must include poisson noise from the object, such
         as multidrizzle ERR weight maps
     :param model_file: Filename of the model definition file. This should be
@@ -87,8 +87,8 @@ def model_galaxy_mcmc(obs_file, obsIVM_file, psf_files, psfIVM_files,
     else:
         db = backend
 
-    mc_model = multicomponent_model(obs_file, obsIVM_file,
-                                    psf_files, psfIVM_files,
+    mc_model = multicomponent_model(obs_file, obsivm_file,
+                                    psf_files, psfivm_files,
                                     components=model_file,
                                     mag_zp=mag_zeropoint,
                                     mask_file=mask_file,
