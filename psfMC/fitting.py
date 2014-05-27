@@ -280,7 +280,7 @@ def _stats_as_header_cards(db, trace_names=None, chains=None):
             val = '({}) +/- ({})'.format(strmean, strstd)
         statscards += [(key, val, 'psfMC model component')]
 
-    dic = calculate_dic(db, best_chain, best_sample, chains)
+    dic = calculate_dic(db, chains, best_sample, best_chain)
     statscards += [('MDL_DIC', dic, 'Deviance Information Criterion')]
 
     return statscards

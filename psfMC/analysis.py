@@ -96,7 +96,7 @@ def max_posterior_sample(db, chains=None):
         chains = range(db.chains)
     min_chain = -1
     min_sample = -1
-    min_deviance = 0
+    min_deviance = 0  # deviance is a log-probability, always negative
     for chain in chains:
         chain_min_sample = np.argmin(db.trace('deviance', chain)[:])
         chain_min_deviance = db.trace('deviance', chain)[chain_min_sample]
@@ -107,7 +107,7 @@ def max_posterior_sample(db, chains=None):
     return min_chain, min_sample
 
 
-def calculate_dic(db, best_chain=None, best_sample=None, chains=None):
+def calculate_dic(db, chains=None, best_sample=None, best_chain=None):
     """
     Calculates the Deviance Information Criterion for the posterior, defined as
     twice the expected deviance minus the deviance of the expectation value.
@@ -126,7 +126,7 @@ def calculate_dic(db, best_chain=None, best_sample=None, chains=None):
 
 
 def chains_are_converged(model, chains=None, stochastics=None, psrf_tol=0.05,
-                         verbose=1):
+                         verbose=0):
     """
     Checks whether chains are converged by calculating the Gelman-Rubin
     Potential Scale Reduction Factor (PSRF) for all traced stochastics
