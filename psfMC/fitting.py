@@ -104,8 +104,7 @@ def model_galaxy_mcmc(obs_file, obsIVM_file, psf_files, psfIVM_files,
 
     # TODO: Add support for resuming. For now, skip sampling if chains exist
     if mc_model.db.chains == 0:
-        samp_iter = 0
-        while True:
+        for samp_iter in xrange(max_iterations):
             # TODO: Is there a way to delete old chains?
             for chain_num in xrange(chains):
                 # Seed new values for every independent chain on first iteration
@@ -117,10 +116,8 @@ def model_galaxy_mcmc(obs_file, obsIVM_file, psf_files, psfIVM_files,
                                       trace_index=-1)
                 mc_model.sample(**kwargs)
 
-            samp_iter += 1
             iter_chains = range(samp_iter*chains, (samp_iter+1)*chains)
-            if samp_iter == max_iterations or \
-                    convergence_check(mc_model, chains=iter_chains):
+            if convergence_check(mc_model, chains=iter_chains):
                 break
             else:
                 warn('Not yet converged, resampling (iteration '
