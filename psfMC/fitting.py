@@ -21,7 +21,9 @@ def model_galaxy_mcmc(obs_file, obsIVM_file, psf_files, psfIVM_files,
                       model_file=None, mag_zeropoint=0,
                       mask_file=None, output_name=None,
                       write_fits=_default_filetypes,
-                      chains=1, backend='pickle', **kwargs):
+                      chains=1, backend='pickle',
+                      convergence_check=chains_are_converged, max_iterations=1,
+                      **kwargs):
     """
     Model the light distribution of a galaxy or galaxies using multi-component
     Markov Chain Monte Carlo parameter estimation.
@@ -58,6 +60,12 @@ def model_galaxy_mcmc(obs_file, obsIVM_file, psf_files, psfIVM_files,
     :param write_fits: List of which fits file types to write. By default, raw
         (unconvolved) model, convolved model, model IVM, and residual.
     :param backend: PyMC database backend to use. pickle is default
+    :param convergence_check: Function taking an MCMC model and a list of chain
+        indexes as arguments, and returning True or False based on whether the
+        model has converged. Default function returns True when all traces have
+        potential scale reduction factor within 0.05 of 1.0.
+    :param max_iterations: Maximum sampler iterations before convergence is
+        enforced. Default is 1, which means sampler halts even if not converged.
     :param kwargs: Further keyword arguments are passed to pyMC.MCMC.sample, and
         can be used to control number of MCMC samples, burn-in period, etc.
         Useful parameters include iter=, burn=, tune_interval=, thin=, etc. See
@@ -99,29 +107,28 @@ def model_galaxy_mcmc(obs_file, obsIVM_file, psf_files, psfIVM_files,
     if db.chains == 0:
         samp_iter = 0
         while True:
-            # TODO: Is there a way to delete old chains? Otherwise need to make
-            # sure Rhat is calculated only for last nchains
+            # TODO: Is there a way to delete old chains?
             for chain_num in xrange(chains):
-                # re-load the last state from this chain's previous iteration
-                if samp_iter > 0:
+                # Seed new values for every independent chain on first iteration
+                # On subsequent iterations, load last sample from previous
+                if samp_iter == 0:
+                    mc_model.seed()
+                else:
                     mc_model.remember(chain=(samp_iter-1)*chain_num,
                                       trace_index=-1)
-                # Sampler.sample already calls seed(), so no need to manually
-                # randomize the starting position
                 mc_model.sample(**kwargs)
 
+            samp_iter += 1
             iter_chains = range(samp_iter*chains, (samp_iter+1)*chains)
-
-            if chains_are_converged(mc_model, chains=iter_chains):
+            if samp_iter == max_iterations or \
+                    convergence_check(mc_model, chains=iter_chains):
                 break
             else:
-                samp_iter += 1
-                warn('Not yet converged, resampling (iteration {:d})'.format(samp_iter))
+                warn('Not yet converged, resampling (iteration '
+                     '{:d})'.format(samp_iter))
         db.close()
     else:
         warn('Database file already exists, skipping sampling')
-
-    print pymc.gelman_rubin(mc_model)
 
     # Write model output files
     obs_header = pyfits.getheader(obs_file, ignore_missing_end=True)
