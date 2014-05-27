@@ -69,7 +69,7 @@ def num_effective_samples(chains):
     Markov Chain sample autocorrelation. As noted by Gelman, if the number of
     chains is small, this is a crude estimate because the sampling variability
     is high. Always reports min(neff, nsamples * nchains) so as not to claim the
-    sampling is more effieicent than random.
+    sampling is more efficient than random.
     Gelman 2nd edition pg. 306 (Eqn. 11.4)
     :param chains: list of two or more traces (numpy arrays) to analyze
     """
