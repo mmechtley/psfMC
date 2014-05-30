@@ -139,7 +139,6 @@ def chains_are_converged(model, chains=None, stochastics=None, psrf_tol=0.05,
     if chains is None:
         chains = range(model.chains)
     if stochastics is None:
-        # TODO: should this be model.generations?
         stochastics = [stoch.__name__ for stoch
                        in model.stochastics - model.observed_stochastics]
 
