@@ -110,7 +110,7 @@ def model_galaxy_mcmc(obs_file, obsivm_file, psf_files, psfivm_files,
                 # Seed new values for every independent chain on first iteration
                 # On subsequent iterations, load last sample from previous
                 if samp_iter == 0:
-                    mc_model.seed()
+                    mc_model.draw_from_prior()
                 else:
                     mc_model.remember(chain=(samp_iter-1)*chain_num,
                                       trace_index=-1)
