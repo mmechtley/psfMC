@@ -10,18 +10,20 @@ from pymc.StepMethods import AdaptiveMetropolis, DiscreteMetropolis
 from .models import multicomponent_model
 from .array_utils import _bad_px_value
 from .ModelComponents.PSFSelector import PSFSelector
-from .analysis import max_posterior_sample, calculate_dic
+from .analysis import max_posterior_sample, calculate_dic, chains_are_converged
 
 
 _default_filetypes = ('raw_model', 'convolved_model', 'composite_ivm',
                       'residual', 'point_source_subtracted')
 
 
-def model_galaxy_mcmc(obs_file, obsIVM_file, psf_files, psfIVM_files,
+def model_galaxy_mcmc(obs_file, obsivm_file, psf_files, psfivm_files,
                       model_file=None, mag_zeropoint=0,
                       mask_file=None, output_name=None,
                       write_fits=_default_filetypes,
-                      chains=1, backend='pickle', **kwargs):
+                      chains=1, backend='pickle',
+                      convergence_check=chains_are_converged, max_iterations=1,
+                      **kwargs):
     """
     Model the light distribution of a galaxy or galaxies using multi-component
     Markov Chain Monte Carlo parameter estimation.
@@ -29,7 +31,7 @@ def model_galaxy_mcmc(obs_file, obsIVM_file, psf_files, psfIVM_files,
     :param obs_file: Filename or pyfits HDU containing the observed image, in
         the units specified by the magnitude zeropoint, (usually) electrons per
         second for HST observations).
-    :param obsIVM_file: Filename or pyfits HDU containing the observed image's
+    :param obsivm_file: Filename or pyfits HDU containing the observed image's
         inverse variance (weight) map. Must already include poisson noise from
         the object, as with multidrizzle ERR weight maps. Consider using
         astroRMS module to include correlated noise in resampled images
@@ -38,7 +40,7 @@ def model_galaxy_mcmc(obs_file, obsIVM_file, psf_files, psfIVM_files,
         supplied, the PSF image is treated as a free parameter. Additionally,
         the inter-PSF variance (from breathing or other variability) will be
         calculated propagated into the PSF variance maps.
-    :param psfIVM_files: Filename(s) or pyfits HDU containing the PSF's inverse
+    :param psfivm_files: Filename(s) or pyfits HDU containing the PSF's inverse
         variance (weight map). Must include poisson noise from the object, such
         as multidrizzle ERR weight maps
     :param model_file: Filename of the model definition file. This should be
@@ -58,6 +60,12 @@ def model_galaxy_mcmc(obs_file, obsIVM_file, psf_files, psfIVM_files,
     :param write_fits: List of which fits file types to write. By default, raw
         (unconvolved) model, convolved model, model IVM, and residual.
     :param backend: PyMC database backend to use. pickle is default
+    :param convergence_check: Function taking an MCMC model and a list of chain
+        indexes as arguments, and returning True or False based on whether the
+        model has converged. Default function returns True when all traces have
+        potential scale reduction factor within 0.05 of 1.0.
+    :param max_iterations: Maximum sampler iterations before convergence is
+        enforced. Default is 1, which means sampler halts even if not converged.
     :param kwargs: Further keyword arguments are passed to pyMC.MCMC.sample, and
         can be used to control number of MCMC samples, burn-in period, etc.
         Useful parameters include iter=, burn=, tune_interval=, thin=, etc. See
@@ -79,14 +87,13 @@ def model_galaxy_mcmc(obs_file, obsIVM_file, psf_files, psfIVM_files,
     else:
         db = backend
 
-    mc_model = multicomponent_model(obs_file, obsIVM_file,
-                                    psf_files, psfIVM_files,
+    mc_model = multicomponent_model(obs_file, obsivm_file,
+                                    psf_files, psfivm_files,
                                     components=model_file,
                                     mag_zp=mag_zeropoint,
                                     mask_file=mask_file,
                                     db=db,
                                     name=db_name)
-    db = mc_model.db
 
     for stoch in mc_model.step_method_dict:
         if 'xy' in stoch.__name__:
@@ -96,23 +103,38 @@ def model_galaxy_mcmc(obs_file, obsIVM_file, psf_files, psfIVM_files,
                                      proposal_distribution='Prior')
 
     # TODO: Add support for resuming. For now, skip sampling if chains exist
-    if db.chains == 0:
-        for chain_num in xrange(chains):
-            # Sampler.sample already calls seed(), so no need to manually
-            # randomize the starting position
-            mc_model.sample(**kwargs)
-        db.close()
+    if mc_model.db.chains == 0:
+        for samp_iter in xrange(max_iterations):
+            # TODO: Is there a way to delete old chains?
+            for chain_num in xrange(chains):
+                # Seed new values for every independent chain on first iteration
+                # On subsequent iterations, load last sample from previous
+                if samp_iter == 0:
+                    mc_model.draw_from_prior()
+                else:
+                    mc_model.remember(chain=(samp_iter-1)*chain_num,
+                                      trace_index=-1)
+                mc_model.sample(**kwargs)
+
+            iter_chains = range(samp_iter*chains, (samp_iter+1)*chains)
+            if convergence_check(mc_model, chains=iter_chains):
+                break
+            else:
+                warn('Not yet converged, resampling (iteration '
+                     '{:d})'.format(samp_iter))
+        mc_model.db.close()
     else:
         warn('Database file already exists, skipping sampling')
 
     # Write model output files
     obs_header = pyfits.getheader(obs_file, ignore_missing_end=True)
-    save_posterior_model(mc_model, db, output_name=output_name,
+    save_posterior_model(mc_model, output_name=output_name,
                          filetypes=write_fits, header=obs_header)
 
 
-def save_posterior_model(model, db, output_name='out_{}', mode='weighted',
-                         filetypes=_default_filetypes, header=None):
+def save_posterior_model(model, output_name='out_{}', mode='weighted',
+                         filetypes=_default_filetypes, header=None,
+                         chains=None):
     """
     Writes out the posterior model images. Two modes are supported: Maximum a
     posteriori (maximum or MAP) and "weighted average" (weighted). Since
@@ -123,33 +145,37 @@ def save_posterior_model(model, db, output_name='out_{}', mode='weighted',
     Sample autocorrelation should be moot, since such correlations are
     distributed roughly equally in parameter space.
 
-    :param model: psfMC model object (MCMC sampler) that defines the model
-    :param db: psfMC trace database that defines the (possibly multichain)
-               sequence of samples
+    :param model: psfMC model object (MCMC sampler) that defines the model. May
+        have multiple chains
     :param output_name: base name for output files (no extension)
-    :param mode: Either "maximum" or "MAP" (both do MAP), or "weighted".
-                 Default is weighted
+    :param mode: Either "maximum" or "MAP" (both do MAP), or "weighted". Default
+        is weighted
     :param filetypes: list of filetypes to save out (see model_galaxy_mcmc
-                      documentation for a list of possible types
+        documentation for a list of possible types
     :param header: base fits header to include with each image, e.g. a copy of
-                   the header from the original data
+        the header from the original data
+    :param chains: List of chain indexes that sample the final posterior (e.g.
+        if initial chains had not converged)
     """
     if header is None:
         header = pyfits.Header()
     if '{}' not in output_name:
         output_name += '_{}'
+    if chains is None:
+        chains = range(model.db.chains)
 
     stoch_names = [stoch.__name__ for stoch
                    in model.stochastics - model.observed_stochastics]
-    statscards = _stats_as_header_cards(db, trace_names=stoch_names)
+    statscards = _stats_as_header_cards(model.db, trace_names=stoch_names,
+                                        chains=chains)
     header.extend(statscards, end=True)
-    best_chain, best_samp = header['MPCHAIN'], header['MPSAMP']
+    best_chain, best_samp = header['MAPCHAIN'], header['MAPSAMP']
 
     # Record the name of the PSF file used
     psf_selector = [cont for cont in model.containers
                     if isinstance(cont, PSFSelector)].pop()
     model.get_node('PSF_Index').value = \
-        db.trace('PSF_Index', best_chain)[best_samp]
+        model.db.trace('PSF_Index', best_chain)[best_samp]
     header.set('PSF_IMG', value=psf_selector.value.filename(),
                comment='PSF image of maximum posterior model')
 
@@ -171,8 +197,8 @@ def save_posterior_model(model, db, output_name='out_{}', mode='weighted',
 
     elif mode in ('weighted',):
         total_samples = 0
-        for chain in xrange(db.chains):
-            chain_samples = db.trace('deviance', chain).length()
+        for chain in chains:
+            chain_samples = model.db.trace('deviance', chain).length()
             total_samples += chain_samples
             for sample in xrange(chain_samples):
                 _print_progress(sample, chain, chain_samples)
@@ -214,7 +240,7 @@ _replace_pairs = (('_Sersic', 'SER'), ('_PSF', 'PSF'), ('_Sky', 'SKY'),
                  ('PSF_Index', 'PSF_IDX'))
 
 
-def _stats_as_header_cards(db, trace_names=None):
+def _stats_as_header_cards(db, trace_names=None, chains=None):
     """
     Collates statistics about the trace database, and returns them in 3-tuple
     key-value-comment format suitable for extending a fits header
@@ -225,7 +251,7 @@ def _stats_as_header_cards(db, trace_names=None):
     statscards += [
         ('MCITER', samp_info['_iter'], 'number of samples (incl. burn-in)'),
         ('MCBURN', samp_info['_burn'], 'number of burn-in (discarded) samples'),
-        ('MCCHAINS', db.chains, 'number of chains run'),
+        ('MCCHAINS', len(chains), 'number of chains run'),
         ('MCTHIN', samp_info['_thin'], 'thin interval (retain every nth)'),
         ('MCTUNE', samp_info['_tune_throughout'],
          'Are AdaptiveMetropolis tuned after burn-in?'),
@@ -234,13 +260,12 @@ def _stats_as_header_cards(db, trace_names=None):
 
     # Now collect information about the posterior model
     statscards += _section_header('psfMC POSTERIOR MODEL INFORMATION')
-    best_chain, best_sample = max_posterior_sample(db)
+    best_chain, best_sample = max_posterior_sample(db, chains)
     statscards += [
-        ('MPCHAIN', best_chain, 'Chain index of maximum posterior model'),
-        ('MPSAMP', best_sample, 'Sample index of maximum posterior model')]
+        ('MAPCHAIN', best_chain, 'Chain index of maximum posterior model'),
+        ('MAPSAMP', best_sample, 'Sample index of maximum posterior model')]
     for trace_name in sorted(trace_names):
-        combined_samps = [db.trace(trace_name, chain)[:]
-                          for chain in xrange(db.chains)]
+        combined_samps = [db.trace(trace_name, chain)[:] for chain in chains]
         combined_samps = np.concatenate(combined_samps)
         max_post_val = db.trace(trace_name, best_chain)[best_sample]
         std = np.std(combined_samps, axis=0)
@@ -255,7 +280,7 @@ def _stats_as_header_cards(db, trace_names=None):
             val = '({}) +/- ({})'.format(strmean, strstd)
         statscards += [(key, val, 'psfMC model component')]
 
-    dic = calculate_dic(db, best_chain, best_sample)
+    dic = calculate_dic(db, chains, best_sample, best_chain)
     statscards += [('MDL_DIC', dic, 'Deviance Information Criterion')]
 
     return statscards

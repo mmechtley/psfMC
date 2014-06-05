@@ -10,8 +10,8 @@ def _magic_dist(class_name):
     """
     Magically import all pymc distributions, without requiring name argument
     """
-    return lambda *args, **kwargs: \
-        pymc.distributions.__dict__[class_name]('', *args, **kwargs)
+    dist = getattr(pymc.distributions, class_name)
+    return lambda *args, **kwargs: dist('', *args, **kwargs)
 
 _dists = [pymc.distributions.capitalize(_dist) for _dist
           in pymc.distributions.availabledistributions]
