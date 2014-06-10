@@ -126,10 +126,12 @@ def model_galaxy_mcmc(obs_file, obsivm_file, psf_files, psfivm_files,
     else:
         warn('Database file already exists, skipping sampling')
 
-    # Write model output files
+    # Write model output files, using only the last `chains' chains.
+    post_chains = range(mc_model.db.chains - chains, mc_model.db.chains)
     obs_header = pyfits.getheader(obs_file, ignore_missing_end=True)
     save_posterior_model(mc_model, output_name=output_name,
-                         filetypes=write_fits, header=obs_header)
+                         filetypes=write_fits, header=obs_header,
+                         chains=post_chains)
 
 
 def save_posterior_model(model, output_name='out_{}', mode='weighted',
