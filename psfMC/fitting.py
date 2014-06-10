@@ -95,15 +95,16 @@ def model_galaxy_mcmc(obs_file, obsivm_file, psf_files, psfivm_files,
                                     db=db,
                                     name=db_name)
 
-    for stoch in mc_model.step_method_dict:
-        if 'xy' in stoch.__name__:
-            mc_model.use_step_method(AdaptiveMetropolis, stoch, interval=10)
-        if stoch.__name__ == 'PSF_Index':
-            mc_model.use_step_method(DiscreteMetropolis, stoch,
-                                     proposal_distribution='Prior')
-
     # TODO: Add support for resuming. For now, skip sampling if chains exist
     if mc_model.db.chains == 0:
+        # Set special step methods for xy positions and discrete variables
+        for stoch in mc_model.step_method_dict:
+            if 'xy' in stoch.__name__:
+                mc_model.use_step_method(AdaptiveMetropolis, stoch)
+            if stoch.__name__ == 'PSF_Index':
+                mc_model.use_step_method(DiscreteMetropolis, stoch,
+                                         proposal_distribution='Prior')
+
         for samp_iter in xrange(max_iterations):
             # TODO: Is there a way to delete old chains?
             for chain_num in xrange(chains):
