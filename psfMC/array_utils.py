@@ -11,18 +11,6 @@ _timers = dict()
 _bad_px_value = 0
 
 
-def debug_timer(step, name=''):
-    """
-    Hacky lightweight timer, for profiling model creation
-    """
-    if step == 'start':
-        _timers[name] = time.time()
-    elif step == 'stop':
-        print '{}: {:.2e}'.format(name, time.time() - _timers[name]),
-    else:
-        print ''
-
-
 def pad_and_rfft_image(img, newshape):
     """
     Pads the psf array to the size described by imgshape, then run rfft to put
@@ -31,8 +19,8 @@ def pad_and_rfft_image(img, newshape):
     # TODO: pad with white noise instead of zeros?
     pad = np.asarray(newshape) - np.asarray(img.shape)
     if np.any(pad < 0):
-        raise NotImplementedError('PSF images larger than observation ' +
-                                  'images are not yet supported')
+        raise NotImplementedError('PSF images larger than observation images '
+                                  'are not yet supported')
     img_pad = np.zeros(newshape, dtype=img.dtype)
     img_pad[pad[0]//2:pad[0]//2 + img.shape[0],
             pad[1]//2:pad[1]//2 + img.shape[1]] = img
@@ -111,7 +99,7 @@ def mask_from_file(mask_file, obs_hdr, shape):
         regfilt = preg.open(mask_file).as_imagecoord(obs_hdr).get_filter()
         return ~regfilt.mask(shape)
     except ImportError:
-        warn('pyregion module could not be imported. ds9 region format masks ' +
+        warn('pyregion module could not be imported. ds9 region format masks '
              'will be ignored.')
     except UnicodeDecodeError:
         pass  # When not ds9 region format

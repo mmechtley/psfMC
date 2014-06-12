@@ -50,5 +50,6 @@ def component_list_from_file(filename):
 
     exec(compile(model_tree, filename, mode='exec'))
 
+    # Filter out only those object that are subclasses of ComponentBase
     return [comp for comp in locals()[_comps_name]
             if isinstance(comp, ComponentBase.ComponentBase)]

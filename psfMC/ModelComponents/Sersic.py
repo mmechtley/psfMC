@@ -9,7 +9,7 @@ from ..array_utils import array_coords
 try:
     import numexpr as ne
 except ImportError:
-    warn('numexpr module could not be imported. numexpr is recommended for ' +
+    warn('numexpr module could not be imported. numexpr is recommended for '
          'optimized (parallel) computation of Sersic profiles.')
     ne = None
 
