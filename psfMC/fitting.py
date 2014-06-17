@@ -115,11 +115,11 @@ def model_galaxy_mcmc(obs_file, obsivm_file, psf_files, psfivm_files,
             if convergence_check(mc_model, chains=iter_chains):
                 break
             else:
-                warn('Not yet converged, resampling (iteration '
-                     '{:d})'.format(samp_iter))
+                warn('Not yet converged after {:d} iterations ({:d} chains)'
+                     .format(samp_iter+1, chains))
         mc_model.db.close()
     else:
-        warn('Database file already exists, skipping sampling')
+        warn('Database already contains sampled chains, skipping sampling')
 
     # Write model output files, using only the last `chains' chains.
     post_chains = range(mc_model.db.chains - chains, mc_model.db.chains)

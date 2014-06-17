@@ -142,6 +142,10 @@ def chains_are_converged(model, chains=None, stochastics=None, psrf_tol=0.05,
         stochastics = [stoch.__name__ for stoch
                        in model.stochastics - model.observed_stochastics]
 
+    # Automatically assume converged if only one chain is sampled.
+    if len(chains) < 2:
+        return True
+
     def is_converged(stoch):
         """
         Test whether a single stochastic is converged (PSRF is within tolerance)
