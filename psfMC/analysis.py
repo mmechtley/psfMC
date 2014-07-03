@@ -96,7 +96,7 @@ def max_posterior_sample(db, chains=None):
         chains = range(db.chains)
     min_chain = -1
     min_sample = -1
-    min_deviance = 0  # deviance is a log-probability, always negative
+    min_deviance = np.inf
     for chain in chains:
         chain_min_sample = np.argmin(db.trace('deviance', chain)[:])
         chain_min_deviance = db.trace('deviance', chain)[chain_min_sample]
