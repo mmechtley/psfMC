@@ -171,8 +171,7 @@ def save_posterior_model(model, output_name='out_{}', mode='weighted',
     # Record the name of the PSF file used
     psf_selector = [cont for cont in model.containers
                     if isinstance(cont, PSFSelector)].pop()
-    model.get_node('PSF_Index').value = \
-        model.db.trace('PSF_Index', best_chain)[best_samp]
+    model.remember(chain=best_chain, trace_index=best_samp)
     header.set('PSF_IMG', value=psf_selector.value.filename(),
                comment='PSF image of maximum posterior model')
 
