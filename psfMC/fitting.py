@@ -63,7 +63,9 @@ def model_galaxy_mcmc(obs_file, obsivm_file, psf_files, psfivm_files,
     :param convergence_check: Function taking an MCMC model and a list of chain
         indexes as arguments, and returning True or False based on whether the
         model has converged. Default function returns True when all traces have
-        potential scale reduction factor within 0.05 of 1.0.
+        potential scale reduction factor within 0.05 of 1.0. Sampling will be
+        repeated (increasing effective burn-in period) until convergence check
+        is met or until max_iterations iterations are performed
     :param max_iterations: Maximum sampler iterations before convergence is
         enforced. Default is 1, which means sampler halts even if not converged.
     :param kwargs: Further keyword arguments are passed to pyMC.MCMC.sample, and
@@ -126,12 +128,13 @@ def model_galaxy_mcmc(obs_file, obsivm_file, psf_files, psfivm_files,
     obs_header = pyfits.getheader(obs_file, ignore_missing_end=True)
     save_posterior_model(mc_model, output_name=output_name,
                          filetypes=write_fits, header=obs_header,
-                         chains=post_chains)
+                         chains=post_chains,
+                         convergence_check=convergence_check)
 
 
 def save_posterior_model(model, output_name='out_{}', mode='weighted',
                          filetypes=_default_filetypes, header=None,
-                         chains=None):
+                         chains=None, convergence_check=chains_are_converged):
     """
     Writes out the posterior model images. Two modes are supported: Maximum a
     posteriori (maximum or MAP) and "weighted average" (weighted). Since
@@ -153,6 +156,10 @@ def save_posterior_model(model, output_name='out_{}', mode='weighted',
         the header from the original data
     :param chains: List of chain indexes that sample the final posterior (e.g.
         if initial chains had not converged)
+    :param convergence_check: Function taking an MCMC model and a list of chain
+        indexes as arguments, and returning True or False based on whether the
+        model has converged. Default function returns True when all traces have
+        potential scale reduction factor within 0.05 of 1.0.
     """
     if header is None:
         header = pyfits.Header()
@@ -161,19 +168,10 @@ def save_posterior_model(model, output_name='out_{}', mode='weighted',
     if chains is None:
         chains = range(model.db.chains)
 
-    stoch_names = [stoch.__name__ for stoch
-                   in model.stochastics - model.observed_stochastics]
-    statscards = _stats_as_header_cards(model.db, trace_names=stoch_names,
-                                        chains=chains)
+    statscards = _stats_as_header_cards(model, chains=chains,
+                                        convergence_check=convergence_check)
     header.extend(statscards, end=True)
     best_chain, best_samp = header['MAPCHAIN'], header['MAPSAMP']
-
-    # Record the name of the PSF file used
-    psf_selector = [cont for cont in model.containers
-                    if isinstance(cont, PSFSelector)].pop()
-    model.remember(chain=best_chain, trace_index=best_samp)
-    header.set('PSF_IMG', value=psf_selector.value.filename(),
-               comment='PSF image of maximum posterior model')
 
     print 'Saving posterior models'
     # Check to ensure we understand all the requested file types
@@ -228,22 +226,18 @@ def save_posterior_model(model, output_name='out_{}', mode='weighted',
     return
 
 
-# TODO: better way to make keys. Maybe component.shortname(attr) etc.
-# String translation table to change trace names to FITS header keys
-_replace_pairs = (('_Sersic', 'SER'), ('_PSF', 'PSF'), ('_Sky', 'SKY'),
-                 ('_reff', '_RE'), ('_b', 'B'), ('_index', '_N'),
-                 ('_axis_ratio', '_Q'), ('_angle', '_ANG'),
-                 ('PSF_Index', 'PSF_IDX'))
-
-
-def _stats_as_header_cards(db, trace_names=None, chains=None):
+def _stats_as_header_cards(model, chains=None,
+                           convergence_check=chains_are_converged):
     """
     Collates statistics about the trace database, and returns them in 3-tuple
     key-value-comment format suitable for extending a fits header
     """
+    db = model.db
     # First get information about the sampler run parameters
     statscards = _section_header('psfMC MCMC SAMPLER PARAMETERS')
     samp_info = db.getstate()['sampler']
+    # Check sampler convergence
+    converged = convergence_check(model, chains=chains)
     statscards += [
         ('MCITER', samp_info['_iter'], 'number of samples (incl. burn-in)'),
         ('MCBURN', samp_info['_burn'], 'number of burn-in (discarded) samples'),
@@ -252,7 +246,8 @@ def _stats_as_header_cards(db, trace_names=None, chains=None):
         ('MCTUNE', samp_info['_tune_throughout'],
          'Are AdaptiveMetropolis tuned after burn-in?'),
         ('MCTUNE_N', samp_info['_tune_interval'],
-         'AdaptiveMetropolis tuning interval')]
+         'AdaptiveMetropolis tuning interval'),
+        ('MCCONVER', converged, 'Has MCMC sampler converged?')]
 
     # Now collect information about the posterior model
     statscards += _section_header('psfMC POSTERIOR MODEL INFORMATION')
@@ -260,24 +255,32 @@ def _stats_as_header_cards(db, trace_names=None, chains=None):
     statscards += [
         ('MAPCHAIN', best_chain, 'Chain index of maximum posterior model'),
         ('MAPSAMP', best_sample, 'Sample index of maximum posterior model')]
-    for trace_name in sorted(trace_names):
+
+    stochastics = model.stochastics - model.observed_stochastics
+    for stoch in sorted(stochastics, key=lambda s: s.__name__):
+        trace_name = stoch.__name__
+        fits_key = stoch.fitsname
         combined_samps = [db.trace(trace_name, chain)[:] for chain in chains]
         combined_samps = np.concatenate(combined_samps)
         max_post_val = db.trace(trace_name, best_chain)[best_sample]
         std = np.std(combined_samps, axis=0)
-        key = trace_name
-        for oldstr, newstr in _replace_pairs:
-            key = key.replace(oldstr, newstr)
         try:
             val = '{:0.4g} +/- {:0.4g}'.format(max_post_val, std)
         except ValueError:
             strmean = ','.join(['{:0.4g}'.format(dim) for dim in max_post_val])
             strstd = ','.join(['{:0.4g}'.format(dim) for dim in std])
             val = '({}) +/- ({})'.format(strmean, strstd)
-        statscards += [(key, val, 'psfMC model component')]
+        statscards += [(fits_key, val, 'psfMC model component')]
 
     dic = calculate_dic(db, chains, best_sample, best_chain)
     statscards += [('MDL_DIC', dic, 'Deviance Information Criterion')]
+
+    # Record the name of the PSF file used in the MP model
+    psf_selector = [cont for cont in model.containers
+                    if isinstance(cont, PSFSelector)].pop()
+    model.remember(chain=best_chain, trace_index=best_sample)
+    statscards += [('PSF_IMG', psf_selector.value.filename(),
+                    'PSF image of maximum posterior model')]
 
     return statscards
 

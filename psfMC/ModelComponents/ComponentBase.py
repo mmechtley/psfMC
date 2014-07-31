@@ -7,6 +7,8 @@ class ComponentBase(ContainerBase):
     """
     Base class which other components inherit from
     """
+    _fits_abbrs = []
+
     def __init__(self):
         # Significant portions of this adapted from
         # pymc.Container.ObjectContainer.
@@ -17,20 +19,28 @@ class ComponentBase(ContainerBase):
         file_items(self, dictpop)
 
         self._value = copy(self)
-        ContainerBase.__init__(self, self)
+        super(ComponentBase, self).__init__(self)
         self.OCValue = OCValue(self)
 
     def update_trace_names(self, count=None):
         """
         Set trace names based on component number, type, and attribute name
+        Also add abbreviated 'fitsname' attribute to individual stochastics
         """
         comptype = self.__class__.__name__
         for attr in self.__dict__:
             newname = '{}_{}'.format(comptype, attr)
+            fitsname = newname
+            for longname, abbr in self.__class__._fits_abbrs:
+                fitsname = fitsname.replace(longname, abbr)
+
             if count is not None:
-                newname = str(count) + '_' + newname
+                newname = '{:d}_{}'.format(count, newname)
+                fitsname = '{:d}{}'.format(count, fitsname)
+
             try:
                 self.__dict__[attr].__name__ = newname
+                self.__dict__[attr].fitsname = fitsname
             except AttributeError:
                 pass
 

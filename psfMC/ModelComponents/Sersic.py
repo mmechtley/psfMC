@@ -18,6 +18,9 @@ class Sersic(ComponentBase):
     """
     Sersic profile component
     """
+    _fits_abbrs = [('Sersic', 'SER'), ('reff_b', 'REB'), ('reff', 'RE'),
+                   ('index', 'N'), ('angle', 'ANG')]
+
     def __init__(self, xy=None, mag=None, reff=None, reff_b=None,
                  index=None, angle=None, angle_degrees=False):
         self.xy = xy
