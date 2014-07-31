@@ -247,7 +247,7 @@ def _stats_as_header_cards(model, chains=None,
          'Are AdaptiveMetropolis tuned after burn-in?'),
         ('MCTUNE_N', samp_info['_tune_interval'],
          'AdaptiveMetropolis tuning interval'),
-        ('MCCONVER', converged, 'Has MCMC sampler converged?')]
+        ('MCCONVRG', converged, 'Has MCMC sampler converged?')]
 
     # Now collect information about the posterior model
     statscards += _section_header('psfMC POSTERIOR MODEL INFORMATION')
