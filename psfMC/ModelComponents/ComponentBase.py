@@ -5,13 +5,13 @@ from pymc.Container_values import OCValue
 
 class ComponentBase(ContainerBase):
     """
-    Base class which other components inherit from
+    Base class which other components inherit from.
+    Significant portions are adapted from pymc.Container.ObjectContainer.
+    (__init__, replace, value)
     """
     _fits_abbrs = []
 
     def __init__(self):
-        # Significant portions of this adapted from
-        # pymc.Container.ObjectContainer.
         dictpop = copy(self.__dict__)
         if 'self' in dictpop:
             dictpop.pop('self')
