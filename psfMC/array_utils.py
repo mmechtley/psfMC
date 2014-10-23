@@ -1,12 +1,8 @@
 from __future__ import division
-import time
 import pyfits
 import numpy as np
 from math import fsum
 from warnings import warn
-
-
-_timers = dict()
 
 _bad_px_value = 0
 
@@ -81,7 +77,7 @@ def preprocess_obs(obs_data, obs_ivm, mask_file=None):
         if exclude_px is not None:
             badpx |= exclude_px
 
-    return obs_data, obs_var, badpx
+    return obs_hdr, obs_data, obs_var, badpx
 
 
 def mask_from_file(mask_file, obs_hdr, shape):
@@ -137,7 +133,7 @@ def pre_fft_psf(psf_data, psf_var, pad_to_shape=None):
     return f_psf, f_psf_var
 
 
-def calculate_psf_variability(psf_data, psf_vars):
+def calculate_psf_variability(psf_data, psf_vars, debug_psfs=False):
     """
     Take a set of normalized PSFs and their corresponding variance maps, measure
     the inter-PSF (i.e. PSF variability/mismatch) variance map, and propagate
@@ -146,6 +142,17 @@ def calculate_psf_variability(psf_data, psf_vars):
     if len(psf_data) == 1:
         return psf_data, psf_vars
     mismatch_var = np.var(psf_data, axis=0)
+
+    if debug_psfs:
+        import pyfits
+        meanpsf = np.mean(psf_data, axis=0)
+        pyfits.writeto('xx_rms.fits', np.sqrt(mismatch_var))
+        pyfits.writeto('xx_mean.fits', meanpsf)
+        for num, (psf, var) in enumerate(zip(psf_data, psf_vars)):
+            pyfits.writeto('xx_psf{:d}.fits'.format(num), psf - meanpsf)
+            pyfits.writeto('xx_rms{:d}.fits'.format(num), np.sqrt(var))
+        exit(1)
+
     # Add contribution of PSF mismatch to all individual variance maps
     psf_vars = [var + mismatch_var for var in psf_vars]
     return psf_data, psf_vars
