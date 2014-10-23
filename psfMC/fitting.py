@@ -96,7 +96,7 @@ def model_galaxy_mcmc(model_file, output_name=None,
     else:
         warn('Database already contains sampled chains, skipping sampling')
 
-    # Write model output files, using only the last `chains' chains.
+    # Write model output files, using only the last "chains" chains.
     post_chains = range(mc_model.db.chains - chains, mc_model.db.chains)
     save_posterior_model(mc_model, output_name=output_name,
                          filetypes=write_fits,
@@ -124,8 +124,6 @@ def save_posterior_model(model, output_name='out_{}', mode='weighted',
         is weighted
     :param filetypes: list of filetypes to save out (see model_galaxy_mcmc
         documentation for a list of possible types
-    :param header: base fits header to include with each image, e.g. a copy of
-        the header from the original data
     :param chains: List of chain indexes that sample the final posterior (e.g.
         if initial chains had not converged)
     :param convergence_check: Function taking an MCMC model and a list of chain
@@ -153,7 +151,7 @@ def save_posterior_model(model, output_name='out_{}', mode='weighted',
              'generated for these types.'.format(unknown_determs))
         filetypes = set(filetypes) - unknown_determs
 
-    output_data = dict([(ftype, None) for ftype in filetypes])
+    output_data = dict()
     if mode in ('maximum', 'MAP'):
         model.remember(chain=best_chain, trace_index=best_samp)
         for ftype in filetypes:
@@ -172,15 +170,18 @@ def save_posterior_model(model, output_name='out_{}', mode='weighted',
                 for ftype in filetypes:
                     sample_data = np.ma.filled(model.get_node(ftype).value,
                                                _bad_px_value)
-                    if output_data[ftype] is None:
+                    if ftype not in output_data:
                         output_data[ftype] = np.zeros_like(sample_data)
+                    # Accumulate variances rather than IVMs, then invert later
                     if ftype in ('composite_ivm',):
                         sample_data = 1 / sample_data
                     output_data[ftype] += sample_data
         # Take the mean
         for ftype in filetypes:
             output_data[ftype] /= total_samples
+            # Mean of variances needs two factors of total_samples. Then invert.
             if ftype in ('composite_ivm',):
+                output_data[ftype] /= total_samples
                 output_data[ftype] = 1 / output_data[ftype]
 
     else:

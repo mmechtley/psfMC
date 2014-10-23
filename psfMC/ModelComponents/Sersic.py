@@ -126,13 +126,11 @@ class Sersic(ComponentBase):
             sb = ne.evaluate(ser_expr)
         else:
             sb = sbeff * exp(-kappa * (exp(log(sq_radii)*radius_pow) - 1))
-        # estimate distance of the pixel center of mass from the pixel center
-        # in units of reff
-        grad = Sersic._normed_grad(sq_radii, radius_pow, kappa)
+        # Estimate offset of pixel barycenter from pixel center, in reff units
         # TODO: should delta_r change per-pixel based on ellipse params?
-        # Find the barycenter offset from the center (units of reff) within the
-        # pixel-sized trapezoid having a top with the given normed gradient.
         delta_r = 1 / self.reff
+        # Pixel-sized trapezoid having a top with the given normed gradient
+        grad = Sersic._normed_grad(sq_radii, radius_pow, kappa)
         bary_offset = delta_r**2 / 12 * grad
         arr += sb * (1 + grad * bary_offset)
         return arr
