@@ -37,7 +37,7 @@ based on a rough Galfit model.
 
 **mask_J0005-0006.reg:** An SAOImage ds9 region file is included to define the 
 fitting region. It defines a large circle centered on the quasar, with 3 
-exclusion regions making out pixels belonging to other galaxies which are not 
+exclusion regions masking out pixels belonging to other galaxies which are not 
 blended with the quasar.
 
 Example Run Script
