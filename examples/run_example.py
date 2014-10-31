@@ -45,6 +45,7 @@ for obsfile, psffile in zip(obsfiles, psffiles):
             pp.hist(db.trace(trace_name)[:], bins=20)
             pp.title(trace_name)
             pp.show()
+    db.close()
 
     # Also try to open a ds9 window with all the input and output fits images
     out_images = glob.glob(output_name+'_*.fits')

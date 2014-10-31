@@ -119,7 +119,7 @@ def model_galaxy_mcmc(obs_file, obsivm_file, psf_files, psfivm_files,
             else:
                 warn('Not yet converged after {:d} iterations ({:d} chains)'
                      .format(samp_iter+1, chains))
-        mc_model.db.close()
+        mc_model.db.commit()
     else:
         warn('Database already contains sampled chains, skipping sampling')
 
@@ -130,6 +130,7 @@ def model_galaxy_mcmc(obs_file, obsivm_file, psf_files, psfivm_files,
                          filetypes=write_fits, header=obs_header,
                          chains=post_chains,
                          convergence_check=convergence_check)
+    mc_model.db.close()
 
 
 def save_posterior_model(model, output_name='out_{}', mode='weighted',
