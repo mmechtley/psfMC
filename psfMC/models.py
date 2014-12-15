@@ -85,5 +85,6 @@ def multicomponent_model(components, **kwargs):
     stochastics += components
 
     mcmc = MCMC(stochastics, **kwargs)
+    # FIXME: This is kind of an abuse of duck-typing. Subclass MCMC instead?
     mcmc.obs_header = config.obs_header
     return mcmc
