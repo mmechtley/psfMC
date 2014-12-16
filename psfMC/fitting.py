@@ -17,64 +17,43 @@ _default_filetypes = ('raw_model', 'convolved_model', 'composite_ivm',
                       'residual', 'point_source_subtracted')
 
 
-def model_galaxy_mcmc(obs_file, obsivm_file, psf_files, psfivm_files,
-                      model_file=None, mag_zeropoint=0,
-                      mask_file=None, output_name=None,
+def model_galaxy_mcmc(model_file, output_name=None,
                       write_fits=_default_filetypes,
-                      chains=1, backend='pickle',
-                      convergence_check=chains_are_converged, max_iterations=1,
+                      chains=1, max_iterations=1,
+                      convergence_check=chains_are_converged,
+                      backend='pickle',
                       **kwargs):
     """
     Model the light distribution of a galaxy or galaxies using multi-component
     Markov Chain Monte Carlo parameter estimation.
 
-    :param obs_file: Filename or pyfits HDU containing the observed image, in
-        the units specified by the magnitude zeropoint, (usually) electrons per
-        second for HST observations).
-    :param obsivm_file: Filename or pyfits HDU containing the observed image's
-        inverse variance (weight) map. Must already include poisson noise from
-        the object, as with multidrizzle ERR weight maps. Consider using
-        astroRMS module to include correlated noise in resampled images
-    :param psf_files: Filename(s) or pyfits HDU containing the PSF for the
-        model. This should be e.g. a high S/N star. If multiple PSF images are
-        supplied, the PSF image is treated as a free parameter. Additionally,
-        the inter-PSF variance (from breathing or other variability) will be
-        calculated propagated into the PSF variance maps.
-    :param psfivm_files: Filename(s) or pyfits HDU containing the PSF's inverse
-        variance (weight map). Must include poisson noise from the object, such
-        as multidrizzle ERR weight maps
     :param model_file: Filename of the model definition file. This should be
         a series of components from psfMC.ModelComponents, with parameters
         supplied as either fixed values or stochastics from psfMC.distributions
-    :param mag_zeropoint: Magnitude zeropoint, i.e. the magnitude of one ADU,
-        whether in electrons per second (as with published HST zeropoints) or
-        whatever funky units the data use.
-    :param mask_file: Optional file defining the fitting region. This can be
-        used to exclude bad pixels or interloper objects, or confine fitting
-        to a smaller region of a large image. Supplied in either fits format
-        (where nonzero values indicate exclusion), or ds9 region format.
     :param output_name: Base name for output files (no file extension). By
         default, files are written out containing the raw model, convolved
         model, combined IVM 1/(1/obsIVM + 1/modelIVM), residual of
         observation - model, and the MCMC trace database.
     :param write_fits: List of which fits file types to write. By default, raw
         (unconvolved) model, convolved model, model IVM, and residual.
-    :param backend: PyMC database backend to use. pickle is default
+    :param chains: Number of individual chains to run (resetting the sampler
+        to begin at a new random position between each chain)
+    :param max_iterations: Maximum sampler iterations before convergence is
+        enforced. Default is 1, which means sampler halts even if not converged.
     :param convergence_check: Function taking an MCMC model and a list of chain
         indexes as arguments, and returning True or False based on whether the
         model has converged. Default function returns True when all traces have
         potential scale reduction factor within 0.05 of 1.0. Sampling will be
         repeated (increasing effective burn-in period) until convergence check
         is met or until max_iterations iterations are performed
-    :param max_iterations: Maximum sampler iterations before convergence is
-        enforced. Default is 1, which means sampler halts even if not converged.
+    :param backend: PyMC database backend to use. pickle is default
     :param kwargs: Further keyword arguments are passed to pyMC.MCMC.sample, and
         can be used to control number of MCMC samples, burn-in period, etc.
         Useful parameters include iter=, burn=, tune_interval=, thin=, etc. See
         pyMC documentation.
     """
     if output_name is None:
-        output_name = 'out_' + obs_file.replace('.fits', '').replace('.gz', '')
+        output_name = 'out_' + model_file.replace('.py', '')
     output_name += '_{}'
 
     # TODO: Set these based on total number of unknown components?
@@ -89,13 +68,7 @@ def model_galaxy_mcmc(obs_file, obsivm_file, psf_files, psfivm_files,
     else:
         db = backend
 
-    mc_model = multicomponent_model(obs_file, obsivm_file,
-                                    psf_files, psfivm_files,
-                                    components=model_file,
-                                    mag_zp=mag_zeropoint,
-                                    mask_file=mask_file,
-                                    db=db,
-                                    name=db_name)
+    mc_model = multicomponent_model(components=model_file, db=db, name=db_name)
 
     # TODO: Add support for resuming. For now, skip sampling if chains exist
     if mc_model.db.chains == 0:
@@ -125,16 +98,15 @@ def model_galaxy_mcmc(obs_file, obsivm_file, psf_files, psfivm_files,
 
     # Write model output files, using only the last "chains" chains.
     post_chains = range(mc_model.db.chains - chains, mc_model.db.chains)
-    obs_header = pyfits.getheader(obs_file, ignore_missing_end=True)
     save_posterior_model(mc_model, output_name=output_name,
-                         filetypes=write_fits, header=obs_header,
+                         filetypes=write_fits,
                          chains=post_chains,
                          convergence_check=convergence_check)
     mc_model.db.close()
 
 
 def save_posterior_model(model, output_name='out_{}', mode='weighted',
-                         filetypes=_default_filetypes, header=None,
+                         filetypes=_default_filetypes,
                          chains=None, convergence_check=chains_are_converged):
     """
     Writes out the posterior model images. Two modes are supported: Maximum a
@@ -160,8 +132,7 @@ def save_posterior_model(model, output_name='out_{}', mode='weighted',
         model has converged. Default function returns True when all traces have
         potential scale reduction factor within 0.05 of 1.0.
     """
-    if header is None:
-        header = pyfits.Header()
+    header = model.obs_header
     if '{}' not in output_name:
         output_name += '_{}'
     if chains is None:

@@ -15,12 +15,12 @@ _sersic_ref_file = 'gfsim_n{:0.1f}.fits.gz'
 _psf_ref_shift = np.array((2.2, 2.7))
 
 
-def _replace_galfit_param(name, value, object=1, fit=True):
+def _replace_galfit_param(name, value, object_num=1, fit=True):
     """
     Replaces a parameter value in the galfit configuration file.
     :param name: parameter name, without the following parenthesis
     :param value: new value for the parameter. Best provided as a string
-    :param object: For object parameters, which object to change. Galfit
+    :param object_num: For object parameters, which object to change. Galfit
                    numbering, whichs starts with 1. Non-object params (e.g. B)
                    should use default object=1
     :param fit: Whether to fit the parameter (True) or hold fixed (False)
@@ -30,7 +30,7 @@ def _replace_galfit_param(name, value, object=1, fit=True):
         gf_file = f.readlines()
     # Control parameters only occur once, so 0th index is fine.
     loc = [i for i in range(len(gf_file)) if
-           gf_file[i].strip().startswith(name+')')][object-1]
+           gf_file[i].strip().startswith(name+')')][object_num-1]
     param_str = gf_file[loc]
     comment = param_str.find('#')
     if name in ascii_uppercase:
@@ -54,7 +54,7 @@ def test_sersic(index=4):
     if not os.path.exists(sersic_ref_file):
         nozip_name = sersic_ref_file.replace('.gz', '')
         _replace_galfit_param('B', nozip_name)
-        _replace_galfit_param(5, index, object=1, fit=False)
+        _replace_galfit_param(5, index, object_num=1, fit=False)
         subprocess.call(['galfit', 'sim.feedme'])
         subprocess.call(['gzip', nozip_name])
     gfmodel = pyfits.getdata(sersic_ref_file)
@@ -76,14 +76,14 @@ def test_sersic(index=4):
     radii = np.sqrt(ser.coordinate_sq_radii(coords))
     radii = radii.reshape(mcmodel.shape)
 
-    print 'Commanded magnitude: {:0.2f} n={:0.1f}'.format(
-        gfhdr['1_MAG'], index)
+    print('Commanded magnitude: {:0.2f} n={:0.1f}'
+          .format(gfhdr['1_MAG'], index))
     for model, name in [(gfmodel, 'Galfit'), (mcmodel, ' psfMC')]:
         inside = fsum(model[radii <= 1])
         outside = fsum(model[radii >= 1])
         totalmag = -2.5*np.log10(fsum(model.flat)) + gfhdr['MAGZPT']
-        print '{}: Inside: {:0.4f} Outside: {:0.4f} Mag: {:0.2f}'.format(
-            name, inside, outside, totalmag)
+        print('{}: Inside: {:0.4f} Outside: {:0.4f} Mag: {:0.2f}'
+              .format(name, inside, outside, totalmag))
 
     abs_error = mcmodel - gfmodel
     frac_error = abs_error / gfmodel
@@ -110,11 +110,11 @@ def test_sersic(index=4):
     def timing_check():
         return ser.add_to_array(mcmodel, mag_zp=gfhdr['MAGZPT'], coords=coords)
 
-    print 'Timing, adding Sersic profile to 128x128 array'
+    print('Timing, adding Sersic profile to 128x128 array')
     niter = 1000
     tottime = timeit(timing_check, number=niter)
-    print 'Total: {:0.3g}s n={:d} Each: {:0.3g}s'.format(tottime, niter,
-                                                         tottime / niter)
+    print('Total: {:0.3g}s n={:d} Each: {:0.3g}s'
+          .format(tottime, niter, tottime / niter))
 
 
 def test_psf():
@@ -123,31 +123,46 @@ def test_psf():
     shifting) vs reference implementation (scipy.ndimage.shift with bilinear
     interpolation)
     """
-    print 'Testing PSF component fractional positioning'
+    print('Testing PSF component bilinear shifting')
     refarr = np.zeros((5, 5))
-    # can't put this on the array edge because of boundary modes?
     refarr[1, 1] = 1.0
     # must reverse for scipy.ndimage.shift, since arrays are row, col indexed
     refarr = shift(refarr, _psf_ref_shift[::-1]-1, order=1)
-
     testarr = np.zeros((5, 5))
-    psf = PSF(xy=_psf_ref_shift, mag=0)
+    psf = PSF(xy=_psf_ref_shift, mag=0, shift_method='bilinear')
     psf.add_to_array(testarr, mag_zp=0)
-
-    assert np.allclose(refarr, testarr)
+    if not np.allclose(refarr, testarr):
+        pp.subplot(121)
+        pp.imshow(refarr, interpolation='nearest', origin='bottom')
+        pp.title('scipy ndimage reference')
+        pp.subplot(122)
+        pp.imshow(testarr, interpolation='nearest', origin='bottom')
+        pp.title('psfMC test')
+        pp.show()
+        raise AssertionError(
+            'Bilinear interpolation does not match scipy ndimage shifts')
 
     mcmodel = np.zeros((128, 128))
 
+    coords = array_coords(mcmodel.shape)
     def timing_check():
-        return psf.add_to_array(mcmodel, mag_zp=0)
+        return psf.add_to_array(mcmodel, mag_zp=0, coords=coords)
 
-    print 'Timing, adding PSF component to 128x128 array'
-    niter = 1000
-    tottime = timeit(timing_check, number=niter)
-    print 'Total: {:0.3g}s n={:d} Each: {:0.3g}s'.format(tottime, niter,
-                                                         tottime / niter)
+    for shift_method in ('lanczos3', 'bilinear'):
+        psf.shift_method = shift_method
+        print('Timing, adding PSF component to 128x128 array, {} shift'
+              .format(shift_method))
+        niter = 1000
+        tottime = timeit(timing_check, number=niter)
+        print('Total: {:0.3g}s n={:d} Each: {:0.3g}s'
+              .format(tottime, niter, tottime / niter))
 
 if __name__ == '__main__':
+    print('Testing PSF Component')
+    print('-'*30)
     test_psf()
+
+    print('Testing Sersic Component')
+    print('-'*30)
     for idx in (0.5, 1.0, 3.1, 4.0, 6.5):
         test_sersic(index=idx)

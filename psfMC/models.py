@@ -1,20 +1,21 @@
 from __future__ import division
 from pymc import deterministic, Normal
 from pymc.MCMC import MCMC
-from .array_utils import *
-from .ModelComponents import PSF
-from .ModelComponents.PSFSelector import PSFSelector
+from numpy import zeros_like, seterr
+from .array_utils import convolve
+from .ModelComponents import Configuration, PSF
 from .model_parser import component_list_from_file
 
 
-def multicomponent_model(obs_data, obs_ivm, psf_data, psf_ivm,
-                         components=None, mag_zp=0, mask_file=None, **kwargs):
+# TODO: This should probably be a class instead
+def multicomponent_model(components, **kwargs):
     """
     Multi-component model for MCMC psf fitting. Components is a list of
     ComponentBase subclasses, or a model definition python file parsable by
     model_parser.
     Returns an MCMC object ready for sampling. **kwargs are passed to MCMC()
     """
+    seterr(divide='ignore')
     if isinstance(components, basestring):
         try:
             components = component_list_from_file(components)
@@ -23,36 +24,37 @@ def multicomponent_model(obs_data, obs_ivm, psf_data, psf_ivm,
             err.message = message.format(components)
             raise err
 
-    np.seterr(divide='ignore')
-
-    obs_data, obs_var, bad_px = preprocess_obs(obs_data, obs_ivm, mask_file)
-
-    # Set up PSFSelector, including pre-processing input PSF data/ivms
-    psf_select = PSFSelector(psf_data, psf_ivm, obs_data.shape)
-
-    # pre-compute data x,y coordinates
-    data_coords = array_coords(obs_data.shape)
-
-    model_comps = []
-    stochastics = []
+    # First find the Configuration component and take it out of the list since
+    # it's treated separately
+    try:
+        config = [comp for comp in components
+                  if isinstance(comp, Configuration)].pop()
+        components.remove(config)
+    except (IndexError, ValueError):
+        raise ValueError('Unable to find the Configuration component, required'
+                         'for setting up input images.')
 
     for count, component in enumerate(components):
         component.update_trace_names(count=count)
-        model_comps += [component]
+
+    # List of only PSF components, for making PSF-subtracted images
+    psf_comps = [comp for comp in components if isinstance(comp, PSF)]
 
     @deterministic(plot=False, trace=False)
-    def raw_model(model_comps=model_comps):
-        modelpx = np.zeros_like(obs_var)
+    def raw_model(model_comps=components):
+        modelpx = zeros_like(config.obs_var)
         for comp in model_comps:
-            comp.add_to_array(modelpx, mag_zp=mag_zp, coords=data_coords)
+            comp.add_to_array(modelpx, mag_zp=config.mag_zeropoint,
+                              coords=config.coords)
         return modelpx
 
     @deterministic(plot=False, trace=False)
-    def convolved_model(psf=psf_select, raw_model=raw_model):
+    def convolved_model(psf=config.psf_selector, raw_model=raw_model):
         return convolve(raw_model, psf.psf())
 
     @deterministic(plot=False, trace=False)
-    def composite_ivm(obs_var=obs_var, psf=psf_select, raw_model=raw_model):
+    def composite_ivm(obs_var=config.obs_var, psf=config.psf_selector,
+                      raw_model=raw_model):
         # Model and observation variances are independent, so additive
         # FIXME: odd sizes (127x127) cause this to screw up in one dimension?
         model_var = convolve(raw_model**2, psf.variance())
@@ -60,27 +62,29 @@ def multicomponent_model(obs_data, obs_ivm, psf_data, psf_ivm,
         return comp_ivm
 
     @deterministic(plot=False, trace=False)
-    def residual(obs_data=obs_data, convolved_model=convolved_model):
+    def residual(obs_data=config.obs_data, convolved_model=convolved_model):
         return obs_data - convolved_model
 
     @deterministic(plot=False, trace=False)
-    def point_source_subtracted(model_comps=model_comps, psf=psf_select):
+    def point_source_subtracted(psf_comps=psf_comps, psf=config.psf_selector):
         # Note: this is NOT called every iteration during sampling (no observed
         # stochastic depends on it). Only when generating posterior model images
-        psf_px = np.zeros_like(obs_var)
-        psf_comps = [comp for comp in model_comps if isinstance(comp, PSF)]
+        psf_px = zeros_like(config.obs_var)
         for comp in psf_comps:
-            comp.add_to_array(psf_px, mag_zp)
+            comp.add_to_array(psf_px, config.mag_zeropoint)
         psf_px = convolve(psf_px, psf.psf())
-        return obs_data - psf_px
+        return config.obs_data - psf_px
 
-    data = Normal('data', value=obs_data[~bad_px],
-                  mu=convolved_model[~bad_px],
-                  tau=composite_ivm[~bad_px],
+    data = Normal('data', value=config.obs_data[~config.bad_px],
+                  mu=convolved_model[~config.bad_px],
+                  tau=composite_ivm[~config.bad_px],
                   observed=True, trace=False)
 
-    stochastics += [psf_select, raw_model, convolved_model, composite_ivm,
-                    residual, point_source_subtracted, data]
-    stochastics += model_comps
+    stochastics = [config.psf_selector, raw_model, convolved_model,
+                   composite_ivm, residual, point_source_subtracted, data]
+    stochastics += components
 
-    return MCMC(stochastics, **kwargs)
+    mcmc = MCMC(stochastics, **kwargs)
+    # FIXME: This is kind of an abuse of duck-typing. Subclass MCMC instead?
+    mcmc.obs_header = config.obs_header
+    return mcmc
