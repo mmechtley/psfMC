@@ -2,56 +2,56 @@ from __future__ import division
 import numpy as np
 
 
-def _between_variance(chains):
+def _between_variance(traces):
     """
     Variance of the individual chain means
     Gelman 2nd edition pg. 303
-    :param chains: numpy 2D array, samples in rows, chains in columns
+    :param traces: numpy 2D array, samples in rows, chains in columns
     """
-    nsamples, nchains = chains.shape
+    nsamples, nchains = traces.shape
 
-    chain_means = np.mean(chains, axis=0)
+    chain_means = np.mean(traces, axis=0)
     total_mean = np.mean(chain_means)
     scale = nsamples / (nchains - 1)
     return scale * np.sum((chain_means - total_mean)**2)
 
 
-def _within_variance(chains):
+def _within_variance(traces):
     """
     Mean of the individual chain variances
     Gelman 2nd edition pg. 303
-    :param chains: numpy 2D array, samples in rows, chains in columns
+    :param traces: numpy 2D array, samples in rows, chains in columns
     """
-    nsamples, nchains = chains.shape
+    nsamples, nchains = traces.shape
 
-    chain_means = np.mean(chains, axis=0)
-    col_vars = 1 / (nsamples - 1) * np.sum((chains - chain_means)**2, axis=0)
+    chain_means = np.mean(traces, axis=0)
+    col_vars = 1 / (nsamples - 1) * np.sum((traces - chain_means)**2, axis=0)
     return np.mean(col_vars)  # 1 / nchains implicit in mean
 
 
-def _pooled_posterior_variance(chains):
+def _pooled_posterior_variance(traces):
     """
     Weight average of the within-chain variance and the between-chain variance
     Gelman 2nd edition pg. 303 (Eqn. 11.3)
-    :param chains: numpy 2D array, samples in rows, chains in columns
+    :param traces: numpy 2D array, samples in rows, chains in columns
     """
-    nsamples, nchains = chains.shape
+    nsamples, nchains = traces.shape
 
-    return (nsamples - 1) / nsamples * _within_variance(chains) + \
-        1 / nsamples * _between_variance(chains)
+    return (nsamples - 1) / nsamples * _within_variance(traces) + \
+        1 / nsamples * _between_variance(traces)
 
 
-def potential_scale_reduction(chains):
+def potential_scale_reduction(traces):
     """
     So-called R-hat or Potential Scale Reduction Factor (PSRF), the square root
     of the ratio of the marginal posterior variance to the within-chain
     variance.
     Gelman 2nd edition pg. 304
     Brooks & Gelman 1998 eq. 1.1
-    :param chains: list of two or more traces (numpy arrays) to analyze
+    :param traces: list of two or more traces (numpy arrays) to analyze
     """
     # TODO: Can be refined by correcting for degrees of freedom (Brooks 1998)
-    all_samps = np.column_stack(chains)
+    all_samps = np.column_stack(traces)
     nsamples, nchains = all_samps.shape
     psrf_scale = (nchains + 1) / nchains
     psrf_offset = (1 - nsamples) / (nchains * nsamples)  # negation absorbed
@@ -63,7 +63,7 @@ def potential_scale_reduction(chains):
         return np.sqrt(psrf_scale * pooled_var / within_var + psrf_offset)
 
 
-def num_effective_samples(chains):
+def num_effective_samples(traces):
     """
     The effective number of samples, ie the number of samples corrected for
     Markov Chain sample autocorrelation. As noted by Gelman, if the number of
@@ -71,9 +71,9 @@ def num_effective_samples(chains):
     is high. Always reports min(neff, nsamples * nchains) so as not to claim the
     sampling is more efficient than random.
     Gelman 2nd edition pg. 306 (Eqn. 11.4)
-    :param chains: list of two or more traces (numpy arrays) to analyze
+    :param traces: list of two or more traces (numpy arrays) to analyze
     """
-    all_samps = np.column_stack(chains)
+    all_samps = np.column_stack(traces)
     nsamples, nchains = all_samps.shape
     pooled_var = _pooled_posterior_variance(all_samps)
     between_var = _between_variance(all_samps)
@@ -98,8 +98,9 @@ def max_posterior_sample(db, chains=None):
     min_sample = -1
     min_deviance = np.inf
     for chain in chains:
-        chain_min_sample = np.argmin(db.trace('deviance', chain)[:])
-        chain_min_deviance = db.trace('deviance', chain)[chain_min_sample]
+        dev_trace = db.trace('deviance', chain)[:]
+        chain_min_sample = np.argmin(dev_trace)
+        chain_min_deviance = dev_trace[chain_min_sample]
         if chain_min_deviance < min_deviance:
             min_deviance = chain_min_deviance
             min_sample = chain_min_sample
@@ -166,3 +167,40 @@ def chains_are_converged(model, chains=None, stochastics=None, psrf_tol=0.05,
         return np.all(np.abs(psrf - 1) < psrf_tol)
 
     return all([is_converged(stoch) for stoch in stochastics])
+
+
+def sample_autocorr(trace1d, sigma=5):
+    """
+    Calculates the autocorrelation function & related statistics for a 1-D
+    trace. The method used for calculating the autocorrelation time (and thus
+    the number of effective samples) is an initial sequence estimator (see
+    Thompson 2010 arXiv:1011.0175v1)
+    :param trace1d: Trace to calculate autocorrelation for. Must be 1-D (so
+        split x,y components for example)
+    :param sigma: Significance level for calculating maximum significant lag
+        and effective sample number
+    :return: Tuple of (lags, normed correlation function, num. effective
+        samples, maximum significant lag)
+    """
+    # detrend and calculate normalization constant
+    detrend = trace1d - np.mean(trace1d)
+    norm_constant = np.sum(detrend**2)
+    # Tested against pyplot.acorr with detrend=mlab.detrend_mean & normed=True
+    acorr = np.correlate(detrend, detrend, mode='full') / norm_constant
+    middle = (acorr.size - 1) // 2
+    lags = np.arange(acorr.size) - middle
+
+    # Overall significance for autocorrelation is Z/sqrt(N)
+    acorr_signif = sigma / np.sqrt(trace1d.size)
+    # first index where conditional is false (0)
+    trunc = np.argmin(acorr[middle:] > acorr_signif)
+    # TODO: Instead use initial convex sequence/initial positive sequence est.
+    # adj_sums = acorr[middle:-1] + acorr[middle+1:]
+    # trunc = np.argmin(adj_sums < 0)
+
+    maxlag = lags[middle+trunc]
+    # sum of the significant normed autocorrelation lags, tau in the literature
+    tau = np.sum(acorr[middle-trunc+1:middle+trunc])
+    eff_samples = trace1d.size / tau
+
+    return lags, acorr, eff_samples, maxlag

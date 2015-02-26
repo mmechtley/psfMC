@@ -1,8 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as pp
-import pyfits
 import os
 import subprocess
+from astropy.io import fits
 from math import fsum
 from scipy.ndimage import shift
 from psfMC.ModelComponents import Sersic, PSF
@@ -57,9 +57,9 @@ def test_sersic(index=4):
         _replace_galfit_param(5, index, object_num=1, fit=False)
         subprocess.call(['galfit', 'sim.feedme'])
         subprocess.call(['gzip', nozip_name])
-    gfmodel = pyfits.getdata(sersic_ref_file)
+    gfmodel = fits.getdata(sersic_ref_file)
 
-    gfhdr = pyfits.getheader(sersic_ref_file)
+    gfhdr = fits.getheader(sersic_ref_file)
     for key in [key for key in gfhdr if key.startswith('1_')]:
         gfhdr[key] = float(gfhdr[key].split('+/-')[0])
     r_maj = gfhdr['1_RE']
@@ -145,6 +145,7 @@ def test_psf():
     mcmodel = np.zeros((128, 128))
 
     coords = array_coords(mcmodel.shape)
+
     def timing_check():
         return psf.add_to_array(mcmodel, mag_zp=0, coords=coords)
 

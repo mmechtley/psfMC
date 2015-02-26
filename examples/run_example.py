@@ -2,7 +2,6 @@ from psfMC import model_galaxy_mcmc
 import glob
 import subprocess
 import pymc
-import pyfits
 try:
     import matplotlib.pyplot as pp
 except ImportError:
@@ -12,7 +11,8 @@ except ImportError:
 # to allow this demonstration to run quickly. They are almost certainly too
 # small to provide proper convergence.
 mc_args = {'burn': 5000, 'iter': 10000, 'chains': 4,
-           'tune_interval': 250, 'max_iterations': 1}
+           'tune_interval': 250, 'max_iterations': 1,
+           'backend': 'hdf5'}
 
 # These lists could be longer, to define more quasar+PSF pairs to run
 model_files = ['model_J0005-0006.py']
@@ -25,14 +25,15 @@ for model_file in model_files:
     model_galaxy_mcmc(model_file, output_name=output_name, **mc_args)
 
     # Once sampling has completed, display some example plots
-    db = pymc.database.pickle.load(output_name+'_db.pickle')
-    for trace_name in ('0_Sky_adu', '1_PSF_mag', '2_Sersic_mag',
-                       '2_Sersic_reff', '2_Sersic_index', '2_Sersic_angle'):
-        if pp is not None:
+    if pp is not None:
+        db_module = getattr(pymc.database, mc_args['backend'])
+        db = db_module.load(output_name + '_db.' + mc_args['backend'])
+        for trace_name in ('0_Sky_adu', '1_PSF_mag', '2_Sersic_mag',
+                           '2_Sersic_reff', '2_Sersic_index', '2_Sersic_angle'):
             pp.hist(db.trace(trace_name)[:], bins=20)
             pp.title(trace_name)
             pp.show()
-    db.close()
+        db.close()
 
     # Also try to open a ds9 window with all the input and output fits images
     in_images = glob.glob('sci_*.fits')

@@ -2,9 +2,9 @@ from __future__ import division
 from warnings import warn
 import os
 
-import pyfits
 import numpy as np
 import pymc
+from astropy.io import fits
 from pymc.StepMethods import AdaptiveMetropolis, DiscreteMetropolis
 
 from .models import multicomponent_model
@@ -46,7 +46,8 @@ def model_galaxy_mcmc(model_file, output_name=None,
         potential scale reduction factor within 0.05 of 1.0. Sampling will be
         repeated (increasing effective burn-in period) until convergence check
         is met or until max_iterations iterations are performed
-    :param backend: PyMC database backend to use. pickle is default
+    :param backend: PyMC database backend to use. pickle is default due to
+        universal support, but HDF5 (via pytables) is highly recommended
     :param kwargs: Further keyword arguments are passed to pyMC.MCMC.sample, and
         can be used to control number of MCMC samples, burn-in period, etc.
         Useful parameters include iter=, burn=, tune_interval=, thin=, etc. See
@@ -180,9 +181,8 @@ def save_posterior_model(model, output_name='out_{}', mode='weighted',
         # Take the mean
         for ftype in filetypes:
             output_data[ftype] /= total_samples
-            # Mean of variances needs two factors of total_samples. Then invert.
+            # Invert variance map
             if ftype in ('composite_ivm',):
-                output_data[ftype] /= total_samples
                 output_data[ftype] = 1 / output_data[ftype]
 
     else:
@@ -190,12 +190,12 @@ def save_posterior_model(model, output_name='out_{}', mode='weighted',
              'not be saved.'.format(mode))
         return
 
-    # Now  save the files
+    # Now save the files
     for ftype in filetypes:
         header.set('OBJECT', value=ftype)
-        pyfits.writeto(output_name.format(ftype + '.fits'),
-                       output_data[ftype], header=header,
-                       clobber=True, output_verify='fix')
+        fits.writeto(output_name.format(ftype + '.fits'),
+                     output_data[ftype], header=header,
+                     clobber=True, output_verify='fix')
     return
 
 

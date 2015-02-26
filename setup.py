@@ -5,7 +5,7 @@ from subprocess import check_output, CalledProcessError
 from numpy.distutils.core import setup
 
 _packages = ['psfMC', 'psfMC.ModelComponents']
-_requires = ['numpy', 'pymc', 'scipy', 'pyfits']
+_requires = ['numpy', 'scipy', 'pymc', 'astropy']
 
 
 def _version_from_init():

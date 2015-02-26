@@ -1,6 +1,6 @@
 from __future__ import division
-import pyfits
 import numpy as np
+from astropy.io import fits
 from math import fsum
 from warnings import warn
 
@@ -58,9 +58,9 @@ def preprocess_obs(obs_data, obs_ivm, mask_file=None):
     pixels, and normalizes the PSF for convolution
     """
     # Read in arrays, mask bad pixels
-    obs_hdr = pyfits.getheader(obs_data)
-    obs_data = pyfits.getdata(obs_data, ignore_missing_end=True)
-    obs_ivm = pyfits.getdata(obs_ivm, ignore_missing_end=True)
+    obs_hdr = fits.getheader(obs_data)
+    obs_data = fits.getdata(obs_data, ignore_missing_end=True)
+    obs_ivm = fits.getdata(obs_ivm, ignore_missing_end=True)
 
     # Generate bad pixel mask. Bad pixels get 0 weight in weight map, and are
     # excluded from fitting
@@ -86,7 +86,7 @@ def mask_from_file(mask_file, obs_hdr, shape):
     (nonzero pixels denoting exclusion), or in ds9 region format.
     """
     try:
-        return pyfits.getdata(mask_file).astype(bool)
+        return fits.getdata(mask_file).astype(bool)
     except IOError:
         pass  # When not in fits format
 
@@ -108,8 +108,8 @@ def preprocess_psf(psf_data, psf_ivm):
     Read in a PSF & IVM, mask bad pixels, normalize kernel
     Return the normed data and a corresponding (non-inverse) variance map
     """
-    psf_data = pyfits.getdata(psf_data, ignore_missing_end=True)
-    psf_ivm = pyfits.getdata(psf_ivm, ignore_missing_end=True)
+    psf_data = fits.getdata(psf_data, ignore_missing_end=True)
+    psf_ivm = fits.getdata(psf_ivm, ignore_missing_end=True)
 
     # We don't want zero-weight pixels in the PSF to contribute infinitely to
     # the variance, so we simply set them to 0 in both data and weight map
@@ -144,13 +144,12 @@ def calculate_psf_variability(psf_data, psf_vars, debug_psfs=False):
     mismatch_var = np.var(psf_data, axis=0)
 
     if debug_psfs:
-        import pyfits
         meanpsf = np.mean(psf_data, axis=0)
-        pyfits.writeto('xx_rms.fits', np.sqrt(mismatch_var))
-        pyfits.writeto('xx_mean.fits', meanpsf)
+        fits.writeto('xx_rms.fits', np.sqrt(mismatch_var))
+        fits.writeto('xx_mean.fits', meanpsf)
         for num, (psf, var) in enumerate(zip(psf_data, psf_vars)):
-            pyfits.writeto('xx_psf{:d}.fits'.format(num), psf - meanpsf)
-            pyfits.writeto('xx_rms{:d}.fits'.format(num), np.sqrt(var))
+            fits.writeto('xx_psf{:d}.fits'.format(num), psf - meanpsf)
+            fits.writeto('xx_rms{:d}.fits'.format(num), np.sqrt(var))
         exit(1)
 
     # Add contribution of PSF mismatch to all individual variance maps
