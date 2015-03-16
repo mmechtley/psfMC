@@ -8,9 +8,9 @@ from astropy.io import fits
 from pymc.StepMethods import AdaptiveMetropolis, DiscreteMetropolis
 
 from .models import multicomponent_model
-from .array_utils import _bad_px_value
 from .ModelComponents.PSFSelector import PSFSelector
-from .analysis import max_posterior_sample, calculate_dic, chains_are_converged
+from .analysis import max_posterior_sample, calculate_dic, \
+    check_convergence_psrf
 
 
 _default_filetypes = ('raw_model', 'convolved_model', 'composite_ivm',
@@ -20,7 +20,7 @@ _default_filetypes = ('raw_model', 'convolved_model', 'composite_ivm',
 def model_galaxy_mcmc(model_file, output_name=None,
                       write_fits=_default_filetypes,
                       chains=1, max_iterations=1,
-                      convergence_check=chains_are_converged,
+                      convergence_check=check_convergence_psrf,
                       backend='pickle',
                       **kwargs):
     """
@@ -107,8 +107,8 @@ def model_galaxy_mcmc(model_file, output_name=None,
 
 
 def save_posterior_model(model, output_name='out_{}', mode='weighted',
-                         filetypes=_default_filetypes,
-                         chains=None, convergence_check=chains_are_converged):
+                         filetypes=_default_filetypes, bad_px_value=0,
+                         chains=None, convergence_check=check_convergence_psrf):
     """
     Writes out the posterior model images. Two modes are supported: Maximum a
     posteriori (maximum or MAP) and "weighted average" (weighted). Since
@@ -126,6 +126,7 @@ def save_posterior_model(model, output_name='out_{}', mode='weighted',
         is weighted
     :param filetypes: list of filetypes to save out (see model_galaxy_mcmc
         documentation for a list of possible types
+    :param bad_px_value: Value to replace bad pixels with
     :param chains: List of chain indexes that sample the final posterior (e.g.
         if initial chains had not converged)
     :param convergence_check: Function taking an MCMC model and a list of chain
@@ -158,7 +159,7 @@ def save_posterior_model(model, output_name='out_{}', mode='weighted',
         model.remember(chain=best_chain, trace_index=best_samp)
         for ftype in filetypes:
             output_data[ftype] = np.ma.filled(
-                model.get_node(ftype).value, _bad_px_value)
+                model.get_node(ftype).value, bad_px_value)
 
     elif mode in ('weighted',):
         total_samples = 0
@@ -171,7 +172,7 @@ def save_posterior_model(model, output_name='out_{}', mode='weighted',
                 # Accumulate output arrays
                 for ftype in filetypes:
                     sample_data = np.ma.filled(model.get_node(ftype).value,
-                                               _bad_px_value)
+                                               bad_px_value)
                     if ftype not in output_data:
                         output_data[ftype] = np.zeros_like(sample_data)
                     # Accumulate variances rather than IVMs, then invert later
@@ -200,7 +201,7 @@ def save_posterior_model(model, output_name='out_{}', mode='weighted',
 
 
 def _stats_as_header_cards(model, chains=None,
-                           convergence_check=chains_are_converged):
+                           convergence_check=check_convergence_psrf):
     """
     Collates statistics about the trace database, and returns them in 3-tuple
     key-value-comment format suitable for extending a fits header

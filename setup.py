@@ -4,8 +4,9 @@ from warnings import warn
 from subprocess import check_output, CalledProcessError
 from numpy.distutils.core import setup
 
-_packages = ['psfMC', 'psfMC.ModelComponents']
-_requires = ['numpy', 'scipy', 'pymc', 'astropy']
+_packages = ['psfMC', 'psfMC.ModelComponents', 'psfMC.analysis']
+_scripts = ['scripts/plotchain']
+_requires = ['numpy', 'scipy', 'pymc', 'astropy', 'matplotlib']
 
 
 def _version_from_init():
@@ -37,4 +38,5 @@ setup(name=_packages[0],
       description='Markov Chain Monte Carlo modeling of 2-dimensional surface '
                   'brightness distributions of quasar host galaxies',
       packages=_packages,
+      scripts=_scripts,
       requires=_requires)

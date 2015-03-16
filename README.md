@@ -36,7 +36,8 @@ still passed directly to `model_galaxy_mcmc`. See the example model file in
 
 Dependencies
 ------------
-The software depends on the numpy, scipy, pymc, and astropy modules.
+The software depends on the numpy, scipy, pymc, and astropy modules. The 
+matplotlib module is required for certain tests and posterior analysis plots.
 
 Additionally, the pyregion module is optional but strongly recommended for ease 
 of masking out foreground or background objects unrelated to the quasar being 

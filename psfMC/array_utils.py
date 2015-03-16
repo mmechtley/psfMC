@@ -4,8 +4,6 @@ from astropy.io import fits
 from math import fsum
 from warnings import warn
 
-_bad_px_value = 0
-
 
 def pad_and_rfft_image(img, newshape):
     """
