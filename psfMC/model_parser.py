@@ -1,3 +1,4 @@
+import os
 import ast
 from .ModelComponents import ComponentBase
 
@@ -48,7 +49,15 @@ def component_list_from_file(filename):
     model_tree = ExprsToAssigns().visit(model_tree)
     ast.fix_missing_locations(model_tree)
 
+    # Process file within its local dir, so file references within are relative
+    # to its location instead of the script run location.
+    prev_dir = os.getcwd()
+    model_dir = os.path.dirname(filename)
+    if model_dir == '':
+        model_dir = '.'
+    os.chdir(model_dir)
     exec(compile(model_tree, filename, mode='exec'))
+    os.chdir(prev_dir)
 
     # Filter out only those object that are subclasses of ComponentBase
     return [comp for comp in locals()[_comps_name]

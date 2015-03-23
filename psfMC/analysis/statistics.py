@@ -1,4 +1,4 @@
-from __future__ import division
+from __future__ import division, print_function
 import numpy as np
 
 
@@ -162,7 +162,7 @@ def check_convergence_psrf(model, chains=None, stochastics=None, psrf_tol=0.05,
         else:
             psrf = potential_scale_reduction(traces)
         if verbose > 0:
-            print stoch, psrf
+            print(stoch, psrf)
         # Converged when psrf is within tolerance
         return np.all(np.abs(psrf - 1) < psrf_tol)
 

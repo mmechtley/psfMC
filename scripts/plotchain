@@ -9,16 +9,24 @@ estimating the number of effective samples on both plots (using Gelman-Rubin
 method on the histogram, and autocorrelation significance method on
 autocorrelation plot).
 
-There are several 'magic' trace names that can be used as well. They assume
-component numbers are 0: sky, 1: PSF, 2: Sersic.
-magdiff: 2_Sersic_mag - 1_PSF_mag
-centerdist: Euclidean distance (pixels) between PSF and Sersic components
-axisratio: semi-minor/semi-major axis (b/a)
-sbeff: Surface brightness at Sersic reff, in mag/pixel
+There are several 'magic' trace names that can be used to plot derived
+quantities that are not explicitly traced in the database. Component names
+should be specified as <index>_<type> such as 0_PSF or 4_Sersic
+<comp1>_<comp2>_magdiff: Magnitude difference between two components
+<comp1>_<comp2>_centerdist: Euclidean distance (pixels) between two components
+<n>_Sersic_axisratio: Semi-minor/semi-major axis ratio (q) of a Sersic component
+<n>_Sersic_sbeff: Surface brightness at Sersic reff, in mag/pixel
 
-Several other options can be specified on the command line:
-comma-separated list of chain indexes (e.g. 3,4,5) : Only analyze certain chains
-trace: generate trace plots (value vs. sample index) instead of histograms
+A comma-separated list of chain indexes can be supplied, to limit analysis to
+only certain chains, for instance if sampling was run with max_iterations > 1.
+Chain indexes can be either positive or negative, to count either from the
+beginning or end. E.g.: 0,1,2,3 or -1,-2,-3,-4
+
+Other options that can be specified on the command line:
+hist: Generate histogram plots. This is the default behavior, so need not be
+  explicitly supplied.
+trace: Generate trace plots (value vs. sample index) instead of histograms.
+  Useful for assessing suitability of burn-in length.
 save: Don't display matplotlib windows, instead save all plots as pdf
 
 Examples:
@@ -26,16 +34,18 @@ plotchain.py 1_PSF_mag mydb.pickle
   Basic usage. Display histogram and autocorrelation plot for a single variable
   from all chains in the given trace database.
 
-plotchain.py axisratio trace *.pickle
-  Will generate trace plots for all pickle databases in the current directory
+plotchain.py 1_PSF_2_Sersic_magdiff trace *.hdf5
+  Will generate trace plots of magnitude difference between PSF and Sersic
+  component for all pickle databases in the current directory
 
-plotchain.py 2_Sersic_index 3,4,5,6 save
-  Will generate pdf histograms for all pickle databases in the current directory
-  using only chains 3-6.
+plotchain.py 2_Sersic_index 4,5,6,7 save
+  Will generate pdf histograms for all databases in the current directory using
+  only chains 3-6.
 """
 import os
 import glob
 import sys
+from difflib import SequenceMatcher
 from psfMC.analysis import plot_hist, plot_trace
 
 
@@ -74,9 +84,16 @@ if __name__ == '__main__':
         db_names = glob.glob('*.pickle') + glob.glob('*.hdf5')
 
     for db_name in db_names:
-        model_name, ext = os.path.splitext(db_name)
-        model_name = model_name.replace('out_', 'model_').replace('_db', '.py')
+        # Use some SequenceMatcher text comparison to look for the py file with
+        # the most similar name to the db file.
+        db_dir = os.path.dirname(db_name)
+        py_files = glob.glob(os.path.join(db_dir, '*.py'))
+        similar_score = lambda x: SequenceMatcher(db_name, x).ratio()
+        py_files.sort(key=similar_score)
+        model_name = py_files[-1] if len(py_files) > 0 else None
+
         if mode == 'hist':
-            plot_hist(trace_name, db_name, model_name, chains=chains, save=save)
+            plot_hist(trace_name, db_name, model=model_name, chains=chains,
+                      save=save)
         elif mode in ('chain', 'trace'):
             plot_trace(trace_name, db_name, chains=chains, save=save)
