@@ -48,12 +48,12 @@ def _axis_label(trace_name):
         return trace_name
 
 
-def _get_prior(key, model):
+def _get_prior(trace_name, model):
     """
     Return a function P(X) representing the prior probability for key. For keys
     that don't have priors (e.g. centerdist, magdiff, etc.), returns None.
     """
-    key_node = model.get_node(key)
+    key_node = model.get_node(trace_name)
     if key_node is None:
         return None
     prior_logp = key_node.__dict__['_logp'].fun

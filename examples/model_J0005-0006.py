@@ -1,3 +1,16 @@
+"""
+Example psfMC model file. The ModelComponents and distributions import
+statements are optional (they are injected automatically when the model file is
+processed), but their explicit inclusion is recommended.
+Model components have several parameters that can generally be supplied as
+either a fixed value or as a prior distribution. For instance:
+Sersic(..., index=1.0, ...)
+will create a Sersic profile with a fixed index of 1 (exponential profile), but:
+Sersic(..., index=Uniform(lower=0.5, upper=10.0), ...)
+will leave the index as a simulated free parameter with a Uniform prior.
+See the docstrings for individual components and distributions for the available
+parameters.
+"""
 from numpy import array
 from psfMC.ModelComponents import Configuration, Sky, PSF, Sersic
 from psfMC.distributions import Normal, Uniform, Weibull
@@ -15,6 +28,7 @@ Configuration(obs_file='sci_J0005-0006.fits',
               mag_zeropoint=25.9463)
 
 # We can treat the sky as an unknown component if the subtraction is uncertain
+# pyMC Normal distributions are parameterized by mu, tau (= 1/sigma**2)
 Sky(adu=Normal(mu=0, tau=100))
 
 # Point source component

@@ -10,11 +10,11 @@ mc_args = {'burn': 5000, 'iter': 10000, 'chains': 4,
            'tune_interval': 250, 'max_iterations': 1,
            'backend': 'hdf5'}
 
-# These lists could be longer, to define more quasar+PSF pairs to run
+# This list could be longer, to define more quasar+PSF pairs to run
 model_files = ['model_J0005-0006.py']
 
 for model_file in model_files:
-    # Do some string manipulation to infer filenames for additional files
+    # Do some string manipulation create the base output filename
     output_name = model_file.replace('model', 'out').replace('.py', '')
 
     # Run the MCMC sampler

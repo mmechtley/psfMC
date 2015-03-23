@@ -43,6 +43,7 @@ class Configuration(ComponentBase):
         self.obs_data = obs_data
         self.obs_var = obs_var
         self.bad_px = bad_px
+        # TODO: Supply pixel scale (or infer from header)?
 
         # Setup PSF Selector to pick from multiple PSFs
         self.psf_selector = PSFSelector(psf_files, psfivm_files, obs_data.shape)
