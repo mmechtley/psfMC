@@ -12,7 +12,9 @@ class PSFSelector(ComponentBase):
     """
     def __init__(self, psflist, ivmlist, data_shape):
         # List-ify psflist and ivmlist if they are single strings
-        if isinstance(psflist, basestring) or isinstance(ivmlist, basestring):
+
+        if not hasattr(psflist, '__iter__') or isinstance(psflist, str) or \
+                not hasattr(ivmlist, '__iter__') or isinstance(ivmlist, str):
             psflist, ivmlist = [psflist], [ivmlist]
         self.filenames = psflist
         self.selected_index = DiscreteUniform('PSF_Index',

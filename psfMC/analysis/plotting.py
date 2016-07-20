@@ -1,29 +1,33 @@
 # coding=utf-8
 from __future__ import division, print_function
 import os
-import pymc
+from warnings import warn
+import pymc.database
 import matplotlib.pyplot as pp
 import numpy as np
 from matplotlib import patheffects
 from matplotlib.transforms import blended_transform_factory
 from matplotlib.ticker import MaxNLocator
 from mpl_toolkits.axes_grid1 import make_axes_locatable
+from scipy.special import gamma
 from .statistics import num_effective_samples, potential_scale_reduction, \
     max_posterior_sample, chain_autocorr
 from ..models import multicomponent_model
 from ..ModelComponents.Sersic import Sersic
-from scipy.special import gamma
+from corner import corner
 
 _labels = {'deviance': 'Model deviance (-2*log(P))',
+           'x': '{} x (pix)',
+           'y': '{} y (pix)',
            'adu': '{} (adu)',
-           'mag': '{} total mag',
+           'mag': '{} mag',
            'index': '{} index $n$',
-           'reff': '{} effective radius $r_e$ (pixels)',
-           'reff_b': '{} minor axis (pixels)',
-           'angle': '{} position angle',
+           'reff': '{} $R_e a$ (pix)',
+           'reff_b': '{} $R_e b$ (pix)',
+           'angle': '{} PA (deg)',
+           'PSF_Index': 'PSF index',
            'axisratio': '{} axis ratio $b/a$',
-           'sbeff': '{} characteristic surface brightness $\mu_e$ (mag '
-                    'pixel$^{-1}$)',
+           'sbeff': '{} $\mu_e$ (mag pixel$^{-1}$)',
            'magdiff': '$m_{{{}}} - m_{{{}}}$',
            'centerdist': '{} vs. {} position difference (pixels)'}
 
@@ -101,7 +105,6 @@ def _get_trace(trace_name, db, chain=1):
     :return: Trace values as NxD array, where N is the number of samples and D
         is the number of dimensions of the parameter (2 for xy, 1 for others)
     """
-    trace = None
     try:
         name_comps = trace_name.split('_')
         if 'magdiff' in name_comps:
@@ -127,7 +130,7 @@ def _get_trace(trace_name, db, chain=1):
                            db.trace(key_prefix+'index', chain)[:])
         else:
             trace = db.trace(trace_name, chain)[:]
-    except KeyError, err:
+    except KeyError as err:
         names = db.trace_names[chain]
         err.message = 'Unable to find trace {} while plotting {}. Available '\
             'traces are {} or magdiff, centerdist, axisratio, sbeff'\
@@ -153,7 +156,7 @@ def _load_db_and_model(db, model):
     if model is not None:
         try:
             model = multicomponent_model(model)
-        except IOError, err:
+        except IOError:
             print('Unable to find model file {}. Priors will not be plotted.'
                   .format(model))
             model = None
@@ -188,7 +191,7 @@ def plot_trace(trace_name, db, chains=None, save=False):
         ml_model, ml_chain = max_posterior_sample(db, [chain])
         trace = _get_trace(trace_name, db, chain)
 
-        for col in xrange(trace.shape[1]):
+        for col in range(trace.shape[1]):
             ax_trace.plot(np.arange(trace.shape[0]), trace[:, col])
             ax_hist.hist(trace[:, col], bins=20, histtype='step',
                          orientation='horizontal')
@@ -247,7 +250,7 @@ def plot_hist(trace_name, db, model=None, chains=None, save=False,
         ml_model, ml_chain = max_posterior_sample(db, [chain])
 
         all_traces.append(trace)
-        for col in xrange(trace.shape[1]):
+        for col in range(trace.shape[1]):
             chain_color = ax_hist._get_lines.color_cycle.next()
             ax_hist.hist(trace[:, col], bins=20, histtype='step',
                          lw=2, color=chain_color)
@@ -268,9 +271,9 @@ def plot_hist(trace_name, db, model=None, chains=None, save=False,
 
     # Calculate PSR factor and effective samples for each dimension
     psr = [potential_scale_reduction([trace[:, col] for trace in all_traces])
-           for col in xrange(all_traces[0].shape[1])]
+           for col in range(all_traces[0].shape[1])]
     neff = [num_effective_samples([trace[:, col] for trace in all_traces])
-            for col in xrange(all_traces[0].shape[1])]
+            for col in range(all_traces[0].shape[1])]
 
     fig_hist.suptitle(disp_name)
     ax_hist.set_xlabel(_axis_label(trace_name))
@@ -324,4 +327,95 @@ def plot_hist(trace_name, db, model=None, chains=None, save=False,
         pp.show()
     pp.close(fig_hist)
     pp.close(fig_acorr)
+    db.close()
+
+def corner_plot(database, model=None, disp_parameters=None, chains=None,
+                save=False, skip_zero_variance=True, print_stats=True,
+                **kwargs):
+    """
+
+    :param database:
+    :param model:
+    :param disp_parameters:
+    :param chains:
+    :param save:
+    :param kwargs:
+    :param skip_zero_variance:
+    :param print_stats:
+    :return:
+    """
+    disp_name, db, model = _load_db_and_model(database, model)
+    chains = _select_chains(db, chains)
+    # find available traces and remove deviance/adaptive scale factors
+    disp_trace_names = db.trace_names
+    if isinstance(disp_trace_names[0], list):
+        disp_trace_names = disp_trace_names[0]
+    # If no traces were specified, filter scale factors & deviance, then sort
+    if disp_parameters is None:
+        disp_trace_names = [trace_name for trace_name in disp_trace_names if
+                            'adaptive_scale_factor' not in trace_name and
+                            trace_name != 'deviance']
+        disp_trace_names.sort()
+    # If we specified traces, display those ones
+    else:
+        missing_traces = set(disp_parameters) - set(disp_trace_names)
+        if missing_traces != set():
+            raise ValueError('Unable to find trace(s) named: {}'.format(
+                missing_traces))
+        disp_trace_names = list(disp_parameters)
+
+    # Just read in traces as giant data array (samples x parameters)
+    # (As expected by triangle.corner())
+    flat_traces = None
+    for chain in chains:
+        traces = [_get_trace(trace_name, db, chain=chain)
+                  for trace_name in disp_trace_names]
+        flat_chain = np.column_stack(traces)
+        if flat_traces is None:
+            flat_traces = flat_chain
+        else:
+            flat_traces = np.append(flat_traces, flat_chain, axis=0)
+
+    labels = list(disp_trace_names)
+    # Double all xy labels into x label and y label
+    xy_inds = [ind for ind,label in enumerate(labels) if 'xy' in label]
+    for ind in reversed(xy_inds):
+        label = labels[ind]
+        labels[ind] = label.replace('xy', 'y')
+        labels.insert(ind, label.replace('xy', 'x'))
+    labels = [_axis_label(label) for label in labels]
+
+    if skip_zero_variance:
+        # Remove zero-variance variables, because corner.corner will barf
+        col_vars = np.var(flat_traces, axis=0)
+        variable_cols = np.where(col_vars!=0)[0]
+        nonvariable_cols = np.where(col_vars==0)[0]
+        flat_traces = flat_traces[:,variable_cols]
+        removed_cols = [label for col,label in enumerate(labels)
+                        if col in nonvariable_cols]
+        labels = [label for col,label in enumerate(labels)
+                  if col in variable_cols]
+        warn('The following traces had zero variance and will not be '
+             'displayed: {}'.format(removed_cols))
+
+    if print_stats:
+        chain_len = flat_traces.shape[0] // len(chains)
+        chain_slices = [slice(cnum*chain_len, (cnum+1)*chain_len)
+                        for cnum in range(len(chains))]
+        print('Num chains: {:d} Chain length: {:d}'
+              .format(len(chains), chain_len))
+        print('Potential Scale Reduction Factors:')
+        for col, label in enumerate(labels):
+            psr = potential_scale_reduction([flat_traces[slc, col]
+                                             for slc in chain_slices])
+            print('{} {:0.4f}'.format(label, psr))
+
+    corner(flat_traces, labels=labels, max_n_ticks=3,
+           label_kwargs={'fontsize': 'small'}, **kwargs)
+
+    if save:
+        pp.savefig('{}_corner.pdf'.format(disp_name))
+    else:
+        pp.show()
+    pp.close(pp.gcf())
     db.close()

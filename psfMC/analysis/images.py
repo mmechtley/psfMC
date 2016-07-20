@@ -70,7 +70,7 @@ def save_posterior_images(model, output_name='out_{}', mode='weighted',
         for chain in chains:
             chain_samples = model.db.trace('deviance', chain).length()
             total_samples += chain_samples
-            for sample in xrange(chain_samples):
+            for sample in range(chain_samples):
                 _print_progress(sample, chain, chain_samples)
                 model.remember(chain=chain, trace_index=sample)
                 # Accumulate output arrays

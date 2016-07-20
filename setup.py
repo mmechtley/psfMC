@@ -5,8 +5,8 @@ from subprocess import check_output, CalledProcessError
 from numpy.distutils.core import setup
 
 _packages = ['psfMC', 'psfMC.ModelComponents', 'psfMC.analysis']
-_scripts = ['scripts/plotchain']
-_requires = ['numpy', 'scipy', 'pymc', 'astropy', 'matplotlib']
+_scripts = ['scripts/plotchain', 'scripts/corner_plot']
+_requires = ['numpy', 'scipy', 'pymc', 'astropy', 'matplotlib', 'corner']
 
 
 def _version_from_init():
@@ -30,7 +30,7 @@ if os.path.exists('.git'):
              'for development builds.')
 
 setup(name=_packages[0],
-      version=_version,
+      version='1.0',
       author='Matt Mechtley',
       author_email='matt@cherem.org',
       url='https://github.com/mmechtley/psfMC',

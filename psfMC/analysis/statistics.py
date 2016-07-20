@@ -136,6 +136,7 @@ def check_convergence_psrf(model, chains=None, stochastics=None, psrf_tol=0.05,
     :param stochastics: List of stochastic (trace) names to consider. If None,
         all traces will be considered.
     :param psrf_tol: Tolerance on PSRF (how close to 1.0 they must be)
+    :param verbose: Values >1 indicate to print the psrf for each stochastic
     """
     if chains is None:
         chains = range(model.chains)

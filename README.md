@@ -15,13 +15,18 @@ Hubble Space Telescope Imaging*]
 A journal article is forthcoming, but if you use psfMC in the meantime, please 
 cite:
 
-Mechtley, M. 2014, PhD thesis, Arizona State Univ.
+[Mechtley, M. 2014, PhD Thesis, Arizona State Univ.]
+(http://labs.adsabs.harvard.edu/adsabs/abs/2014PhDT.........1M/)
 
 Recent Changes and Notes
 ------------------------
 The current master branch is a **beta** release. No additional features are 
 planned for the 1.0 release, and additional bugfixes are considered low priority 
 (may make it in or may not).
+
+Beta release 1.0b5 adds MCMC corner plots via Dan Foreman-Mackey's [corner.py 
+module](https://github.com/dfm/corner.py). Also includes a new command line 
+script `corner_plot` to generate these from a terminal.
 
 Beta release 1.0b4 migrated from pyfits to the astropy.io.fits module, since 
 this is the package where future development of FITS support will continue.  

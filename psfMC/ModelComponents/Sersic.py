@@ -1,6 +1,6 @@
 from __future__ import division
 from warnings import warn
-from numpy import asarray, exp, cos, sin, deg2rad, sum, log, pi, dot, abs
+from numpy import asarray, exp, cos, sin, deg2rad, sum, log, pi, dot
 from scipy.special import gamma
 from pymc import Potential
 from .ComponentBase import ComponentBase
@@ -106,7 +106,8 @@ class Sersic(ComponentBase):
 
         :param arr: Numpy array to add sersic profile to
         :param mag_zp: Magnitude zeropoint (e.g. magnitude of 1 count/second)
-        :param coords: Optional pre-computed x,y coordfinates of each element
+        :param kwargs: coords: Optional pre-computed x,y coordinates of each
+            element
         """
         coords = kwargs['coords'] if 'coords' in kwargs \
             else array_coords(arr.shape)
@@ -143,6 +144,7 @@ class Sersic(ComponentBase):
         Sersic coefficient kappa. The sign is negative, i.e. the formal gradient
         with respect to r as r increases outward.
         """
+        # TODO: Use 2D gradient instead of 1D approximation
         # Since square radius is supplied instead of radius, need to be careful
         # about the powers (sqrt happens first so applies to both 1/n and -1)
         if ne is not None:

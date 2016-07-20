@@ -2,6 +2,7 @@ from __future__ import division, print_function
 from warnings import warn
 import os
 import pymc
+import pymc.database
 from pymc.StepMethods import AdaptiveMetropolis, DiscreteMetropolis
 from .models import multicomponent_model
 from .analysis import check_convergence_psrf, save_posterior_images
@@ -66,9 +67,9 @@ def model_galaxy_mcmc(model_file, output_name=None,
     if mc_model.db.chains == 0:
         _set_step_methods(mc_model)
 
-        for samp_iter in xrange(max_iterations):
+        for samp_iter in range(max_iterations):
             # TODO: Is there a way to delete old chains?
-            for chain_num in xrange(chains):
+            for chain_num in range(chains):
                 # Seed new values for every independent chain on first iteration
                 # On subsequent iterations, load last sample from previous
                 if samp_iter == 0:
