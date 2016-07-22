@@ -24,9 +24,12 @@ The current master branch is a **beta** release. No additional features are
 planned for the 1.0 release, and additional bugfixes are considered low priority 
 (may make it in or may not).
 
-Beta release 1.0b5 adds MCMC corner plots via Dan Foreman-Mackey's [corner.py 
-module](https://github.com/dfm/corner.py). Also includes a new command line 
-script `corner_plot` to generate these from a terminal.
+Beta release 1.0b5 adds a new analysis submodule. FITS image production has been 
+moved there, and various statistical and plotting methods have been added for
+analyzing posterior chains. This includes MCMC corner plots via Dan Foreman-
+Mackey's [corner.py](https://github.com/dfm/corner.py) module. Also includes two 
+new command line scripts: `corner_plot` and `plot_chain` to generate these plots 
+from a terminal.
 
 Beta release 1.0b4 migrated from pyfits to the astropy.io.fits module, since 
 this is the package where future development of FITS support will continue.  

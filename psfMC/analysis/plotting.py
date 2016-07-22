@@ -329,6 +329,7 @@ def plot_hist(trace_name, db, model=None, chains=None, save=False,
     pp.close(fig_acorr)
     db.close()
 
+
 def corner_plot(database, model=None, disp_parameters=None, chains=None,
                 save=False, skip_zero_variance=True, print_stats=True,
                 **kwargs):
@@ -378,7 +379,7 @@ def corner_plot(database, model=None, disp_parameters=None, chains=None,
 
     labels = list(disp_trace_names)
     # Double all xy labels into x label and y label
-    xy_inds = [ind for ind,label in enumerate(labels) if 'xy' in label]
+    xy_inds = [ind for ind, label in enumerate(labels) if 'xy' in label]
     for ind in reversed(xy_inds):
         label = labels[ind]
         labels[ind] = label.replace('xy', 'y')
@@ -388,12 +389,12 @@ def corner_plot(database, model=None, disp_parameters=None, chains=None,
     if skip_zero_variance:
         # Remove zero-variance variables, because corner.corner will barf
         col_vars = np.var(flat_traces, axis=0)
-        variable_cols = np.where(col_vars!=0)[0]
-        nonvariable_cols = np.where(col_vars==0)[0]
-        flat_traces = flat_traces[:,variable_cols]
-        removed_cols = [label for col,label in enumerate(labels)
+        variable_cols = np.where(col_vars != 0)[0]
+        nonvariable_cols = np.where(col_vars == 0)[0]
+        flat_traces = flat_traces[:, variable_cols]
+        removed_cols = [label for col, label in enumerate(labels)
                         if col in nonvariable_cols]
-        labels = [label for col,label in enumerate(labels)
+        labels = [label for col, label in enumerate(labels)
                   if col in variable_cols]
         warn('The following traces had zero variance and will not be '
              'displayed: {}'.format(removed_cols))
