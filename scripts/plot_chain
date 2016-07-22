@@ -88,8 +88,7 @@ if __name__ == '__main__':
         # the most similar name to the db file.
         db_dir = os.path.dirname(db_name)
         py_files = glob.glob(os.path.join(db_dir, '*.py'))
-        similar_score = lambda x: SequenceMatcher(a=db_name, b=x).ratio()
-        py_files.sort(key=similar_score)
+        py_files.sort(key=lambda x: SequenceMatcher(a=db_name, b=x).ratio())
         model_name = py_files[-1] if len(py_files) > 0 else None
 
         if mode == 'hist':
