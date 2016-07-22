@@ -5,7 +5,7 @@ from subprocess import check_output, CalledProcessError
 from numpy.distutils.core import setup
 
 _packages = ['psfMC', 'psfMC.ModelComponents', 'psfMC.analysis']
-_scripts = ['scripts/plotchain', 'scripts/corner_plot']
+_scripts = ['scripts/plot_chain', 'scripts/corner_plot']
 _requires = ['numpy', 'scipy', 'pymc', 'astropy', 'matplotlib', 'corner']
 
 

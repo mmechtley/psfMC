@@ -30,15 +30,15 @@ trace: Generate trace plots (value vs. sample index) instead of histograms.
 save: Don't display matplotlib windows, instead save all plots as pdf
 
 Examples:
-plotchain.py 1_PSF_mag mydb.pickle
+plot_chain.py 1_PSF_mag mydb.pickle
   Basic usage. Display histogram and autocorrelation plot for a single variable
   from all chains in the given trace database.
 
-plotchain.py 1_PSF_2_Sersic_magdiff trace *.hdf5
+plot_chain.py 1_PSF_2_Sersic_magdiff trace *.hdf5
   Will generate trace plots of magnitude difference between PSF and Sersic
   component for all pickle databases in the current directory
 
-plotchain.py 2_Sersic_index 4,5,6,7 save
+plot_chain.py 2_Sersic_index 4,5,6,7 save
   Will generate pdf histograms for all databases in the current directory using
   only chains 3-6.
 """
