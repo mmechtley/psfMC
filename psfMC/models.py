@@ -16,10 +16,10 @@ def multicomponent_model(components, **kwargs):
     Returns an MCMC object ready for sampling. **kwargs are passed to MCMC()
     """
     seterr(divide='ignore')
-    if isinstance(components, basestring):
+    if not hasattr(components, '__iter__') or isinstance(components, str):
         try:
             components = component_list_from_file(components)
-        except IOError, err:
+        except IOError as err:
             message = 'Unable to open components file {}. Does it exist?'
             err.message = message.format(components)
             raise err

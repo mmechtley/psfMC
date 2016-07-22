@@ -4,8 +4,9 @@ from warnings import warn
 from subprocess import check_output, CalledProcessError
 from numpy.distutils.core import setup
 
-_packages = ['psfMC', 'psfMC.ModelComponents']
-_requires = ['numpy', 'scipy', 'pymc', 'astropy']
+_packages = ['psfMC', 'psfMC.ModelComponents', 'psfMC.analysis']
+_scripts = ['scripts/plot_chain', 'scripts/corner_plot']
+_requires = ['numpy', 'scipy', 'pymc', 'astropy', 'matplotlib', 'corner']
 
 
 def _version_from_init():
@@ -29,7 +30,7 @@ if os.path.exists('.git'):
              'for development builds.')
 
 setup(name=_packages[0],
-      version=_version,
+      version='1.0',
       author='Matt Mechtley',
       author_email='matt@cherem.org',
       url='https://github.com/mmechtley/psfMC',
@@ -37,4 +38,5 @@ setup(name=_packages[0],
       description='Markov Chain Monte Carlo modeling of 2-dimensional surface '
                   'brightness distributions of quasar host galaxies',
       packages=_packages,
+      scripts=_scripts,
       requires=_requires)

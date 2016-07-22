@@ -15,13 +15,21 @@ Hubble Space Telescope Imaging*]
 A journal article is forthcoming, but if you use psfMC in the meantime, please 
 cite:
 
-Mechtley, M. 2014, PhD thesis, Arizona State Univ.
+[Mechtley, M. 2014, PhD Thesis, Arizona State Univ.]
+(http://labs.adsabs.harvard.edu/adsabs/abs/2014PhDT.........1M/)
 
 Recent Changes and Notes
 ------------------------
 The current master branch is a **beta** release. No additional features are 
 planned for the 1.0 release, and additional bugfixes are considered low priority 
 (may make it in or may not).
+
+Beta release 1.0b5 adds a new analysis submodule. FITS image production has been 
+moved there, and various statistical and plotting methods have been added for
+analyzing posterior chains. This includes MCMC corner plots via Dan Foreman-
+Mackey's [corner.py](https://github.com/dfm/corner.py) module. Also includes two 
+new command line scripts: `corner_plot` and `plot_chain` to generate these plots 
+from a terminal.
 
 Beta release 1.0b4 migrated from pyfits to the astropy.io.fits module, since 
 this is the package where future development of FITS support will continue.  
@@ -36,12 +44,14 @@ still passed directly to `model_galaxy_mcmc`. See the example model file in
 
 Dependencies
 ------------
-The software depends on the numpy, scipy, pymc, and astropy modules.
+The software depends on the `numpy`, `scipy`, `pymc`, and `astropy` modules. The 
+`matplotlib` module and `corner` modules are required for certain tests and 
+posterior analysis plots.
 
-Additionally, the pyregion module is optional but strongly recommended for ease 
-of masking out foreground or background objects unrelated to the quasar being 
-modeled.
+Additionally, the `pyregion` module is optional but strongly recommended for 
+ease of masking out foreground or background objects unrelated to the quasar 
+being modeled.
 
-The numexpr module is also optional, and is used to parallelize certain 
+The `numexpr` module is also optional, and is used to parallelize certain 
 calculations (generating Sersic profiles), providing a marginal increase in 
 speed.

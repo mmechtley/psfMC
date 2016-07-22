@@ -1,4 +1,4 @@
-from __future__ import division
+from __future__ import division, print_function
 import numpy as np
 
 
@@ -126,8 +126,8 @@ def calculate_dic(db, chains=None, best_sample=None, best_chain=None):
     return 2*mean_dev - db.trace('deviance', best_chain)[best_sample]
 
 
-def chains_are_converged(model, chains=None, stochastics=None, psrf_tol=0.05,
-                         verbose=0):
+def check_convergence_psrf(model, chains=None, stochastics=None, psrf_tol=0.05,
+                           verbose=0):
     """
     Checks whether chains are converged by calculating the Gelman-Rubin
     Potential Scale Reduction Factor (PSRF) for all traced stochastics
@@ -136,6 +136,7 @@ def chains_are_converged(model, chains=None, stochastics=None, psrf_tol=0.05,
     :param stochastics: List of stochastic (trace) names to consider. If None,
         all traces will be considered.
     :param psrf_tol: Tolerance on PSRF (how close to 1.0 they must be)
+    :param verbose: Values >1 indicate to print the psrf for each stochastic
     """
     if chains is None:
         chains = range(model.chains)
@@ -162,20 +163,20 @@ def chains_are_converged(model, chains=None, stochastics=None, psrf_tol=0.05,
         else:
             psrf = potential_scale_reduction(traces)
         if verbose > 0:
-            print stoch, psrf
+            print(stoch, psrf)
         # Converged when psrf is within tolerance
         return np.all(np.abs(psrf - 1) < psrf_tol)
 
     return all([is_converged(stoch) for stoch in stochastics])
 
 
-def sample_autocorr(trace1d, sigma=5):
+def chain_autocorr(chain1d, sigma=5):
     """
-    Calculates the autocorrelation function & related statistics for a 1-D
-    trace. The method used for calculating the autocorrelation time (and thus
-    the number of effective samples) is an initial sequence estimator (see
+    Calculates the normalized autocorrelation function & related statistics for
+    a 1-D chain. The method used for calculating the autocorrelation time (and
+    thus the number of effective samples) is an initial sequence estimator (see
     Thompson 2010 arXiv:1011.0175v1)
-    :param trace1d: Trace to calculate autocorrelation for. Must be 1-D (so
+    :param chain1d: Trace to calculate autocorrelation for. Must be 1-D (so
         split x,y components for example)
     :param sigma: Significance level for calculating maximum significant lag
         and effective sample number
@@ -183,7 +184,7 @@ def sample_autocorr(trace1d, sigma=5):
         samples, maximum significant lag)
     """
     # detrend and calculate normalization constant
-    detrend = trace1d - np.mean(trace1d)
+    detrend = chain1d - np.mean(chain1d)
     norm_constant = np.sum(detrend**2)
     # Tested against pyplot.acorr with detrend=mlab.detrend_mean & normed=True
     acorr = np.correlate(detrend, detrend, mode='full') / norm_constant
@@ -191,7 +192,7 @@ def sample_autocorr(trace1d, sigma=5):
     lags = np.arange(acorr.size) - middle
 
     # Overall significance for autocorrelation is Z/sqrt(N)
-    acorr_signif = sigma / np.sqrt(trace1d.size)
+    acorr_signif = sigma / np.sqrt(chain1d.size)
     # first index where conditional is false (0)
     trunc = np.argmin(acorr[middle:] > acorr_signif)
     # TODO: Instead use initial convex sequence/initial positive sequence est.
@@ -201,6 +202,6 @@ def sample_autocorr(trace1d, sigma=5):
     maxlag = lags[middle+trunc]
     # sum of the significant normed autocorrelation lags, tau in the literature
     tau = np.sum(acorr[middle-trunc+1:middle+trunc])
-    eff_samples = trace1d.size / tau
+    eff_samples = chain1d.size / tau
 
     return lags, acorr, eff_samples, maxlag

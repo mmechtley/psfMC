@@ -1,0 +1,61 @@
+#!/usr/bin/env python
+"""
+Generate a corner plot to show covariances in the posterior distribution of a
+psfMC model. Comma-separated lists of trace names and/or chain indexes can be
+specified. The argument "save" will save plots as pdf instead of displaying
+them in a window. All other arguments are interpreted as trace database names.
+For script access, including additional parameters, annotation, etc., use
+psfMC.analysis.corner_plot
+Example usage:
+
+Specify trace names:
+corner_plot 1_PSF_mag,2_Sersic_mag,2_Sersic_reff,2_Sersic_index database.hdf5
+Specify trace names and plot only last 4 chains:
+corner_plot 1_PSF_xy,2_Sersic_xy -1,-2,-3,-4 database.hdf5
+Save pdf plots for all databases:
+corner_plot save *.hdf5
+"""
+from __future__ import division
+from psfMC.analysis import corner_plot
+from ast import literal_eval
+from matplotlib import rc
+
+rc('axes.formatter', useoffset=False)
+rc('font', family='serif')
+
+if __name__ == '__main__':
+    import sys
+    if len(sys.argv) < 2:
+        print(__doc__)
+        exit()
+
+    save = False
+    try:
+        sys.argv.remove('save')
+        save = True
+    except ValueError:
+        pass
+
+    chains = None
+    disp_params = None
+    leftover_args = sys.argv
+    for cl_arg in [cl_arg for cl_arg in sys.argv if ',' in cl_arg]:
+        leftover_args.remove(cl_arg)
+        cl_arg = '['+cl_arg+']'
+        try:
+            arg_list = literal_eval(cl_arg)
+        except SyntaxError:
+            cl_arg = cl_arg.replace(',', "','").replace('[', "['")\
+                .replace(']', "']")
+            arg_list = literal_eval(cl_arg)
+            if '' in arg_list:
+                arg_list.remove('')
+        if all([isinstance(arg, int) for arg in arg_list]):
+            chains = arg_list
+        else:
+            disp_params = arg_list
+
+    db_names = leftover_args[1:]
+    for db_name in db_names:
+        corner_plot(db_name, disp_parameters=disp_params, chains=chains,
+                    save=save)

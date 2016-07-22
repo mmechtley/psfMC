@@ -4,9 +4,8 @@ from astropy.io import fits
 from math import fsum
 from warnings import warn
 
-_bad_px_value = 0
 
-
+# TODO: Investigate using scipy.fftpack instead?
 def pad_and_rfft_image(img, newshape):
     """
     Pads the psf array to the size described by imgshape, then run rfft to put
@@ -91,10 +90,11 @@ def mask_from_file(mask_file, obs_hdr, shape):
         pass  # When not in fits format
 
     try:
-        import pyregion as preg
-        regfilt = preg.open(mask_file).as_imagecoord(obs_hdr).get_filter()
+        import pyregion
+        regfilt = pyregion.open(mask_file).as_imagecoord(obs_hdr).get_filter()
         return ~regfilt.mask(shape)
     except ImportError:
+        pyregion = None
         warn('pyregion module could not be imported. ds9 region format masks '
              'will be ignored.')
     except UnicodeDecodeError:
