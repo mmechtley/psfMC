@@ -1,12 +1,10 @@
 import os
 import re
-from warnings import warn
-from subprocess import check_output, CalledProcessError
 from numpy.distutils.core import setup
 
 _packages = ['psfMC', 'psfMC.ModelComponents', 'psfMC.analysis']
 _scripts = ['scripts/plot_chain', 'scripts/corner_plot']
-_requires = ['numpy', 'scipy', 'pymc', 'astropy', 'matplotlib', 'corner']
+_requires = ['numpy', 'scipy', 'astropy', 'emcee', 'matplotlib', 'corner']
 
 
 def _version_from_init():
@@ -20,14 +18,6 @@ def _version_from_init():
     return ''
 
 _version = _version_from_init()
-
-if os.path.exists('.git'):
-    try:
-        _version = check_output(['git', 'describe'])
-    except CalledProcessError:
-        warn('git versioning information found but call to git describe '
-             'failed. Version number will not include commit number and hash '
-             'for development builds.')
 
 setup(name=_packages[0],
       version='1.0',

@@ -53,9 +53,8 @@ def component_list_from_file(filename):
     # to its location instead of the script run location.
     prev_dir = os.getcwd()
     model_dir = os.path.dirname(filename)
-    if model_dir == '':
-        model_dir = '.'
-    os.chdir(model_dir)
+    if model_dir != '':
+        os.chdir(model_dir)
     exec(compile(model_tree, filename, mode='exec'))
     os.chdir(prev_dir)
 

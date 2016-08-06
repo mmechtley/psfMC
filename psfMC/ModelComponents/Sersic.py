@@ -1,9 +1,8 @@
 from __future__ import division
 from warnings import warn
-from numpy import asarray, exp, cos, sin, deg2rad, sum, log, pi, dot
-from scipy.special import gamma
-from pymc import Potential
-from .ComponentBase import ComponentBase
+from numpy import asarray, exp, cos, sin, deg2rad, sum, log, pi, dot, inf
+from scipy.special import gamma, gammaincinv
+from .ComponentBase import ComponentBase, StochasticProperty
 from ..array_utils import array_coords
 
 try:
@@ -21,8 +20,16 @@ class Sersic(ComponentBase):
     _fits_abbrs = [('Sersic', 'SER'), ('reff_b', 'REB'), ('reff', 'RE'),
                    ('index', 'N'), ('angle', 'ANG')]
 
+    xy = StochasticProperty('xy')
+    mag = StochasticProperty('mag')
+    reff = StochasticProperty('reff')
+    reff_b = StochasticProperty('reff_b')
+    index = StochasticProperty('index')
+    angle = StochasticProperty('angle')
+
     def __init__(self, xy=None, mag=None, reff=None, reff_b=None,
                  index=None, angle=None, angle_degrees=False):
+        super(Sersic, self).__init__()
         self.xy = xy
         self.mag = mag
         self.reff = reff
@@ -31,23 +38,11 @@ class Sersic(ComponentBase):
         self.angle = angle
         self.angle_degrees = angle_degrees
 
-        # Enforce major axis > minor axis.
-        # Otherwise rotation angle makes no sense.
-        self.axis_ratio_constraint = Potential(logp=Sersic.ab_logp,
-                                               name='axis_ratio_constraint',
-                                               parents={'major_axis': reff,
-                                                        'minor_axis': reff_b},
-                                               doc='Axis Ratio Constraint',
-                                               verbose=0,
-                                               cache_depth=2)
-
-        super(Sersic, self).__init__()
-
-    @staticmethod
-    def ab_logp(major_axis, minor_axis):
-        # FIXME: should be -inf but pymc doesn't like ZeroProbability
-        # try some functional form of q?
-        return -1e200 if minor_axis > major_axis else 0
+    def log_priors(self):
+        logp = super(Sersic, self).log_priors()
+        # Axis ratio constraint, reff must be bigger than reff_b
+        logp += -inf if self.reff_b > self.reff else 0
+        return logp
 
     @staticmethod
     def total_flux_adu(mag, mag_zp):
@@ -60,10 +55,9 @@ class Sersic(ComponentBase):
     def kappa(n):
         """
         Sersic profile exponential scaling factor, called either kappa or b_n
-        Uses analytic expansion from Ciotti & Bertin 1999, A&A, 352, 447
+        Ciotti & Bertin 1999, A&A, 352, 447 Eqn 5, exact formula!
         """
-        return (2*n - 1/3 + 4/405*n**-1 + 46/25515*n**-2 + 131/1148175*n**-3
-                - 2194697/30690717750*n**-4)
+        return gammaincinv(2*n, 0.5)
 
     def sb_eff_adu(self, mag_zp, flux_tot=None, kappa=None):
         """
@@ -92,8 +86,8 @@ class Sersic(ComponentBase):
         # Matrix representation of n-D ellipse: en.wikipedia.org/wiki/Ellipsoid
         # inv_xform is inverse scale matrix (1/reff, 0, 0, 1/reff_b)
         # multiplied by inverse rotation matrix (cos, sin, -sin, cos)
-        inv_xform = asarray(((cos_ang/self.reff, sin_ang/self.reff),
-                             (-sin_ang/self.reff_b, cos_ang/self.reff_b)))
+        inv_xform = asarray(((cos_ang / self.reff, sin_ang / self.reff),
+                             (-sin_ang / self.reff_b, cos_ang / self.reff_b)))
         # TODO: Might be room for optimization here?
         radii = sum(dot(inv_xform, (coords-self.xy).T)**2, axis=0)
         return radii
@@ -131,9 +125,9 @@ class Sersic(ComponentBase):
         # TODO: should delta_r change per-pixel based on ellipse params?
         delta_r = 1 / self.reff
         # Pixel-sized trapezoid having a top with the given normed gradient
-        grad = Sersic._normed_grad(sq_radii, radius_pow, kappa)
-        bary_offset = delta_r**2 / 12 * grad
-        arr += sb * (1 + grad * bary_offset)
+        normed_grad = Sersic._normed_grad(sq_radii, radius_pow, kappa)
+        bary_offset = delta_r**2 / 12 * normed_grad
+        arr += sb * (1 + normed_grad * bary_offset)
         return arr
 
     @staticmethod

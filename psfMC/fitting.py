@@ -1,18 +1,18 @@
 from __future__ import division, print_function
+
 from warnings import warn
-import os
-import pymc
-import pymc.database
-from pymc.StepMethods import AdaptiveMetropolis, DiscreteMetropolis
-from .models import multicomponent_model
-from .analysis import check_convergence_psrf, save_posterior_images
+from emcee import EnsembleSampler
+from .database import save_database
+from .analysis import check_convergence_autocorr
 from .analysis.images import default_filetypes
+from .models import MultiComponentModel
 
 
 def model_galaxy_mcmc(model_file, output_name=None,
                       write_fits=default_filetypes,
-                      chains=1, max_iterations=1,
-                      convergence_check=check_convergence_psrf,
+                      iterations=0, burn=0,
+                      chains=None, max_iterations=1,
+                      convergence_check=check_convergence_autocorr,
                       backend='pickle',
                       **kwargs):
     """
@@ -49,63 +49,60 @@ def model_galaxy_mcmc(model_file, output_name=None,
         output_name = 'out_' + model_file.replace('.py', '')
     output_name += '_{}'
 
-    # TODO: Set these based on total number of unknown components?
-    kwargs.setdefault('iter', 6000)
-    kwargs.setdefault('burn', 3000)
+    mc_model = MultiComponentModel(components=model_file)
+
+    # If chains is not specified, use the minimum number recommended by emcee
+    if chains is None:
+        chains = 2 * mc_model.num_params + 2
+
+    # TODO: can't use threads=n right now because model object can't be pickled
+    sampler = EnsembleSampler(nwalkers=chains, dim=mc_model.num_params,
+                              lnpostfn=mc_model.log_posterior,
+                              kwargs={'model': mc_model})
 
     # Open database if it exists, otherwise pass backend to create a new one
-    db_name = output_name.format('db')
-    if os.path.exists(db_name+'.'+backend):
-        back_module = getattr(pymc.database, backend)
-        db = back_module.load(db_name+'.'+backend)
-    else:
-        db = backend
+    db_name = output_name.format('db.hdf5')
 
-    mc_model = multicomponent_model(components=model_file, db=db, name=db_name)
+    # TODO: Check if database exists, resume if so
+    # else:
+    # warn('Database already contains sampled chains, skipping sampling')
 
-    # TODO: Add support for resuming. For now, skip sampling if chains exist
-    if mc_model.db.chains == 0:
-        _set_step_methods(mc_model)
+    param_vec = mc_model.init_params_from_priors(chains)
 
-        for samp_iter in range(max_iterations):
-            # TODO: Is there a way to delete old chains?
-            for chain_num in range(chains):
-                # Seed new values for every independent chain on first iteration
-                # On subsequent iterations, load last sample from previous
-                if samp_iter == 0:
-                    mc_model.draw_from_prior()
-                else:
-                    mc_model.remember(chain=(samp_iter-1)*chain_num,
-                                      trace_index=-1)
-                mc_model.sample(**kwargs)
+    # Run burn-in and discard
+    for step, (param_vec, logp, rand_state) in enumerate(
+            sampler.sample(param_vec, iterations=burn)):
+        next_pct = 100 * (step + 1) // burn
+        curr_pct = 100 * step // burn
+        if next_pct - curr_pct > 0:
+            print('Burning: {:d}%'.format(next_pct))
 
-            iter_chains = range(samp_iter*chains, (samp_iter+1)*chains)
-            if convergence_check(mc_model, chains=iter_chains):
-                break
-            else:
-                warn('Not yet converged after {:d} iterations ({:d} chains)'
-                     .format(samp_iter+1, chains))
-        mc_model.db.commit()
-    else:
-        warn('Database already contains sampled chains, skipping sampling')
+    sampler.reset()
+
+    for sampling_iter in range(max_iterations):
+
+        # Now run real samples and retain
+        for step, result in enumerate(
+                sampler.sample(param_vec, iterations=iterations)):
+            next_pct = 100 * (step + 1) // iterations
+            curr_pct = 100 * step // iterations
+            if next_pct - curr_pct > 0:
+                print('Sampling: {:d}%'.format(next_pct))
+
+        # TODO: Replace with user-defined convergence check
+
+
+        if convergence_check(sampler):
+            break
+        else:
+            warn('Not yet converged after {:d} iterations'
+                 .format((sampling_iter + 1)*iterations))
+
+    db = save_database(sampler, mc_model, db_name)
 
     # Write model output files, using only the last "chains" chains.
-    post_chains = range(mc_model.db.chains - chains, mc_model.db.chains)
-    save_posterior_images(mc_model, output_name=output_name,
-                          filetypes=write_fits,
-                          chains=post_chains,
-                          convergence_check=convergence_check)
-    mc_model.db.close()
-
-
-def _set_step_methods(model):
-    """
-    Set special step methods (for xy positions and discrete variables)
-    :param model: multicomponent model
-    """
-    for stoch in model.step_method_dict:
-        if 'xy' in stoch.__name__:
-            model.use_step_method(AdaptiveMetropolis, stoch)
-        if stoch.__name__ == 'PSF_Index':
-            model.use_step_method(DiscreteMetropolis, stoch,
-                                  proposal_distribution='Prior')
+    # post_chains = range(mc_model.db.chains - chains, mc_model.db.chains)
+    # save_posterior_images(mc_model, output_name=output_name,
+    #                       filetypes=write_fits,
+    #                       chains=post_chains,
+    #                       convergence_check=convergence_check)

@@ -12,7 +12,7 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 from scipy.special import gamma
 from .statistics import num_effective_samples, potential_scale_reduction, \
     max_posterior_sample, chain_autocorr
-from ..models import multicomponent_model
+from ..models import MultiComponentModel
 from ..ModelComponents.Sersic import Sersic
 from corner import corner
 

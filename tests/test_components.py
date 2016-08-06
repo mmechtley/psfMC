@@ -5,7 +5,7 @@ import subprocess
 from astropy.io import fits
 from math import fsum
 from scipy.ndimage import shift
-from psfMC.ModelComponents import Sersic, PSF
+from psfMC.ModelComponents import Sersic, PointSource
 from psfMC.array_utils import array_coords
 from timeit import timeit
 from string import ascii_uppercase
@@ -129,7 +129,7 @@ def test_psf():
     # must reverse for scipy.ndimage.shift, since arrays are row, col indexed
     refarr = shift(refarr, _psf_ref_shift[::-1]-1, order=1)
     testarr = np.zeros((5, 5))
-    psf = PSF(xy=_psf_ref_shift, mag=0, shift_method='bilinear')
+    psf = PointSource(xy=_psf_ref_shift, mag=0, shift_method='bilinear')
     psf.add_to_array(testarr, mag_zp=0)
     if not np.allclose(refarr, testarr):
         pp.subplot(121)

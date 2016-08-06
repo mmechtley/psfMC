@@ -1,5 +1,7 @@
 from __future__ import division, print_function
 import numpy as np
+from warnings import warn
+from emcee.autocorr import AutocorrError
 
 
 def _between_variance(traces):
@@ -205,3 +207,28 @@ def chain_autocorr(chain1d, sigma=5):
     eff_samples = chain1d.size / tau
 
     return lags, acorr, eff_samples, maxlag
+
+
+def check_convergence_autocorr(sampler, min_chain_to_tau_ratio=10,
+                               verbose=0):
+    """
+    Use integrated autocorrelation time to estimate whether the chain is
+    converged / whether samples are representative
+    :param sampler: emcee Sampler object
+    :param min_chain_to_tau_ratio: Factor by which the chains must be longer
+        than the longest autocorrelation time
+    :param verbose: Print parameter autocorrelation values for verbose > 0
+    """
+    # Use dirty imprecise estimation of autocorrelation time by specifying c=1
+    try:
+        acorr = sampler.get_autocorr_time(c=1)
+    except AutocorrError:
+        warn('emcee was unable to estimate the autocorrelation time, assuming '
+             'chain is not converged')
+        return False
+    if verbose > 0:
+        print('Autocorrelation times: {}'.format(acorr))
+
+    nsamples = sampler.chain.shape[1]
+
+    return np.all(nsamples > min_chain_to_tau_ratio*acorr)

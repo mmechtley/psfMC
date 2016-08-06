@@ -1,4 +1,4 @@
 from .Configuration import Configuration
-from .PSF import PSF
+from .PointSource import PointSource
 from .Sersic import Sersic
 from .Sky import Sky

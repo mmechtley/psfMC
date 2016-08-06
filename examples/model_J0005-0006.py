@@ -12,8 +12,8 @@ See the docstrings for individual components and distributions for the available
 parameters.
 """
 from numpy import array
-from psfMC.ModelComponents import Configuration, Sky, PSF, Sersic
-from psfMC.distributions import Normal, Uniform, Weibull
+from psfMC.ModelComponents import Configuration, Sky, PointSource, Sersic
+from psfMC.distributions import Normal, Uniform, WeibullMinimum
 
 total_mag = 20.83
 center = array((64.5, 64.5))
@@ -28,27 +28,26 @@ Configuration(obs_file='sci_J0005-0006.fits',
               mag_zeropoint=25.9463)
 
 # We can treat the sky as an unknown component if the subtraction is uncertain
-# pyMC Normal distributions are parameterized by mu, tau (= 1/sigma**2)
-Sky(adu=Normal(mu=0, tau=100))
+Sky(adu=Normal(loc=0, scale=0.01))
 
 # Point source component
-PSF(xy=Uniform(lower=center-max_shift, upper=center+max_shift),
-    mag=Uniform(lower=total_mag-0.2, upper=total_mag+1.5))
+PointSource(xy=Uniform(loc=center - max_shift, scale=2 * max_shift),
+            mag=Uniform(loc=total_mag-0.2, scale=0.2+1.5))
 
 # Sersic profile, modeling a galaxy under the point source
-Sersic(xy=Uniform(lower=center-max_shift, upper=center+max_shift),
-       mag=Uniform(lower=total_mag, upper=27.5),
-       reff=Uniform(lower=2.0, upper=12.0),
-       reff_b=Uniform(lower=2.0, upper=12.0),
-       index=Weibull(alpha=1.5, beta=4),
-       angle=Uniform(lower=0, upper=180), angle_degrees=True)
+Sersic(xy=Uniform(loc=center-max_shift, scale=2*max_shift),
+       mag=Uniform(loc=total_mag, scale=27.5-total_mag),
+       reff=Uniform(loc=2.0, scale=12.0-2.0),
+       reff_b=Uniform(loc=2.0, scale=12.0-2.0),
+       index=WeibullMinimum(c=1.5, scale=4),
+       angle=Uniform(loc=0, scale=180), angle_degrees=True)
 
 # Second sersic profile, modeling the faint blob to the upper left of the quasar
 center = array((46, 85.6))
 max_shift = array((5, 5))
-Sersic(xy=Uniform(lower=center-max_shift, upper=center+max_shift),
-       mag=Uniform(lower=23.5, upper=25.5),
-       reff=Uniform(lower=2.0, upper=8.0),
-       reff_b=Uniform(lower=2.0, upper=8.0),
-       index=Weibull(alpha=1.5, beta=4),
-       angle=Uniform(lower=0, upper=180), angle_degrees=True)
+Sersic(xy=Uniform(loc=center-max_shift, scale=2*max_shift),
+       mag=Uniform(loc=23.5, scale=25.5-23.5),
+       reff=Uniform(loc=2.0, scale=8.0-2.0),
+       reff_b=Uniform(loc=2.0, scale=8.0-2.0),
+       index=WeibullMinimum(c=1.5, scale=4),
+       angle=Uniform(loc=0, scale=180), angle_degrees=True)

@@ -1,30 +1,33 @@
 from numpy import array, abs, pi, sin, prod, clip, where, round
-from .ComponentBase import ComponentBase
+from .ComponentBase import ComponentBase, StochasticProperty
 from ..array_utils import array_coords
 
 
-class PSF(ComponentBase):
+class PointSource(ComponentBase):
     """
-    Point source component.
+    Point source component
     shift_method controls how the point source flux is distributed when sub-
     pixel shifting. Current methods are bilinear and lanczos3.
     xy position is 0-based (like numpy array) not 1-based (like FITS)
     """
+    xy = StochasticProperty('xy')
+    mag = StochasticProperty('mag')
+
     def __init__(self, xy=None, mag=None, shift_method='lanczos3'):
+        super(PointSource, self).__init__()
         self.xy = xy
         self.mag = mag
         self.shift_method = shift_method
-        super(PSF, self).__init__()
 
     def add_to_array(self, arr, mag_zp, **kwargs):
         """
-        Add point source to a numpy array. Array is assumed to be in counts per
-        second, ie the brightness of a pixel is
+        Add point source to a numpy array. Array values are assumed to be in
+        units such that the brightness of a pixel is
         m = -2.5*log(pixel value) + mag_zp
-        Linear interpolation is used for subpixel positions.
 
         :param arr: Numpy array to add psf to
         :param mag_zp: Magnitude zeropoint (i.e. magnitude of 1 count/second)
+        :param kwargs: coords: pre-computed array of pixel coordinates
         """
         coords = kwargs['coords'] if 'coords' in kwargs \
             else array_coords(arr.shape)
@@ -57,6 +60,7 @@ def minimal_slice(position, kern_radius, array_shape):
     Get a slice representing the minimum array section that includes the given
     position, padded by the given kern_radius. That is, exactly those pixels
     whose center coordinates are within +/- kern_radius of position.
+
     :param position: Position in xy coordinate order
     :param kern_radius: Radius of the kernel (symmetric about position)
     :param array_shape: Shape of embedding numpy array (yx order)
@@ -75,8 +79,16 @@ def minimal_slice(position, kern_radius, array_shape):
 
 
 def sinc(x):
+    """
+    sinc function
+    """
     return where(x != 0, sin(pi*x)/(pi*x), 1.0)
 
 
 def lanczos(x, a):
+    """
+    1D Lanczos kernel
+    :param x: positions to evaluate
+    :param a: size of lanczos window
+    """
     return where(abs(x) < a, sinc(x)*sinc(x/a), 0)
