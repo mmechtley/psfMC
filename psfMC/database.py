@@ -2,14 +2,16 @@ import numpy as np
 from astropy.table import Table
 
 
-# TODO: decide whether this should be hdf5, or FITS or something else
-def save_database(sampler, model, db_name):
+def save_database(sampler, model, db_name, meta_dict=None):
     """
     Save database file to disk using astropy Table format
 
     :param sampler: emcee Sampler object containing sampled chains
     :param model: psfMC MultiComponentModel for getting trace names, etc.
     :param db_name: filename to save to
+    :param meta_dict: OrderedDict of additional information to save in the FITS
+        header (e.g. sampler arguments, burn-in length, etc.) Dict keys must be
+        short enough to be valid FITS header keys
     :return: database as saved, as astropy Table object
     """
     chain = sampler.chain
@@ -26,9 +28,11 @@ def save_database(sampler, model, db_name):
     data_cols += [lnprobability.flat, walker_col]
 
     db = Table(data_cols, names=stochastic_names)
-    # TODO: annotate with additional information? random state? burn?
+    # TODO: Figure out how to save random state. Second table?
+    if meta_dict is not None:
+        db.meta.update(meta_dict)
 
-    db.write(db_name, format='hdf5', path='/Chains', overwrite=True)
+    db.write(db_name, format='fits', overwrite=True)
     return db
 
 
@@ -39,7 +43,7 @@ def load_database(db_name):
     :param db_name: database filename
     :return: astropy Table object
     """
-    return Table.read(db_name, format='hdf5', path='/Chains')
+    return Table.read(db_name, format='fits')
 
 
 def get_sampler_state(database):

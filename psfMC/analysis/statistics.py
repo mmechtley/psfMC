@@ -87,47 +87,6 @@ def num_effective_samples(traces):
         return nsamples * nchains * pooled_var / between_var
 
 
-def max_posterior_sample(db, chains=None):
-    """
-    Maximum posterior sample is the sample that minimizes the model deviance
-    (i.e. has the highest posterior probability)
-    Returns the index of the chain the sample occurs in, and the index of the
-    sample within that chain
-    """
-    if chains is None:
-        chains = range(db.chains)
-    min_chain = -1
-    min_sample = -1
-    min_deviance = np.inf
-    for chain in chains:
-        dev_trace = db.trace('deviance', chain)[:]
-        chain_min_sample = np.argmin(dev_trace)
-        chain_min_deviance = dev_trace[chain_min_sample]
-        if chain_min_deviance < min_deviance:
-            min_deviance = chain_min_deviance
-            min_sample = chain_min_sample
-            min_chain = chain
-    return min_chain, min_sample
-
-
-def calculate_dic(db, chains=None, best_sample=None, best_chain=None):
-    """
-    Calculates the Deviance Information Criterion for the posterior, defined as
-    twice the expected deviance minus the deviance of the expectation value.
-    The expectation value of the posterior is estimated as the sample with the
-    lowest deviance.
-    """
-    # TODO: BPIC might be nice also, but more work to calculate
-    if chains is None:
-        chains = range(db.chains)
-    if best_chain is None or best_sample is None:
-        best_chain, best_sample = max_posterior_sample(db, chains=chains)
-    combined_dev = [db.trace('deviance', chain)[:] for chain in chains]
-    combined_dev = np.concatenate(combined_dev)
-    mean_dev = np.mean(combined_dev, axis=0)
-    return 2*mean_dev - db.trace('deviance', best_chain)[best_sample]
-
-
 def check_convergence_psrf(model, chains=None, stochastics=None, psrf_tol=0.05,
                            verbose=0):
     """

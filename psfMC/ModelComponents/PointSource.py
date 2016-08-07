@@ -10,6 +10,8 @@ class PointSource(ComponentBase):
     pixel shifting. Current methods are bilinear and lanczos3.
     xy position is 0-based (like numpy array) not 1-based (like FITS)
     """
+    _fits_abbrs = [('PointSource', 'PS')]
+
     xy = StochasticProperty('xy')
     mag = StochasticProperty('mag')
 

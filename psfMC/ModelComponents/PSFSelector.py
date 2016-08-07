@@ -12,34 +12,34 @@ class PSFSelector(ComponentBase):
     """
     psf_index = StochasticProperty('psf_index')
 
-    def __init__(self, psflist, ivmlist, data_shape):
+    def __init__(self, psf_list, ivm_list, data_shape):
         super(PSFSelector, self).__init__()
         # List-ify psflist and ivmlist if they are single strings
 
-        if not hasattr(psflist, '__iter__') or isinstance(psflist, str):
-            psflist = [psflist]
-        if not hasattr(ivmlist, '__iter__') or isinstance(ivmlist, str):
-            ivmlist = [ivmlist]
-        if len(psflist) != len(ivmlist):
+        if not hasattr(psf_list, '__iter__') or isinstance(psf_list, str):
+            psf_list = [psf_list]
+        if not hasattr(ivm_list, '__iter__') or isinstance(ivm_list, str):
+            ivm_list = [ivm_list]
+        if len(psf_list) != len(ivm_list):
             raise ValueError('PSF and IVM lists must be the same length')
 
-        if len(psflist) > 1:
-            psf_index = DiscreteUniform(low=0, high=len(psflist))
+        if len(psf_list) > 1:
+            psf_index = DiscreteUniform(low=0, high=len(psf_list))
         else:
             psf_index = 0
 
         # Handle PSF bad pixels, normalize
         data_var_pairs = [preprocess_psf(psf, ivm) for psf, ivm
-                          in zip(psflist, ivmlist)]
+                          in zip(psf_list, ivm_list)]
         # Calculate error contribution from mismatch (PSF variability)
         data_var_lists = calculate_psf_variability(*zip(*data_var_pairs))
         # Pre-FFT all psf models to save on per-sample computation
         f_psflist, f_varlist = zip(*[pre_fft_psf(psf, var, data_shape)
                                    for psf, var in zip(*data_var_lists)])
-        self.filenames = psflist
+        self.filenames = psf_list
         self.psf_index = psf_index
-        self.psflist = f_psflist
-        self.varlist = f_varlist
+        self.psf_list = f_psflist
+        self.var_list = f_varlist
 
     def update_stochastic_names(self, count=None):
         """
@@ -55,14 +55,14 @@ class PSFSelector(ComponentBase):
         """
         Current PSF
         """
-        return self.psflist[self.psf_index]
+        return self.psf_list[self.psf_index]
 
     @property
     def variance(self):
         """
         Variance map for current PSF
         """
-        return self.varlist[self.psf_index]
+        return self.var_list[self.psf_index]
 
     @property
     def filename(self):

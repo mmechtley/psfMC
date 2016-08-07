@@ -50,8 +50,8 @@ class ComponentBase(object):
                 param_values = concatenate((param_values, prior_val))
 
         start_index = 0
-        for stoch in sorted_prior_names:
-            stoch_size = ravel(self._priors[stoch].value).size
+        stoch_sizes = self.stochastic_lens()
+        for stoch, stoch_size in zip(sorted_prior_names, stoch_sizes):
             new_value = array(param_values[start_index:start_index+stoch_size])
             self._priors[stoch].value = new_value
             start_index += stoch_size
@@ -73,12 +73,13 @@ class ComponentBase(object):
         return [array(prior.value).size for key, prior
                 in sorted(self._priors.items())]
 
-    def stochastic_names(self):
+    def stochastic_names(self, name_attr='name'):
         """
         Get a list of names of each stochastic variable, in canonical (alpha
         sorted) order
         """
-        return [prior.name for key, prior in sorted(self._priors.items())]
+        return [getattr(prior, name_attr) for key, prior
+                in sorted(self._priors.items())]
 
     def update_stochastic_names(self, count=None):
         """

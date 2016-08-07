@@ -155,3 +155,10 @@ def calculate_psf_variability(psf_data, psf_vars, debug_psfs=False):
     # Add contribution of PSF mismatch to all individual variance maps
     psf_vars = [var + mismatch_var for var in psf_vars]
     return psf_data, psf_vars
+
+
+def print_progress(sample, max_samples, stage='Burning'):
+    next_pct = 100 * (sample + 1) // max_samples
+    curr_pct = 100 * sample // max_samples
+    if next_pct - curr_pct > 0:
+        print('{}: {:d}%'.format(stage, next_pct))

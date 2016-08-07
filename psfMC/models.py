@@ -68,7 +68,13 @@ class MultiComponentModel(object):
         for walker in range(nwalkers):
             param_vec = np.array([])
             for comp in self.components:
-                comp_stochs = comp.set_stochastic_values()
+                # Draw from priors until we get a set that are valid
+                # In particular, Sersic reff > Sersic reff_b
+                # FIXME: this could technically go on forever
+                while True:
+                    comp_stochs = comp.set_stochastic_values()
+                    if np.isfinite(comp.log_priors()):
+                        break
                 param_vec = np.concatenate((param_vec, comp_stochs))
             initial_params[walker, :] = param_vec
         return initial_params
@@ -87,6 +93,15 @@ class MultiComponentModel(object):
         supplies to the posterior function.
         """
         return np.sum([comp.stochastic_names() for comp in self.components])
+
+    @property
+    def param_fits_abbrs(self):
+        """
+        List of all stochastic parameter FITS abbreviations, ordered as in the
+        emcee vector
+        """
+        return np.sum([comp.stochastic_names(name_attr='fitsname')
+                       for comp in self.components])
 
     @property
     def param_lens(self):
@@ -157,6 +172,7 @@ class MultiComponentModel(object):
                                        - np.log(0.5 / np.pi * ivm_flat))
 
         # FIXME: kinda a hack. log-likelihood is NaN sometimes, find out why
+        # This will just cause MCMC to reject the sample
         if not np.isfinite(log_likelihood):
             return -np.inf
 
