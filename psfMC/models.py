@@ -1,4 +1,5 @@
 from __future__ import division
+import six
 import numpy as np
 from .array_utils import convolve
 from .ModelComponents import Configuration, PointSource
@@ -15,7 +16,7 @@ class MultiComponentModel(object):
     def __init__(self, components):
         np.seterr(divide='ignore')
 
-        if not hasattr(components, '__iter__') or isinstance(components, str):
+        if isinstance(components, six.string_types):
             try:
                 components = component_list_from_file(components)
             except IOError as err:

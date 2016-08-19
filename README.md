@@ -44,7 +44,8 @@ still passed directly to `model_galaxy_mcmc`. See the example model file in
 
 Dependencies
 ------------
-The software depends on the `numpy`, `scipy`, `pymc`, and `astropy` modules. The 
+The software depends on the `numpy`, `scipy`, `pymc`, and `astropy` modules. 
+The `six` module is required for python 2 backward compatibility. The 
 `matplotlib` module and `corner` modules are required for certain tests, 
 posterior statistics, and posterior analysis plots.
 

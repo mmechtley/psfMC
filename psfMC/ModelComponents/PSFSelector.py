@@ -1,3 +1,4 @@
+import six
 from .ComponentBase import ComponentBase, StochasticProperty
 from ..distributions import DiscreteUniform
 from ..array_utils import preprocess_psf, calculate_psf_variability, pre_fft_psf
@@ -16,9 +17,9 @@ class PSFSelector(ComponentBase):
         super(PSFSelector, self).__init__()
         # List-ify psflist and ivmlist if they are single strings
 
-        if not hasattr(psf_list, '__iter__') or isinstance(psf_list, str):
+        if isinstance(psf_list, six.string_types):
             psf_list = [psf_list]
-        if not hasattr(ivm_list, '__iter__') or isinstance(ivm_list, str):
+        if isinstance(ivm_list, six.string_types):
             ivm_list = [ivm_list]
         if len(psf_list) != len(ivm_list):
             raise ValueError('PSF and IVM lists must be the same length')

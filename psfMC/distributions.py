@@ -108,8 +108,7 @@ def _class_from_scipy_dist(class_name, scipy_rv):
         {}
         """
         rv_class = getattr(stats, scipy_rv)
-        __doc__ = Distribution.__doc__.format(class_name, scipy_rv,
-                                              rv_class.__doc__)
+        __doc__ = str(__doc__).format(class_name, scipy_rv, rv_class.__doc__)
 
         def __init__(self, *args, **kwargs):
             self.rv_frozen = self.rv_class(*args, **kwargs)
@@ -135,14 +134,13 @@ def _class_from_scipy_dist(class_name, scipy_rv):
             except ValueError:
                 self._value = new_val
 
-
         value = property(fget=Distribution.get_value, fset=set_value)
 
     NewDist.__name__ = class_name
     return NewDist
 
 # Create Distribution classes for every scipy distribution
-__all__ = _scipy_dists.keys() + ['Distribution']
+__all__ = list(_scipy_dists.keys()) + ['Distribution']
 for _class_name, _dist in _scipy_dists.items():
     dist_class = _class_from_scipy_dist(_class_name, _dist)
     locals()[_class_name] = dist_class

@@ -4,7 +4,8 @@ from numpy.distutils.core import setup
 
 _packages = ['psfMC', 'psfMC.ModelComponents', 'psfMC.analysis']
 _scripts = ['scripts/plot_chain', 'scripts/corner_plot']
-_requires = ['numpy', 'scipy', 'astropy', 'emcee', 'matplotlib', 'corner']
+_requires = ['numpy', 'scipy', 'astropy', 'emcee', 'matplotlib', 'corner',
+             'six']
 
 
 def _version_from_init():

@@ -1,8 +1,9 @@
 import os
 import ast
+import six
 from .ModelComponents import ComponentBase
 
-_comps_name = 'components'
+_comps_name = '__components'
 
 
 class ExprsToAssigns(ast.NodeTransformer):
@@ -33,10 +34,10 @@ def component_list_from_file(filename):
     # so user imports may override them. level=1 means relative import, e.g.:
     # from .ModelComponents import *
     ast.increment_lineno(model_tree, n=3)
-    comps = ast.ImportFrom(module='ModelComponents',
-                           names=[ast.alias(name='*', asname=None)], level=1)
-    dists = ast.ImportFrom(module='distributions',
-                           names=[ast.alias(name='*', asname=None)], level=1)
+    comps = ast.ImportFrom(module='psfMC.ModelComponents',
+                           names=[ast.alias(name='*', asname=None)], level=0)
+    dists = ast.ImportFrom(module='psfMC.distributions',
+                           names=[ast.alias(name='*', asname=None)], level=0)
     model_tree.body.insert(0, comps)
     model_tree.body.insert(1, dists)
 
@@ -55,9 +56,11 @@ def component_list_from_file(filename):
     model_dir = os.path.dirname(filename)
     if model_dir != '':
         os.chdir(model_dir)
-    exec(compile(model_tree, filename, mode='exec'))
+    model_namespace = dict()
+    byte_code = compile(model_tree, filename, mode='exec')
+    six.exec_(byte_code, model_namespace)
     os.chdir(prev_dir)
 
     # Filter out only those object that are subclasses of ComponentBase
-    return [comp for comp in locals()[_comps_name]
+    return [comp for comp in model_namespace[_comps_name]
             if isinstance(comp, ComponentBase.ComponentBase)]
