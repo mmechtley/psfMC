@@ -6,7 +6,7 @@ import subprocess
 # Arguments that will be passed to the MCMC sampler. iter and burn are selected
 # to allow this demonstration to run quickly. They are almost certainly too
 # small to provide proper convergence.
-mc_args = {'burn': 50, 'iterations': 200, 'chains': 250}
+mc_args = {'burn': 200, 'iterations': 200, 'chains': 250}
 
 # This list could be longer, to define more model files to run
 model_files = ['model_J0005-0006.py']
@@ -21,9 +21,9 @@ for model_file in model_files:
     # Once sampling has completed, display some example plots
     db_file = output_name + '_db.fits'
     db = load_database(db_file)
-    # for trace_name in ('0_Sky_adu', '1_PSF_mag', '1_PSF_2_Sersic_magdiff'):
-    #     plot_hist(trace_name, db_file, model=model_file,
-    #               chains=range(-mc_args['chains'], 0))
+    for trace_name in ('0_Sky_adu', '1_PointSource_mag',
+                       '1_PointSource_2_Sersic_magdiff'):
+        plot_hist(trace_name, db_file, model=model_file)
 
     # Also try to open a ds9 window with all the input and output fits images
     in_images = glob.glob('sci_*.fits')

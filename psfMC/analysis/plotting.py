@@ -10,9 +10,9 @@ from matplotlib.ticker import MaxNLocator
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from scipy.special import gamma
 from corner import corner
+from emcee import autocorr
 
-from .statistics import num_effective_samples, potential_scale_reduction, \
-    chain_autocorr
+from .statistics import chain_autocorr
 from ..database import load_database
 from ..models import MultiComponentModel
 from ..ModelComponents.Sersic import Sersic
@@ -156,9 +156,14 @@ def plot_trace(trace_name, db, save=False):
 
     best_row = np.argmax(db['lnprobability'])
     trace = _get_trace(trace_name, db)
+    n_walkers = db['walker'].max() + 1
+    n_samples = trace.shape[0] // n_walkers
 
     for col in range(trace.shape[1]):
-        ax_trace.plot(np.arange(trace.shape[0]), trace[:, col])
+        for walker in range(n_walkers):
+            walker_trace = trace[:, col][db['walker'] == walker]
+            ax_trace.plot(np.arange(n_samples), walker_trace,
+                          color='black', alpha=0.3)
         ax_hist.hist(trace[:, col], bins=20, histtype='step',
                      orientation='horizontal')
         ml_val = trace[best_row, col]
@@ -176,35 +181,23 @@ def plot_trace(trace_name, db, save=False):
 
 
 # TODO: Split histogram and autocorrelation functions?
-def plot_hist(trace_name, db, model=None, save=False, show_stats=True):
+def plot_hist(trace_name, db, model=None, save=False):
     """
-    Plot per-chain histograms for the given traced quantity.
-    In addition, plots autocorrelation functions for each chain to help assess
-    effective number of samples.
+    Plot histogram for the given traced quantity. multi-d quantities (xy
+    positions) will be plotted as multiple histograms on the same axes. All
+    walkers will be combined into a single histogram
+
     :param trace_name: Name of traced quantity, including all with priors, as
-        well as derived quantities magdiff, centerdist, sbeff, and axisratio.
-    :param db: Filename of pymc database
-    :param model: Filename of psfMC model. If model is None, priors will not be
-        plotted.
+        well as derived quantities: magdiff, centerdist, sbeff, and axisratio.
+    :param db: Filename of psfMC database
+    :param model: Filename of psfMC model. If None, priors will not be plotted.
     :param save: If True, plots will not be displayed but will be saved to disk
         in pdf format.
-    :param show_stats: If True, convergence statistics will be displayed on the
-        plots. Gelman-Rubin Potential Scale Reduction Factor and variance-based
-        estimate of effective samples for histogram plot, and Initial Positive
-        Sequence estimator of effective samples for autocorrelation plot.
-    :return:
     """
     disp_name, db, model = _load_db_and_model(db, model)
 
     fig_hist = pp.figure()
     ax_hist = fig_hist.add_subplot(111)
-
-    fig_acorr = pp.figure()
-    ax_autocorr = fig_acorr.add_subplot(111)
-
-    neff_autocorr = 0
-    autocorr_labels = []
-    maxlag = 0
 
     trace = _get_trace(trace_name, db)
     best_row = np.argmax(db['lnprobability'])
@@ -214,74 +207,95 @@ def plot_hist(trace_name, db, model=None, save=False, show_stats=True):
         ml_val = trace[best_row, col]
         ax_hist.axvline(ml_val, lw=2, ls='dashed')
 
-        lags, corr, eff_samples, chain_maxlag = chain_autocorr(trace[:, col])
-        maxlag = np.max([maxlag, chain_maxlag])
-        neff_autocorr += eff_samples
-
-        ax_autocorr.plot(lags, corr, marker=None, ls='solid', lw=2)
-        ax_autocorr.axvline(chain_maxlag)
-
-        autocorr_labels += ['$n_{{eff}}$ = {:0.1f}'.format(eff_samples)]
-
-    # Calculate PSR factor and effective samples for each dimension
-    # psr = [potential_scale_reduction(trace[:, col])
-    #        for col in range(trace.shape[1])]
-    # neff = [num_effective_samples(trace[:, col])
-    #         for col in range(trace.shape[1])]
-
     fig_hist.suptitle(disp_name)
     ax_hist.set_xlabel(_axis_label(trace_name))
     ax_hist.set_ylabel('Number of Samples')
 
-    fig_acorr.suptitle(disp_name)
-    ax_autocorr.set_xlim(0, maxlag + 10)
-    ax_autocorr.axhline(0.0, color='black')
-    ax_autocorr.set_xlabel('Lag Length (Samples)')
-    ax_autocorr.set_ylabel('Autocorrelation (Normalized)')
-
-    if show_stats:
-        # Label for potential scale reduction factors
-        # psr_fmt = '\n'.join(['$\widehat{{R}}$ = {:0.3f}']*len(psr) +
-        #                     ['$n_{{eff}}$ = {:0.1f}']*len(neff))
-        # ax_hist.text(0.95, 0.95, psr_fmt.format(*(psr+neff)),
-        #              ha='right', va='top',  # path_effects=[_text_stroke],
-        #              transform=ax_hist.transAxes)
-        # Label for autocorrelation effective samples
-        autocorr_labels += ['$n_{{eff,tot}}$ = {:0.1f}'.format(neff_autocorr)]
-        ax_autocorr.text(0.95, 0.95, '\n'.join(autocorr_labels),
-                         va='top', ha='right',
-                         transform=ax_autocorr.transAxes)
-
     # Display the prior for this traced variable, if it has a prior
     if model is not None:
         prior = model.get_distribution(trace_name)
-        if prior is not None:
-            min_x, max_x = prior.rv_frozen.interval(0.99)
-            min_x = np.atleast_1d(min_x)
-            max_x = np.atleast_1d(max_x)
-            mid = 0.5*(min_x + max_x)
-            ptp = (max_x - min_x) * 1.1  # 5% higher/lower than min/max
+    else:
+        prior = None
+    if prior is not None:
+        min_xs, max_xs = prior.rv_frozen.interval(0.99)
+        min_xs = np.atleast_1d(min_xs)
+        max_xs = np.atleast_1d(max_xs)
+        min_xs -= 0.01*(max_xs - min_xs)  # 1% higher/lower than min/max
+        max_xs += 0.01*(max_xs - min_xs)
 
-            prior_x = np.column_stack([np.linspace(m-p*0.5, m+p*0.5, 100)
-                                       for m, p in zip(mid, ptp)])
+        prior_x = np.column_stack([np.linspace(dim_min, dim_max, 100)
+                                   for dim_min, dim_max in zip(min_xs, max_xs)])
 
-            # display prior with normalized (axes) y coordinate
-            prior_xform = blended_transform_factory(ax_hist.transData,
-                                                    ax_hist.transAxes)
-            ax_hist.plot(prior_x, np.exp(prior.logp(prior_x)),
-                         lw=1, color='black', zorder=-1,
-                         transform=prior_xform)
+        # display prior with normalized (axes) y coordinate
+        prior_xform = blended_transform_factory(ax_hist.transData,
+                                                ax_hist.transAxes)
+        ax_hist.plot(prior_x, np.exp(prior.logp(prior_x)),
+                     lw=1, color='black', zorder=-1,
+                     transform=prior_xform)
 
     if save:
         fig_hist.savefig('_'.join([disp_name, trace_name, 'hist.pdf']))
-        fig_acorr.savefig('_'.join([disp_name, trace_name, 'acorr.pdf']))
-        psr_fmt = '{} mu: {:0.5g} sig: {:0.3g} R: {} ne: {} nea: {}'
-        mean = np.mean(trace)
-        std = np.std(trace)
-        # print(psr_fmt.format(trace_name, mean, std, psr, neff, neff_autocorr))
     else:
         pp.show()
     pp.close(fig_hist)
+
+
+def plot_autocorr(trace_name, db, save=False):
+    """
+    Plot autocorrelation diagrams for a given traced quantity. For ensemble
+    (multi-walker) database data, the mean of all walkers for the given traced
+    quantity is used to estimate autocorrelation (same as emcee)
+
+    :param trace_name: Name of traced quantity, including all with priors, as
+        well as derived quantities: magdiff, centerdist, sbeff, and axisratio.
+    :param db: Filename of psfMC database
+    :param save: If True, plots will not be displayed but will be saved to disk
+        in pdf format.
+    """
+    disp_name, db, model = _load_db_and_model(db, None)
+
+    fig_acorr = pp.figure()
+    ax_acorr = fig_acorr.add_subplot(111)
+
+    autocorr_labels = []
+    maxlag = 0
+
+    trace = _get_trace(trace_name, db)
+    n_walkers = db['walker'].max() + 1
+    n_samples = trace.shape[0] // n_walkers
+
+    for col in range(trace.shape[1]):
+        trace_walkers = trace[:, col].reshape((n_samples, n_walkers), order='F')
+
+        lags, corr, eff_samples, chain_maxlag = chain_autocorr(trace_walkers)
+        emcee_acorr = autocorr.function(trace_walkers)
+
+        maxlag = np.max([maxlag, chain_maxlag])
+
+        for walk in range(n_walkers):
+            ax_acorr.plot(np.arange(n_samples), emcee_acorr[:, walk],
+                          marker=None, ls='solid', lw=1, color='black',
+                          alpha=0.3, drawstyle='steps-mid')
+        ax_acorr.plot(lags, corr, marker=None, ls='solid', lw=2,
+                      drawstyle='steps-mid')
+        ax_acorr.axvline(chain_maxlag)
+
+        autocorr_labels += ['$n_{{eff}}$ = {:0.1f}'.format(eff_samples)]
+
+    fig_acorr.suptitle(disp_name)
+    ax_acorr.set_xlim(0, maxlag + 10)
+    ax_acorr.axhline(0.0, color='black')
+    ax_acorr.set_xlabel('Lag Length (Samples)')
+    ax_acorr.set_ylabel('Autocorrelation (Normalized)')
+
+    ax_acorr.text(0.95, 0.95, '\n'.join(autocorr_labels),
+                  va='top', ha='right',
+                  transform=ax_acorr.transAxes)
+
+    if save:
+        fig_acorr.savefig('_'.join([disp_name, trace_name, 'acorr.pdf']))
+    else:
+        pp.show()
     pp.close(fig_acorr)
 
 
