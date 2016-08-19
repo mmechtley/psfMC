@@ -131,7 +131,7 @@ def _stats_as_header_cards(model, database):
         std_post = np.std(database[col_name], axis=0)
         try:
             val = '{:0.4g} +/- {:0.4g}'.format(mean_post, std_post)
-        except ValueError:
+        except (ValueError, TypeError):
             strmean = ','.join(['{:0.4g}'.format(dim) for dim in mean_post])
             strstd = ','.join(['{:0.4g}'.format(dim) for dim in std_post])
             val = '({}) +/- ({})'.format(strmean, strstd)
