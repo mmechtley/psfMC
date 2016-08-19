@@ -6,7 +6,7 @@ import subprocess
 # Arguments that will be passed to the MCMC sampler. iter and burn are selected
 # to allow this demonstration to run quickly. They are almost certainly too
 # small to provide proper convergence.
-mc_args = {'burn': 50, 'iterations': 100, 'chains': 250}
+mc_args = {'burn': 50, 'iterations': 200, 'chains': 250}
 
 # This list could be longer, to define more model files to run
 model_files = ['model_J0005-0006.py']

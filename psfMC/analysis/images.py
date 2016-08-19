@@ -1,7 +1,11 @@
 from __future__ import division, print_function
-import numpy as np
+
 from warnings import warn
+
+import numpy as np
 from astropy.io import fits
+
+from ..database import row_to_param_vector
 from ..array_utils import print_progress
 
 default_filetypes = ('raw_model', 'convolved_model', 'composite_ivm',
@@ -50,7 +54,7 @@ def save_posterior_images(model, database, output_name='out_{}',
     if mode in ('maximum', 'MAP'):
         best_row = np.argmax(database['lnprobablity'])
         best_row = database[stochastic_cols][best_row]
-        model.param_values = _row_to_param_vector(best_row)
+        model.param_values = row_to_param_vector(best_row)
 
         for ftype in filetypes:
             sample_data = getattr(model, ftype)()
@@ -59,26 +63,24 @@ def save_posterior_images(model, database, output_name='out_{}',
 
     elif mode in ('weighted',):
         total_samples = len(database)
-        for sample, row in enumerate(database[stochastic_cols]):
-            print_progress(sample, total_samples, 'Creating posterior images')
-            model.param_values = _row_to_param_vector(row)
-            # Accumulate output arrays
-            for ftype in filetypes:
-                sample_data = getattr(model, ftype)()
-                sample_data[~np.isfinite(sample_data)] = bad_px_value
+        # Only re-calculate images if we loaded a database without sampling.
+        # Otherwise, model has already accumulated weighted images during
+        # sampling
+        if total_samples != model.accumulated_samples:
+            model.reset_images()
+            for sample, row in enumerate(database[stochastic_cols]):
+                print_progress(sample, total_samples,
+                               'Creating posterior images')
+                model.param_values = row_to_param_vector(row)
 
-                if ftype not in output_data:
-                    output_data[ftype] = np.zeros_like(sample_data)
-                # Accumulate variances rather than IVMs, then invert later
-                if ftype in ('composite_ivm',):
-                    sample_data = 1 / sample_data
-                output_data[ftype] += sample_data
-        # Take the mean
+                sample_imgs = {ftype: getattr(model, ftype)()
+                               for ftype in filetypes}
+                model.accumulate_images([sample_imgs])
+
         for ftype in filetypes:
-            output_data[ftype] /= total_samples
-            # Invert variance map
-            if ftype in ('composite_ivm',):
-                output_data[ftype] = 1 / output_data[ftype]
+            out_img = model.posterior_images[ftype]
+            out_img[~np.isfinite(out_img)] = bad_px_value
+            output_data[ftype] = out_img
 
     else:
         warn('Unknown posterior output mode ({}). Posterior model images will '
@@ -100,21 +102,24 @@ def _stats_as_header_cards(model, database):
     key-value-comment format suitable for extending a fits header
     """
     # First get information about the sampler run parameters
-    statscards = _section_header('psfMC MCMC SAMPLER PARAMETERS')
+    stats_cards = _fits_section_header('psfMC MCMC SAMPLER PARAMETERS')
     # Check sampler convergence
-    statscards += [
+    stats_cards += [
         ('MCITER', database.meta['MCITER'], 'number of retained samples'),
         ('MCBURN', database.meta['MCBURN'],
          'number of burn-in (discarded) samples'),
         ('MCCHAINS', database.meta['MCCHAINS'], 'number of chains run'),
-        ('MCCONVRG', database.meta['MCCONVRG'], 'Has MCMC sampler converged?')]
+        ('MCCONVRG', database.meta['MCCONVRG'], 'Has MCMC sampler converged?'),
+        ('MCACCEPT', database.meta['MCACCEPT'],
+         'Acceptance fraction (avg of all walkers)')
+    ]
 
     # Now collect information about the posterior model
-    statscards += _section_header('psfMC POSTERIOR MODEL INFORMATION')
+    stats_cards += _fits_section_header('psfMC POSTERIOR MODEL INFORMATION')
     best_row = np.argmax(database['lnprobability'])
     best_chain = database['walker'][best_row]
     best_sample = best_row % database.meta['MCITER']
-    statscards += [
+    stats_cards += [
         ('MAPCHAIN', best_chain, 'Chain index of maximum posterior model'),
         ('MAPSAMP', best_sample, 'Sample index of maximum posterior model')]
 
@@ -130,7 +135,7 @@ def _stats_as_header_cards(model, database):
             strmean = ','.join(['{:0.4g}'.format(dim) for dim in mean_post])
             strstd = ','.join(['{:0.4g}'.format(dim) for dim in std_post])
             val = '({}) +/- ({})'.format(strmean, strstd)
-        statscards += [(fits_abbr, val, 'psfMC model component')]
+        stats_cards += [(fits_abbr, val, 'psfMC model component')]
 
     # Record the name of the PSF file used in the MP model
     psf_selector = model.config.psf_selector
@@ -138,21 +143,15 @@ def _stats_as_header_cards(model, database):
         psf_col = psf_selector.psf_index.name
         best_psf_index = database[psf_col][best_row]
         psf_selector.set_stochastic_values(np.array([best_psf_index]))
-    statscards += [('PSF_IMG', psf_selector.filename,
+    stats_cards += [('PSF_IMG', psf_selector.filename,
                     'PSF image of maximum posterior model')]
 
-    return statscards
+    return stats_cards
 
 
-def _section_header(section_name):
+def _fits_section_header(section_name):
     """
     Blank fits header cards for a section header. As in drizzle, one blank line,
     a line with the section name as a comment, then one more blank.
     """
     return [('', '', ''), ('', '/ ' + section_name, ''), ('', '', '')]
-
-
-def _row_to_param_vector(table_row):
-    row_vec = table_row.as_void()
-    new_dtype = row_vec.dtype[0]
-    return np.frombuffer(row_vec.data, dtype=new_dtype)

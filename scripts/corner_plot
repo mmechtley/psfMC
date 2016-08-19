@@ -36,7 +36,6 @@ if __name__ == '__main__':
     except ValueError:
         pass
 
-    chains = None
     disp_params = None
     leftover_args = sys.argv
     for cl_arg in [cl_arg for cl_arg in sys.argv if ',' in cl_arg]:
@@ -50,12 +49,9 @@ if __name__ == '__main__':
             arg_list = literal_eval(cl_arg)
             if '' in arg_list:
                 arg_list.remove('')
-        if all([isinstance(arg, int) for arg in arg_list]):
-            chains = arg_list
         else:
             disp_params = arg_list
 
     db_names = leftover_args[1:]
     for db_name in db_names:
-        corner_plot(db_name, disp_parameters=disp_params, chains=chains,
-                    save=save)
+        corner_plot(db_name, disp_parameters=disp_params, save=save)

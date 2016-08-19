@@ -72,11 +72,12 @@ def minimal_slice(position, kern_radius, array_shape):
     array_shape = array(array_shape)
     # First, clip the position to stay more than kern_radius from the edge.
     # position is in xy order, but array shape and returned slice are yx.
+    # TODO: log_priors should just return -inf instead of using clip
     clipped_pos = clip(position[::-1],
                        kern_radius - 0.5,
                        array_shape - (kern_radius + 0.5))
-    min_pos = round(clipped_pos - kern_radius)
-    max_pos = round(clipped_pos + kern_radius)
+    min_pos = round(clipped_pos - kern_radius).astype(int)
+    max_pos = round(clipped_pos + kern_radius).astype(int)
     return slice(min_pos[0], max_pos[0]+1), slice(min_pos[1], max_pos[1]+1)
 
 

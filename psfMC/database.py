@@ -33,7 +33,10 @@ def save_database(sampler, model, db_name, meta_dict=None):
         db.meta.update(meta_dict)
 
     db.write(db_name, format='fits', overwrite=True)
-    return db
+    # FIXME: Should not need to reload the db we just created, but posterior
+    # model creation was failing (something with the way db Rows were translated
+    # to ndarray vector)
+    return load_database(db_name)
 
 
 def load_database(db_name):
@@ -71,3 +74,9 @@ def get_sampler_state(database):
 
     # TODO: technically should return random_state also
     return walker_pos, ln_prob
+
+
+def row_to_param_vector(table_row):
+    row_vec = table_row.as_void()
+    new_dtype = row_vec.dtype[0]
+    return np.frombuffer(row_vec.data, dtype=new_dtype)

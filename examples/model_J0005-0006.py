@@ -15,7 +15,7 @@ from numpy import array
 from psfMC.ModelComponents import Configuration, Sky, PointSource, Sersic
 from psfMC.distributions import Normal, Uniform, WeibullMinimum
 
-total_mag = 20.83
+total_mag = 20.66
 center = array((64.5, 64.5))
 max_shift = array((8, 8))
 

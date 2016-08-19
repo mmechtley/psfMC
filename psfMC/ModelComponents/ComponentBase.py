@@ -32,6 +32,15 @@ class ComponentBase(object):
         else:
             self._constants[name] = value
 
+    def get_distribution(self, stoch_name):
+        matching_priors = [dist for dist in self._priors.values()
+                           if dist.name == stoch_name]
+        if len(matching_priors) == 1:
+            return matching_priors[0]
+        else:
+            raise KeyError('Could not find unique prior with name: {}'
+                           .format(stoch_name))
+
     def set_stochastic_values(self, param_values=None):
         """
         Set values for all stochastic variables given a vector of values.

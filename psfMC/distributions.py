@@ -112,21 +112,21 @@ def _class_from_scipy_dist(class_name, scipy_rv):
                                               rv_class.__doc__)
 
         def __init__(self, *args, **kwargs):
-            self._rv_frozen = self.rv_class(*args, **kwargs)
+            self.rv_frozen = self.rv_class(*args, **kwargs)
 
             # Set logp and random functions
-            if isinstance(self._rv_frozen.dist, stats.rv_continuous):
-                self.logp = self._rv_frozen.logpdf
-            elif isinstance(self._rv_frozen.dist, stats.rv_discrete):
-                self.logp = self._rv_frozen.logpmf
+            if isinstance(self.rv_frozen.dist, stats.rv_continuous):
+                self.logp = self.rv_frozen.logpdf
+            elif isinstance(self.rv_frozen.dist, stats.rv_discrete):
+                self.logp = self.rv_frozen.logpmf
             else:
                 raise TypeError('Only rv_continuous and rv_discete '
                                 'distributions are supported')
-            self.random = self._rv_frozen.rvs
+            self.random = self.rv_frozen.rvs
             super(NewDist, self).__init__()
 
         def set_value(self, val):
-            if isinstance(self._rv_frozen.dist, stats.rv_discrete):
+            if isinstance(self.rv_frozen.dist, stats.rv_discrete):
                 new_val = rint(val).astype(int)
             else:
                 new_val = val

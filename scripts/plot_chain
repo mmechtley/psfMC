@@ -34,7 +34,7 @@ plot_chain.py 1_PSF_mag mydb.pickle
   Basic usage. Display histogram and autocorrelation plot for a single variable
   from all chains in the given trace database.
 
-plot_chain.py 1_PSF_2_Sersic_magdiff trace *.hdf5
+plot_chain.py 1_PSF_2_Sersic_magdiff trace *db.fits
   Will generate trace plots of magnitude difference between PSF and Sersic
   component for all pickle databases in the current directory
 
@@ -69,19 +69,11 @@ if __name__ == '__main__':
     except ValueError:
         pass
 
-    chains = None
-    try:
-        chain_spec = [arg for arg in sys.argv if ',' in arg][0]
-        sys.argv.remove(chain_spec)
-        chains = eval('['+chain_spec+']')
-    except IndexError:
-        pass
-
     trace_name = sys.argv[1]
 
     db_names = sys.argv[2:]
     if len(db_names) < 1:
-        db_names = glob.glob('*.pickle') + glob.glob('*.hdf5')
+        db_names = glob.glob('*db.fits')
 
     for db_name in db_names:
         # Use some SequenceMatcher text comparison to look for the py file with
@@ -92,7 +84,6 @@ if __name__ == '__main__':
         model_name = py_files[-1] if len(py_files) > 0 else None
 
         if mode == 'hist':
-            plot_hist(trace_name, db_name, model=model_name, chains=chains,
-                      save=save)
+            plot_hist(trace_name, db_name, model=model_name, save=save)
         elif mode in ('chain', 'trace'):
-            plot_trace(trace_name, db_name, chains=chains, save=save)
+            plot_trace(trace_name, db_name, save=save)

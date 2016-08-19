@@ -55,6 +55,54 @@ class MultiComponentModel(object):
         self.obs_header = self.config.obs_header
 
         self._param_vector = np.zeros(self.num_params)
+        self.posterior_images = dict()
+        self.accumulated_samples = 0
+        self.reset_images()
+
+    def reset_images(self):
+        obs_shape = self.config.obs_data.shape
+        self.accumulated_samples = 0
+        for img_type in ('raw_model', 'convolved_model', 'residual',
+                         'composite_ivm', 'point_source_subtracted'):
+            # Note: weight for initial value of array is 0, so zeros vs. ones
+            # shouldn't matter. However, since IVM is inverted to variance, use
+            # ones to avoid: [(1 / zeros) = inf] * 0 = nan
+            self.posterior_images[img_type] = np.ones(obs_shape,
+                                                      dtype=np.float64)
+
+    def accumulate_images(self, sample_images):
+        """
+        Accumulate images from a given sample.
+        :param sample_images: emcee "blobs", i.e. a list of length nwalkers,
+            each element being a dict of {img_type: ndarray}
+        """
+        # Temp convert to variance
+        self.posterior_images['composite_ivm'] = \
+            1 / self.posterior_images['composite_ivm']
+
+        for img_dict in sample_images:
+            self.accumulated_samples += 1
+            # Unclear to me why this copy is needed, but fixed an IVM problem
+            step_imgs = img_dict.copy()
+            step_imgs['composite_ivm'] = 1 / step_imgs['composite_ivm']
+
+            for img_type in img_dict.keys():
+                self.posterior_images[img_type] *= self.accumulated_samples - 1
+                self.posterior_images[img_type] += step_imgs[img_type]
+                self.posterior_images[img_type] /= self.accumulated_samples
+
+        # Reconvert to inverse variance
+        self.posterior_images['composite_ivm'] = \
+            1 / self.posterior_images['composite_ivm']
+
+    def get_distribution(self, param_name):
+        dist = None
+        for comp in self.components:
+            try:
+                dist = comp.get_distribution(param_name)
+            except KeyError:
+                pass
+        return dist
 
     def init_params_from_priors(self, nwalkers):
         """
@@ -71,6 +119,7 @@ class MultiComponentModel(object):
                 # Draw from priors until we get a set that are valid
                 # In particular, Sersic reff > Sersic reff_b
                 # FIXME: this could technically go on forever
+                comp_stochs = []
                 while True:
                     comp_stochs = comp.set_stochastic_values()
                     if np.isfinite(comp.log_priors()):
@@ -158,25 +207,39 @@ class MultiComponentModel(object):
         # Calculate prior, and early out for unsupported prior values
         log_priors = model.log_priors()
         if not np.isfinite(log_priors):
-            return -np.inf
+            return -np.inf, dict()
 
         raw_px = model.raw_model()
         conv_px = model.convolved_model(raw_px)
-        ivm_flat = model.composite_ivm(raw_px)[~model.config.bad_px]
-        resid_flat = model.residual(conv_px)[~model.config.bad_px]
+        resid_px = model.residual(conv_px)
+        ivm_px = model.composite_ivm(raw_px)
+        ps_sub_px = model.point_source_subtracted()
+
+        # Save this evaluation's images as blobs for accumulation.
+        # Note: Accumulation must happen in the emcee.sample() loop, since any
+        # individual evaluation of log_posterior may be discarded.
+        sample_images = {'raw_model': raw_px,
+                         'convolved_model': conv_px,
+                         'residual': resid_px,
+                         'composite_ivm': ivm_px,
+                         'point_source_subtracted': ps_sub_px}
 
         # This is Normal log-likelihood. Consider letting the user choose Normal
         # or Poisson (or maybe others). However, just writing rather than using
         # a distributions.Normal object makes this function about 20% faster
+        # TODO: We get positive log-likelihood sometimes, which I guess means
+        # the -log(0.5/pi*ivm) term dominates. Maybe errors overestimated?
+        ivm_flat = ivm_px[~model.config.bad_px]
+        resid_flat = resid_px[~model.config.bad_px]
         log_likelihood = -0.5 * np.sum(resid_flat**2 * ivm_flat
                                        - np.log(0.5 / np.pi * ivm_flat))
 
         # FIXME: kinda a hack. log-likelihood is NaN sometimes, find out why
         # This will just cause MCMC to reject the sample
         if not np.isfinite(log_likelihood):
-            return -np.inf
+            return -np.inf, sample_images
 
-        return log_likelihood + log_priors
+        return log_likelihood + log_priors, sample_images
 
     def raw_model(self):
         """
