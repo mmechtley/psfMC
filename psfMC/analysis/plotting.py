@@ -14,7 +14,6 @@ from emcee import autocorr
 from astropy.wcs import WCS
 from astropy.wcs.utils import proj_plane_pixel_area
 
-from .statistics import chain_autocorr
 from ..database import load_database
 from ..models import MultiComponentModel
 from ..ModelComponents.Sersic import Sersic
@@ -251,50 +250,57 @@ def plot_autocorr(trace_name, db, save=False):
     """
     disp_name, db, model = _load_db_and_model(db, None)
 
-    fig_acorr = pp.figure()
-    ax_acorr = fig_acorr.add_subplot(111)
-
-    autocorr_labels = []
-    maxlag = 0
-
     trace = _get_trace(trace_name, db)
+
     n_walkers = db['walker'].max() + 1
     n_samples = trace.shape[0] // n_walkers
 
     for col in range(trace.shape[1]):
+
+        fig_acorr = pp.figure()
+        ax_acorr = fig_acorr.add_subplot(111)
+
         trace_walkers = trace[:, col].reshape((n_samples, n_walkers), order='F')
 
-        # TODO: replace with emcee autocorr?
-        lags, corr, eff_samples, chain_maxlag = chain_autocorr(trace_walkers)
-        emcee_acorr = autocorr.function(trace_walkers)
+        lags = np.arange(n_samples)
+        acorr_all = autocorr.function(trace_walkers)
 
-        maxlag = np.max([maxlag, chain_maxlag])
+        trace_avg = np.mean(trace_walkers, axis=1)
+        acorr_avg = autocorr.function(trace_avg)
+        tau = autocorr.integrated_time(trace_avg, c=1)
+        eff_samples = n_samples / tau
+
+        maxlag = np.argmin(acorr_avg > 0)
 
         for walk in range(n_walkers):
-            ax_acorr.plot(np.arange(n_samples), emcee_acorr[:, walk],
+            ax_acorr.plot(lags, acorr_all[:, walk],
                           marker=None, ls='solid', lw=1, color='black',
                           alpha=0.3, drawstyle='steps-mid')
-        ax_acorr.plot(lags, corr, marker=None, ls='solid', lw=2,
+
+        ax_acorr.plot(lags, acorr_avg, marker=None, ls='solid', lw=2,
                       drawstyle='steps-mid')
-        ax_acorr.axvline(chain_maxlag)
 
-        autocorr_labels += ['$n_{{eff}}$ = {:0.1f}'.format(eff_samples)]
+        neff_label = '$n_{{eff}}$ = {:0.1f}'.format(eff_samples)
 
-    fig_acorr.suptitle(disp_name)
-    ax_acorr.set_xlim(0, maxlag + 10)
-    ax_acorr.axhline(0.0, color='black')
-    ax_acorr.set_xlabel('Lag Length (Samples)')
-    ax_acorr.set_ylabel('Autocorrelation (Normalized)')
+        trace_label = trace_name
+        if 'xy' in trace_label:
+            trace_label = trace_label.replace('xy', 'xy'[col])
+        disp_name = ' '.join([disp_name, _axis_label(trace_label)])
+        fig_acorr.suptitle(disp_name)
+        ax_acorr.set_xlim(0, maxlag * 1.01)
+        ax_acorr.axhline(0.0, color='black')
+        ax_acorr.set_xlabel('Lag Length (Samples)')
+        ax_acorr.set_ylabel('Autocorrelation (Normalized)')
 
-    ax_acorr.text(0.95, 0.95, '\n'.join(autocorr_labels),
-                  va='top', ha='right',
-                  transform=ax_acorr.transAxes)
+        ax_acorr.text(0.95, 0.95, neff_label,
+                      va='top', ha='right',
+                      transform=ax_acorr.transAxes)
 
-    if save:
-        fig_acorr.savefig('_'.join([disp_name, trace_name, 'acorr.pdf']))
-    else:
-        pp.show()
-    pp.close(fig_acorr)
+        if save:
+            fig_acorr.savefig('_'.join([disp_name, trace_name, 'acorr.pdf']))
+        else:
+            pp.show()
+        pp.close(fig_acorr)
 
 
 def corner_plot(database, disp_parameters=None, save=False,
