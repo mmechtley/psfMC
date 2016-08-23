@@ -45,31 +45,36 @@ class Sersic(ComponentBase):
         return logp
 
     @staticmethod
-    def total_flux_adu(mag, mag_zp):
+    def mag_to_flux(mag, mag_zp):
         """
-        Returns total flux of the integrated profile, in ADU relative to mag_zp
+        Returns total flux of the integrated profile, units relative to mag_zp
         """
         return 10**(-0.4 * (mag - mag_zp))
 
     @staticmethod
-    def kappa(n):
+    def kappa(index):
         """
         Sersic profile exponential scaling factor, called either kappa or b_n
         Ciotti & Bertin 1999, A&A, 352, 447 Eqn 5, exact formula!
         """
-        return gammaincinv(2*n, 0.5)
+        return gammaincinv(2 * index, 0.5)
 
-    def sb_eff_adu(self, mag_zp, flux_tot=None, kappa=None):
+    @staticmethod
+    def sb_eff(flux_tot, index, reff, reff_b, kappa=None):
         """
         Returns the surface brightness (in flux units per pixel) at re
+
+        :param flux_tot: Total flux
+        :param index: Sersic index n
+        :param reff: Effective radius (semi-major axis)
+        :param reff_b: Effective radius (semi-minor axis)
+        :param mag_zp: (optional) magnitude zeropoint
+        :param kappa: (optional) pre-computed normalization constant kappa
         """
         if kappa is None:
-            kappa = Sersic.kappa(self.index)
-        if flux_tot is None:
-            flux_tot = Sersic.total_flux_adu(self.mag, mag_zp)
-        return flux_tot / (pi * self.reff * self.reff_b * 2*self.index *
-                           exp(kappa + log(kappa) * -2*self.index) *
-                           gamma(2*self.index))
+            kappa = Sersic.kappa(index)
+        return flux_tot / (pi * reff * reff_b * 2*index *
+                           exp(kappa + log(kappa) * -2*index) * gamma(2*index))
 
     def coordinate_sq_radii(self, coords):
         """
@@ -106,8 +111,9 @@ class Sersic(ComponentBase):
         coords = kwargs['coords'] if 'coords' in kwargs \
             else array_coords(arr.shape)
         kappa = Sersic.kappa(self.index)
-        flux_tot = Sersic.total_flux_adu(self.mag, mag_zp)
-        sbeff = self.sb_eff_adu(mag_zp, flux_tot, kappa)
+        flux_tot = Sersic.mag_to_flux(self.mag, mag_zp)
+        sbeff = self.sb_eff(self.mag, self.index, self.reff, self.reff_b,
+                            mag_zp, flux_tot, kappa)
 
         sq_radii = self.coordinate_sq_radii(coords)
         sq_radii = sq_radii.reshape(arr.shape)

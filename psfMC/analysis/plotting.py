@@ -2,15 +2,17 @@
 from __future__ import division, print_function
 import os
 from warnings import warn
+
 import matplotlib.pyplot as pp
 import numpy as np
 from matplotlib import patheffects
 from matplotlib.transforms import blended_transform_factory
 from matplotlib.ticker import MaxNLocator
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-from scipy.special import gamma
 from corner import corner
 from emcee import autocorr
+from astropy.wcs import WCS
+from astropy.wcs.utils import proj_plane_pixel_area
 
 from .statistics import chain_autocorr
 from ..database import load_database
@@ -30,7 +32,7 @@ _labels = {'lnprobability': 'Model posterior log-probability',
            'angle': '{} PA (deg)',
            'PSF_Index': 'PSF index',
            'axisratio': '{} axis ratio $b/a$',
-           'sbeff': '{} $\mu_e$ (mag pixel$^{-1}$)',
+           'sbeff': '{} $\mu_e$ (mag arcsec$^2$)',
            'magdiff': '$m_{{{}}} - m_{{{}}}$',
            'centerdist': '{} vs. {} position difference (pixels)'}
 
@@ -55,20 +57,7 @@ def _axis_label(trace_name):
         return trace_name
 
 
-def _sbeff(mag, reff, reff_b, index, px_scale=None):
-    """
-    Sersic profile surface brightness at effective radius r_e.
-    """
-    # TODO: Remove this since it duplicates code in Sersic class.
-    # Need to make it static there though.
-    kappa = Sersic.kappa(index)
-    to_magarc = 2.5*np.log10(px_scale**2) if px_scale is not None else 0
-    return mag + 2.5*np.log10(2 * np.pi * reff * reff_b * index *
-                              np.exp(kappa) / kappa**(2*index) *
-                              gamma(2*index)) + to_magarc
-
-
-def _get_trace(trace_name, db):
+def _get_trace(trace_name, db, model=None):
     """
     Get the trace array for the specified parameter key. Also handles lookup and
     calculation of the special keys magdiff, centerdist, axisratio, and sbeff.
@@ -81,23 +70,30 @@ def _get_trace(trace_name, db):
     try:
         name_comps = trace_name.split('_')
         if 'magdiff' in name_comps:
-            key_mag1 = '_'.join(name_comps[0:2]+['mag'])
-            key_mag2 = '_'.join(name_comps[2:4]+['mag'])
+            key_mag1 = '_'.join(name_comps[0:2] + ['mag'])
+            key_mag2 = '_'.join(name_comps[2:4] + ['mag'])
             trace = db[key_mag1] - db[key_mag2]
         elif 'centerdist' in name_comps:
-            key_xy1 = '_'.join(name_comps[0:2]+['xy'])
-            key_xy2 = '_'.join(name_comps[2:4]+['xy'])
+            key_xy1 = '_'.join(name_comps[0:2] + ['xy'])
+            key_xy2 = '_'.join(name_comps[2:4] + ['xy'])
             cdiff = db[key_xy1] - db[key_xy2]
             trace = np.sqrt(np.sum(cdiff**2, axis=1))
         elif 'axisratio' in name_comps:
-            key_prefix = '_'.join(name_comps[0:2]+[''])
-            trace = db[key_prefix+'reff_b'] / db[key_prefix+'reff']
+            key_prefix = '_'.join(name_comps[0:2] + [''])
+            trace = db[key_prefix + 'reff_b'] / db[key_prefix + 'reff']
         elif 'sbeff' in name_comps:
-            key_prefix = '_'.join(name_comps[0:2]+[''])
-            trace = _sbeff(db[key_prefix+'mag'],
-                           db[key_prefix+'reff'],
-                           db[key_prefix+'reff_b'],
-                           db[key_prefix+'index'])
+            key_prefix = '_'.join(name_comps[0:2] + [''])
+            trace = Sersic.mag_to_flux(db[key_prefix + 'mag'], 0)
+            trace = Sersic.sb_eff(trace,
+                                  db[key_prefix + 'index'],
+                                  db[key_prefix + 'reff'],
+                                  db[key_prefix + 'reff_b'])
+            if model is not None:
+                wcs = WCS(model.obs_header)
+                px_area = proj_plane_pixel_area(wcs)
+                px_area *= 3600**2  # to sq arcsec
+                trace /= px_area
+            trace = -2.5 * np.log10(trace)
         else:
             trace = db[trace_name]
     except KeyError as err:
@@ -132,18 +128,20 @@ def _load_db_and_model(db_file, model_file):
     return disp_name, db, model
 
 
-def plot_trace(trace_name, db, save=False):
+def plot_trace(trace_name, db, model=None, save=False):
     """
     Plot a trace value vs. time (or sample number). Useful for assessing if the
     sampler has reached a stable distribution.
     :param trace_name: Name of traced quantity, including all with priors, as
         well as derived quantities magdiff, centerdist, sbeff, and axisratio.
     :param db: Filename of trace database
+    :param model: (Optional) filename of model file (for sbeff in mag arcsec^2)
     :param save: If True, plots will not be displayed but will be saved to disk
         in pdf format.
     """
-    disp_name, db, model = _load_db_and_model(db, None)
+    disp_name, db, model = _load_db_and_model(db, model)
 
+    fig = pp.figure()
     ax_trace = pp.subplot(111)
 
     divider = make_axes_locatable(ax_trace)
@@ -155,7 +153,7 @@ def plot_trace(trace_name, db, save=False):
     ax_hist.get_xaxis().tick_top()
 
     best_row = np.argmax(db['lnprobability'])
-    trace = _get_trace(trace_name, db)
+    trace = _get_trace(trace_name, db, model=model)
     n_walkers = db['walker'].max() + 1
     n_samples = trace.shape[0] // n_walkers
 
@@ -171,16 +169,15 @@ def plot_trace(trace_name, db, save=False):
 
     ax_trace.set_xlabel('Sample')
     ax_trace.set_ylabel(_axis_label(trace_name))
-    pp.gcf().suptitle(disp_name)
+    fig.suptitle(disp_name)
 
     if save:
         pp.savefig('_'.join([disp_name, trace_name, 'trace.pdf']))
     else:
         pp.show()
-    pp.close(pp.gcf())
+    pp.close(fig)
 
 
-# TODO: Split histogram and autocorrelation functions?
 def plot_hist(trace_name, db, model=None, save=False):
     """
     Plot histogram for the given traced quantity. multi-d quantities (xy
@@ -199,7 +196,7 @@ def plot_hist(trace_name, db, model=None, save=False):
     fig_hist = pp.figure()
     ax_hist = fig_hist.add_subplot(111)
 
-    trace = _get_trace(trace_name, db)
+    trace = _get_trace(trace_name, db, model=model)
     best_row = np.argmax(db['lnprobability'])
 
     for col in range(trace.shape[1]):
@@ -267,6 +264,7 @@ def plot_autocorr(trace_name, db, save=False):
     for col in range(trace.shape[1]):
         trace_walkers = trace[:, col].reshape((n_samples, n_walkers), order='F')
 
+        # TODO: replace with emcee autocorr?
         lags, corr, eff_samples, chain_maxlag = chain_autocorr(trace_walkers)
         emcee_acorr = autocorr.function(trace_walkers)
 
@@ -299,40 +297,42 @@ def plot_autocorr(trace_name, db, save=False):
     pp.close(fig_acorr)
 
 
-def corner_plot(database, model=None, disp_parameters=None, save=False,
+def corner_plot(database, disp_parameters=None, save=False,
                 skip_zero_variance=True, **kwargs):
     """
 
-    :param database:
-    :param model:
-    :param disp_parameters:
-    :param save:
-    :param skip_zero_variance:
-    :param kwargs:
-    :return:
-    """
-    disp_name, db, model = _load_db_and_model(database, model)
-    # find available traces and remove deviance/adaptive scale factors
-    disp_trace_names = db.colnames
 
-    # If no traces were specified, filter scale factors & deviance, then sort
+    :param database: Filename of psfMC database
+    :param disp_parameters: List/Tuple of stochastic variable (column) names
+        from the database to plot
+    :param save: Save as pdf instead of displaying to screen
+    :param skip_zero_variance: Remove/skip traced columns with 0 variance. If
+        False, corner will raise an error when trying to plot them.
+    :param kwargs: Additional arguments passed to corner.corner
+    """
+    disp_name, db, model = _load_db_and_model(database, None)
+    # find available traces
+    available_col_names = db.colnames
+
+    # If no traces were specified, remove probability and walker
     if disp_parameters is None:
-        disp_trace_names.remove('lnprobability')
-        disp_trace_names.remove('walker')
+        display_col_names = list(available_col_names)
+        display_col_names.remove('lnprobability')
+        display_col_names.remove('walker')
     # If we specified traces, display those ones
     else:
-        missing_traces = set(disp_parameters) - set(disp_trace_names)
+        missing_traces = set(disp_parameters) - set(available_col_names)
         if missing_traces != set():
             raise ValueError('Unable to find trace(s) named: {}'.format(
                 missing_traces))
-        disp_trace_names = list(disp_parameters)
+        display_col_names = list(disp_parameters)
 
-    # Just read in traces as giant data array (samples x parameters)
-    # (As expected by triangle.corner())
-    traces = [_get_trace(trace_name, db) for trace_name in disp_trace_names]
+    # Assemble traces as giant data array (samples x parameters), as expected by
+    # corner.corner()
+    traces = [_get_trace(trace_name, db) for trace_name in display_col_names]
     flat_traces = np.column_stack(traces)
 
-    labels = list(disp_trace_names)
+    labels = list(display_col_names)
     # Double all xy labels into x label and y label
     xy_inds = [ind for ind, label in enumerate(labels) if 'xy' in label]
     for ind in reversed(xy_inds):
@@ -355,11 +355,11 @@ def corner_plot(database, model=None, disp_parameters=None, save=False,
             warn('The following traces had zero variance and will not be '
                  'displayed: {}'.format(removed_cols))
 
-    corner(flat_traces, labels=labels, max_n_ticks=3,
-           label_kwargs={'fontsize': 'small'}, **kwargs)
+    fig = corner(flat_traces, labels=labels, max_n_ticks=3,
+                 label_kwargs={'fontsize': 'small'}, **kwargs)
 
     if save:
         pp.savefig('{}_corner.pdf'.format(disp_name))
     else:
         pp.show()
-    pp.close(pp.gcf())
+    pp.close(fig)

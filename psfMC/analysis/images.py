@@ -121,7 +121,8 @@ def _stats_as_header_cards(model, database):
     best_sample = best_row % database.meta['MCITER']
     stats_cards += [
         ('MAPCHAIN', best_chain, 'Chain index of maximum posterior model'),
-        ('MAPSAMP', best_sample, 'Sample index of maximum posterior model')]
+        ('MAPSAMP', best_sample, 'Sample index of maximum posterior model')
+    ]
 
     stoch_col_names = model.param_names
     stoch_fits_abbrs = model.param_fits_abbrs
@@ -143,8 +144,10 @@ def _stats_as_header_cards(model, database):
         psf_col = psf_selector.psf_index.name
         best_psf_index = database[psf_col][best_row]
         psf_selector.set_stochastic_values(np.array([best_psf_index]))
-    stats_cards += [('PSF_IMG', psf_selector.filename,
-                    'PSF image of maximum posterior model')]
+    stats_cards += [
+        ('PSF_IMG', psf_selector.filename,
+         'PSF image of maximum posterior model')
+    ]
 
     return stats_cards
 

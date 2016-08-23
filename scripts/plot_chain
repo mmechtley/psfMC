@@ -83,6 +83,6 @@ if __name__ == '__main__':
                     model_name, db_name))
             plot_hist(trace_name, db_name, model=model_name, save=save)
         elif mode in ('chain', 'trace'):
-            plot_trace(trace_name, db_name, save=save)
+            plot_trace(trace_name, db_name, model=model_name, save=save)
         elif mode == 'autocorr':
             plot_autocorr(trace_name, db_name, save=save)
