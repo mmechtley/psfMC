@@ -306,11 +306,11 @@ def plot_autocorr(trace_name, db, save=False):
 def corner_plot(database, disp_parameters=None, save=False,
                 skip_zero_variance=True, **kwargs):
     """
-
+    Make a corner plot of all stochastically sampled parameters
 
     :param database: Filename of psfMC database
     :param disp_parameters: List/Tuple of stochastic variable (column) names
-        from the database to plot
+        from the database to plot. default (None): plot all
     :param save: Save as pdf instead of displaying to screen
     :param skip_zero_variance: Remove/skip traced columns with 0 variance. If
         False, corner will raise an error when trying to plot them.
