@@ -1,7 +1,7 @@
 import six
 from .ComponentBase import ComponentBase, StochasticProperty
 from ..distributions import DiscreteUniform
-from ..array_utils import preprocess_psf, calculate_psf_variability, pre_fft_psf
+from ..utils import preprocess_psf, calculate_psf_variability, pre_fft_psf
 
 
 class PSFSelector(ComponentBase):

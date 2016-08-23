@@ -3,7 +3,7 @@ from warnings import warn
 from numpy import asarray, exp, cos, sin, deg2rad, sum, log, pi, dot, inf
 from scipy.special import gamma, gammaincinv
 from .ComponentBase import ComponentBase, StochasticProperty
-from ..array_utils import array_coords
+from ..utils import array_coords, mag_to_flux
 
 try:
     import numexpr as ne
@@ -43,13 +43,6 @@ class Sersic(ComponentBase):
         # Axis ratio constraint, reff must be bigger than reff_b
         logp += -inf if self.reff_b > self.reff else 0
         return logp
-
-    @staticmethod
-    def mag_to_flux(mag, mag_zp):
-        """
-        Returns total flux of the integrated profile, units relative to mag_zp
-        """
-        return 10**(-0.4 * (mag - mag_zp))
 
     @staticmethod
     def kappa(index):
@@ -111,9 +104,9 @@ class Sersic(ComponentBase):
         coords = kwargs['coords'] if 'coords' in kwargs \
             else array_coords(arr.shape)
         kappa = Sersic.kappa(self.index)
-        flux_tot = Sersic.mag_to_flux(self.mag, mag_zp)
-        sbeff = self.sb_eff(self.mag, self.index, self.reff, self.reff_b,
-                            mag_zp, flux_tot, kappa)
+        flux_tot = mag_to_flux(self.mag, mag_zp)
+        sbeff = Sersic.sb_eff(flux_tot, self.index, self.reff, self.reff_b,
+                              kappa)
 
         sq_radii = self.coordinate_sq_radii(coords)
         sq_radii = sq_radii.reshape(arr.shape)

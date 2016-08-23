@@ -157,6 +157,13 @@ def calculate_psf_variability(psf_data, psf_vars, debug_psfs=False):
     return psf_data, psf_vars
 
 
+def mag_to_flux(mag, mag_zp):
+    """
+    Returns total flux of the integrated profile, units relative to mag_zp
+    """
+    return 10 ** (-0.4 * (mag - mag_zp))
+
+
 def print_progress(sample, max_samples, stage='Burning'):
     next_pct = 100 * (sample + 1) // max_samples
     curr_pct = 100 * sample // max_samples

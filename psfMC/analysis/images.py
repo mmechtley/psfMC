@@ -6,7 +6,7 @@ import numpy as np
 from astropy.io import fits
 
 from ..database import row_to_param_vector
-from ..array_utils import print_progress
+from ..utils import print_progress
 
 default_filetypes = ('raw_model', 'convolved_model', 'composite_ivm',
                      'residual', 'point_source_subtracted')

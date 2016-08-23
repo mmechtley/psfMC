@@ -1,7 +1,7 @@
 from __future__ import division
 import six
 import numpy as np
-from .array_utils import convolve
+from .utils import convolve
 from .ModelComponents import Configuration, PointSource
 from .model_parser import component_list_from_file
 

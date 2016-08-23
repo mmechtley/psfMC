@@ -6,7 +6,7 @@ from astropy.io import fits
 from math import fsum
 from scipy.ndimage import shift
 from psfMC.ModelComponents import Sersic, PointSource
-from psfMC.array_utils import array_coords
+from psfMC.utils import array_coords
 from timeit import timeit
 from string import ascii_uppercase
 

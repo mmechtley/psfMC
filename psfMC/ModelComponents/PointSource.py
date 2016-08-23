@@ -1,6 +1,6 @@
 from numpy import array, abs, pi, sin, prod, clip, where, round
 from .ComponentBase import ComponentBase, StochasticProperty
-from ..array_utils import array_coords
+from ..utils import array_coords, mag_to_flux
 
 
 class PointSource(ComponentBase):
@@ -52,7 +52,7 @@ class PointSource(ComponentBase):
             raise ValueError('Unknown shift method: {}'
                              .format(self.shift_method))
 
-        flux = 10**(-0.4 * (self.mag - mag_zp))
+        flux = mag_to_flux(self.mag, mag_zp)
         arr[kern_slice] += kern * flux
         return arr
 

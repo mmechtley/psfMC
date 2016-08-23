@@ -16,6 +16,7 @@ from astropy.wcs.utils import proj_plane_pixel_area
 
 from ..database import load_database
 from ..models import MultiComponentModel
+from ..utils import mag_to_flux
 from ..ModelComponents.Sersic import Sersic
 
 
@@ -82,7 +83,7 @@ def _get_trace(trace_name, db, model=None):
             trace = db[key_prefix + 'reff_b'] / db[key_prefix + 'reff']
         elif 'sbeff' in name_comps:
             key_prefix = '_'.join(name_comps[0:2] + [''])
-            trace = Sersic.mag_to_flux(db[key_prefix + 'mag'], 0)
+            trace = mag_to_flux(db[key_prefix + 'mag'], 0)
             trace = Sersic.sb_eff(trace,
                                   db[key_prefix + 'index'],
                                   db[key_prefix + 'reff'],

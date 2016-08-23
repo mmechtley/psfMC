@@ -3,7 +3,7 @@ import os
 from collections import OrderedDict
 from warnings import warn
 from emcee import EnsembleSampler
-from .array_utils import print_progress
+from .utils import print_progress
 from .analysis import check_convergence_autocorr, save_posterior_images
 from .analysis.images import default_filetypes
 from .database import save_database, load_database

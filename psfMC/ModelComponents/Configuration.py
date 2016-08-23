@@ -1,6 +1,6 @@
 from .ComponentBase import ComponentBase
 from .PSFSelector import PSFSelector
-from ..array_utils import preprocess_obs, array_coords
+from ..utils import preprocess_obs, array_coords
 
 
 class Configuration(ComponentBase):
