@@ -1,4 +1,5 @@
 import numpy as np
+from collections import OrderedDict
 from astropy.table import Table
 
 
@@ -29,8 +30,11 @@ def save_database(sampler, model, db_name, meta_dict=None):
 
     db = Table(data_cols, names=stochastic_names)
     # TODO: Figure out how to save random state. Second table?
-    if meta_dict is not None:
-        db.meta.update(meta_dict)
+    if meta_dict is None:
+        meta_dict = OrderedDict()
+    meta_dict['MAPROW'] = np.argmax(db['lnprobability'])
+    meta_dict = annotate_metadata(meta_dict)
+    db.meta.update(meta_dict)
 
     db.write(db_name, format='fits', overwrite=True)
     # FIXME: Should not need to reload the db we just created, but posterior
@@ -80,3 +84,24 @@ def row_to_param_vector(table_row):
     row_vec = table_row.as_void()
     new_dtype = row_vec.dtype[0]
     return np.frombuffer(row_vec.data, dtype=new_dtype)
+
+
+def annotate_metadata(input_dict):
+    """
+    Take input metadata (OrderedDict) and annotate with appropriate FITS header
+    comments.
+    """
+    comments = {'MCITER': 'number of retained samples',
+                'MCBURN': 'number of burn-in (discarded) samples',
+                'MCWALKRS': 'number of walkers run',
+                'MCCONVRG': 'Has MCMC sampler converged?',
+                'MCACCEPT': 'Acceptance fraction (avg of all walkers)',
+                'MAPROW': 'Row index of maximum posterior model',
+                'PSFIMG': 'PSF image of maximum posterior model'}
+    output_dict = input_dict.copy()
+    for key in input_dict.keys():
+        # If we encounter an unknown key, assume it's a model parameter
+        output_dict[key] = (input_dict[key],
+                            comments.get(key, 'psfMC model parameter'))
+
+    return output_dict

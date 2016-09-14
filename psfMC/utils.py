@@ -26,8 +26,8 @@ def convolve(img, fourier_kernel):
     """
     FFT-based convolution, using the Convolution Theorem. This is about 100x
     faster than using scipy.ndimage.convolve, due to FFT. But it effectively
-    forces the boundary mode to be wrap. The kernel is supplied pre-computed.
-    For improved speed, supply power-of-two arrays
+    forces the boundary mode to be wrap. The kernel is supplied with its fft
+    pre-computed. For improved speed, supply power-of-two arrays
     """
     return np.fft.ifftshift(np.fft.irfft2(np.fft.rfft2(img) * fourier_kernel))
 
