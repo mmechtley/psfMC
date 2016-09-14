@@ -1,4 +1,5 @@
 from numpy import sum, concatenate, array, ravel
+import six
 
 
 class ComponentBase(object):
@@ -41,22 +42,27 @@ class ComponentBase(object):
             raise KeyError('Could not find unique prior with name: {}'
                            .format(stoch_name))
 
-    def set_stochastic_values(self, param_values=None):
+    def set_stochastic_values(self, param_values='random'):
         """
         Set values for all stochastic variables given a vector of values.
 
-        :param param_values: Vector of values for all stochastic variables, in
-            canonical (alphabetically sorted) order. If None, values for each
-            will be drawn from the corresponding prior distribution first.
+        :param param_values: Either vector of values for all stochastic
+            variables, in canonical (alphabetically sorted) order, OR one of:
+            'random' - values for each stochastic will be drawn from the
+            corresponding prior distribution
+            'median' -  values for each stochastic will be set to the 50th
+            percentile value of the corresponding prior distribution
         :returns: Vector of values that were set for all stochastic variables
         """
         sorted_prior_names = sorted(self._priors.keys())
 
-        if param_values is None:
-            param_values = array([])
+        if isinstance(param_values, six.string_types):
+            all_prior_vals = array([])
             for prior_name in sorted_prior_names:
-                prior_val = ravel(self._priors[prior_name].random())
-                param_values = concatenate((param_values, prior_val))
+                val_func = getattr(self._priors[prior_name], param_values)
+                prior_val = ravel(val_func())
+                all_prior_vals = concatenate((all_prior_vals, prior_val))
+            param_values = all_prior_vals
 
         start_index = 0
         stoch_sizes = self.stochastic_lens()
