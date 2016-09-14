@@ -1,11 +1,12 @@
 from __future__ import division, print_function
 
 from warnings import warn
+from collections import OrderedDict
 
 import numpy as np
 from astropy.io import fits
 
-from ..database import row_to_param_vector
+from ..database import row_to_param_vector, annotate_metadata
 from ..utils import print_progress
 
 default_filetypes = ('raw_model', 'convolved_model', 'composite_ivm',
@@ -37,8 +38,7 @@ def save_posterior_images(model, database, output_name='out_{}',
     if '{}' not in output_name:
         output_name += '_{}'
 
-    statscards = _stats_as_header_cards(model, database)
-    header.extend(statscards, end=True)
+    _add_stats_to_header(header, model, database)
 
     print('Saving posterior models')
     # Check to ensure we understand all the requested file types
@@ -96,34 +96,21 @@ def save_posterior_images(model, database, output_name='out_{}',
     return
 
 
-def _stats_as_header_cards(model, database):
+def _add_stats_to_header(header, model, database):
     """
-    Collates statistics about the trace database, and returns them in 3-tuple
-    key-value-comment format suitable for extending a fits header
+    Collates statistics about the trace database, and adds them to the supplied
+    FITS header
     """
-    # First get information about the sampler run parameters
-    stats_cards = _fits_section_header('psfMC MCMC SAMPLER PARAMETERS')
-    # Check sampler convergence
-    stats_cards += [
-        ('MCITER', database.meta['MCITER'], 'number of retained samples'),
-        ('MCBURN', database.meta['MCBURN'],
-         'number of burn-in (discarded) samples'),
-        ('MCCHAINS', database.meta['MCCHAINS'], 'number of chains run'),
-        ('MCCONVRG', database.meta['MCCONVRG'], 'Has MCMC sampler converged?'),
-        ('MCACCEPT', database.meta['MCACCEPT'],
-         'Acceptance fraction (avg of all walkers)')
-    ]
+    # First add all extra metadata from the trace database
+    header.extend(_fits_section_header('psfMC MCMC SAMPLER PARAMETERS'))
+
+    database_info = annotate_metadata(database.meta)
+    header.update(database_info)
 
     # Now collect information about the posterior model
-    stats_cards += _fits_section_header('psfMC POSTERIOR MODEL INFORMATION')
-    best_row = np.argmax(database['lnprobability'])
-    best_chain = database['walker'][best_row]
-    best_sample = best_row % database.meta['MCITER']
-    stats_cards += [
-        ('MAPCHAIN', best_chain, 'Chain index of maximum posterior model'),
-        ('MAPSAMP', best_sample, 'Sample index of maximum posterior model')
-    ]
+    header.extend(_fits_section_header('psfMC POSTERIOR MODEL INFORMATION'))
 
+    model_stats = OrderedDict()
     stoch_col_names = model.param_names
     stoch_fits_abbrs = model.param_fits_abbrs
 
@@ -136,20 +123,19 @@ def _stats_as_header_cards(model, database):
             strmean = ','.join(['{:0.4g}'.format(dim) for dim in mean_post])
             strstd = ','.join(['{:0.4g}'.format(dim) for dim in std_post])
             val = '({}) +/- ({})'.format(strmean, strstd)
-        stats_cards += [(fits_abbr, val, 'psfMC model component')]
+        model_stats[fits_abbr] = val
 
     # Record the name of the PSF file used in the MP model
     psf_selector = model.config.psf_selector
     if len(psf_selector.psf_list) > 1:
         psf_col = psf_selector.psf_index.name
-        best_psf_index = database[psf_col][best_row]
+        best_psf_index = database[psf_col][header['MAPROW']]
         psf_selector.set_stochastic_values(np.array([best_psf_index]))
-    stats_cards += [
-        ('PSF_IMG', psf_selector.filename,
-         'PSF image of maximum posterior model')
-    ]
+    model_stats['PSFIMG'] = psf_selector.filename
 
-    return stats_cards
+    model_stats = annotate_metadata(model_stats)
+    header.update(model_stats)
+    return
 
 
 def _fits_section_header(section_name):
