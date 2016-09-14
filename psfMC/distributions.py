@@ -84,6 +84,9 @@ class Distribution(object):
     def logp(self, x):
         return 0
 
+    def median(self):
+        return 0
+
     def get_value(self):
         return self._value
 
@@ -122,6 +125,7 @@ def _class_from_scipy_dist(class_name, scipy_rv):
                 raise TypeError('Only rv_continuous and rv_discete '
                                 'distributions are supported')
             self.random = self.rv_frozen.rvs
+            self.median = self.rv_frozen.median
             super(NewDist, self).__init__()
 
         def set_value(self, val):
