@@ -1,6 +1,6 @@
 from __future__ import division
 from warnings import warn
-from numpy import asarray, exp, cos, sin, deg2rad, sum, log, pi, dot, inf
+import numpy as np
 from scipy.special import gamma, gammaincinv
 from .ComponentBase import ComponentBase, StochasticProperty
 from ..utils import array_coords, mag_to_flux
@@ -41,7 +41,7 @@ class Sersic(ComponentBase):
     def log_priors(self):
         logp = super(Sersic, self).log_priors()
         # Axis ratio constraint, reff must be bigger than reff_b
-        logp += -inf if self.reff_b > self.reff else 0
+        logp += -np.inf if self.reff_b > self.reff else 0
         return logp
 
     @staticmethod
@@ -66,8 +66,9 @@ class Sersic(ComponentBase):
         """
         if kappa is None:
             kappa = Sersic.kappa(index)
-        return flux_tot / (pi * reff * reff_b * 2*index *
-                           exp(kappa + log(kappa) * -2*index) * gamma(2*index))
+        return flux_tot / (np.pi * reff * reff_b * 2 * index *
+                           np.exp(kappa + np.log(kappa) * -2 * index) *
+                           gamma(2 * index))
 
     def coordinate_sq_radii(self, coords):
         """
@@ -76,19 +77,23 @@ class Sersic(ComponentBase):
 
         :param coords: Nx2 array of point coordinates (in rows)
         """
-        angle = deg2rad(self.angle) if self.angle_degrees else self.angle
+        angle = np.deg2rad(self.angle) if self.angle_degrees else self.angle
         # Correct for "position angle" CCW of up, instead of right
-        angle += 0.5*pi
-        sin_ang, cos_ang = sin(angle), cos(angle)
+        angle += 0.5 * np.pi
+        sin_ang, cos_ang = np.sin(angle), np.cos(angle)
 
         # Matrix representation of n-D ellipse: en.wikipedia.org/wiki/Ellipsoid
         # inv_xform is inverse scale matrix (1/reff, 0, 0, 1/reff_b)
         # multiplied by inverse rotation matrix (cos, sin, -sin, cos)
-        inv_xform = asarray(((cos_ang / self.reff, sin_ang / self.reff),
-                             (-sin_ang / self.reff_b, cos_ang / self.reff_b)))
-        # TODO: Might be room for optimization here?
-        radii = sum(dot(inv_xform, (coords-self.xy).T)**2, axis=0)
-        return radii
+        inv_xform = np.asarray((
+            (cos_ang / self.reff, sin_ang / self.reff),
+            (-sin_ang / self.reff_b, cos_ang / self.reff_b)
+        ))
+        coord_offsets = (coords - self.xy).T
+        sq_radii = np.sum(np.dot(inv_xform, coord_offsets) ** 2, axis=0)
+        # Normalization has two factors of magnitude of coord_offsets
+        sq_delta_r = sq_radii / np.sum(coord_offsets**2, axis=0)
+        return sq_radii, sq_delta_r
 
     def add_to_array(self, arr, mag_zp, **kwargs):
         """
@@ -108,25 +113,24 @@ class Sersic(ComponentBase):
         sbeff = Sersic.sb_eff(flux_tot, self.index, self.reff, self.reff_b,
                               kappa)
 
-        sq_radii = self.coordinate_sq_radii(coords)
+        sq_radii, sq_delta_r = self.coordinate_sq_radii(coords)
         sq_radii = sq_radii.reshape(arr.shape)
+        sq_delta_r = sq_delta_r.reshape(arr.shape)
 
         # Optimization: the square root to get to radii from square radii is
         # combined with the sersic power here
         radius_pow = 0.5 / self.index
         # Optimization: exp(log(a)*b) is faster than a**b or pow(a,b)
         if ne is not None:
-            ser_expr = 'sbeff * exp(-kappa * expm1(log(sq_radii)*radius_pow))'
+            ser_expr = 'exp(-kappa * expm1(log(sq_radii) * radius_pow))'
             sb = ne.evaluate(ser_expr)
         else:
-            sb = sbeff * exp(-kappa * (exp(log(sq_radii)*radius_pow) - 1))
-        # Estimate offset of pixel barycenter from pixel center, in reff units
-        # TODO: should delta_r change per-pixel based on ellipse params?
-        delta_r = 1 / self.reff
-        # Pixel-sized trapezoid having a top with the given normed gradient
+            sb = np.exp(-kappa * np.expm1(np.log(sq_radii) * radius_pow))
+        # Estimate offset of pixel centroid from pixel center, in reff units
+        # 1D Pixel-sized trapezoid having a top with the given normed gradient
         normed_grad = Sersic._normed_grad(sq_radii, radius_pow, kappa)
-        bary_offset = delta_r**2 / 12 * normed_grad
-        arr += sb * (1 + normed_grad * bary_offset)
+        cent_offset = sq_delta_r / 12 * normed_grad
+        arr += sbeff * sb * (1 + normed_grad * cent_offset)
         return arr
 
     @staticmethod
@@ -141,8 +145,9 @@ class Sersic(ComponentBase):
         # Since square radius is supplied instead of radius, need to be careful
         # about the powers (sqrt happens first so applies to both 1/n and -1)
         if ne is not None:
-            grad_expr = '-kappa * 2*radius_pow * ' \
-                        'exp(log(sq_radii)*(radius_pow - 0.5))'
+            grad_expr = '-kappa * 2 * radius_pow * ' \
+                        'exp(log(sq_radii) * (radius_pow - 0.5))'
             return ne.evaluate(grad_expr)
         else:
-            return -kappa * 2*radius_pow * exp(log(sq_radii)*(radius_pow - 0.5))
+            return -kappa * 2 * radius_pow * np.exp(
+                np.log(sq_radii) * (radius_pow - 0.5))
