@@ -128,7 +128,7 @@ def _add_stats_to_header(header, model, database):
     # Record the name of the PSF file used in the MP model
     psf_selector = model.config.psf_selector
     if len(psf_selector.psf_list) > 1:
-        psf_col = psf_selector.psf_index.name
+        psf_col = 'PSF_Index'
         best_psf_index = database[psf_col][header['MAPROW']]
         psf_selector.set_stochastic_values(np.array([best_psf_index]))
     model_stats['PSFIMG'] = psf_selector.filename
