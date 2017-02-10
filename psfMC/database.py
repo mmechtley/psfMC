@@ -105,3 +105,20 @@ def annotate_metadata(input_dict):
                             comments.get(key, 'psfMC model parameter'))
 
     return output_dict
+
+
+def filter_lowp_walkers(database, percentile=10):
+    """
+    Filter out (remove) entries for walkers that never enter the
+    high-probability region. These are usually "lost" walkers that start out in
+    very low-p regions and never make it out.
+    :param database: Database table
+    :param percentile: Walkers will be discarded if ALL of their samples have
+        lnprobability below percentile.
+    :return: Filtered database
+    """
+    # Filter probabilities one-sided (low-p side only)
+    pct_value = np.percentile(database['lnprobability'], 10)
+    ok_walkers = np.unique(
+        database['walker'][database['lnprobability'] > pct_value])
+    return database[np.in1d(database['walker'], ok_walkers)]

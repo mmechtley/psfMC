@@ -14,7 +14,7 @@ from emcee import autocorr
 from astropy.wcs import WCS
 from astropy.wcs.utils import proj_plane_pixel_area
 
-from ..database import load_database
+from ..database import load_database, filter_lowp_walkers
 from ..models import MultiComponentModel
 from ..utils import mag_to_flux
 from ..ModelComponents.Sersic import Sersic
@@ -305,7 +305,7 @@ def plot_autocorr(trace_name, db, save=False):
 
 
 def corner_plot(database, disp_parameters=None, save=False,
-                skip_zero_variance=True, **kwargs):
+                skip_zero_variance=True, filter_walkers=10, **kwargs):
     """
     Make a corner plot of all stochastically sampled parameters
 
@@ -315,9 +315,15 @@ def corner_plot(database, disp_parameters=None, save=False,
     :param save: Save as pdf instead of displaying to screen
     :param skip_zero_variance: Remove/skip traced columns with 0 variance. If
         False, corner will raise an error when trying to plot them.
+    :param filter_walkers: lnprobability percentile to filter walkers (see
+        documentation for database.filter_lowp_walkers)
     :param kwargs: Additional arguments passed to corner.corner
     """
     disp_name, db, model = _load_db_and_model(database, None)
+    # Filter low-p walkers if requested
+    if filter_walkers is not None:
+        db = filter_lowp_walkers(db, filter_walkers)
+
     # find available traces
     available_col_names = db.colnames
 
@@ -362,7 +368,9 @@ def corner_plot(database, disp_parameters=None, save=False,
             warn('The following traces had zero variance and will not be '
                  'displayed: {}'.format(removed_cols))
 
+    # Use range=0.99 to ignore 1% outliers when setting plot range
     fig = corner(flat_traces, labels=labels, max_n_ticks=3,
+                 range=[0.99]*len(labels),
                  label_kwargs={'fontsize': 'small'}, **kwargs)
 
     if save:
