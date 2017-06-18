@@ -118,7 +118,7 @@ def filter_lowp_walkers(database, percentile=10):
     :return: Filtered database
     """
     # Filter probabilities one-sided (low-p side only)
-    pct_value = np.percentile(database['lnprobability'], 10)
+    pct_value = np.percentile(database['lnprobability'], percentile)
     ok_walkers = np.unique(
         database['walker'][database['lnprobability'] > pct_value])
     return database[np.in1d(database['walker'], ok_walkers)]
