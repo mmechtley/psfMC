@@ -6,7 +6,8 @@ from collections import OrderedDict
 import numpy as np
 from astropy.io import fits
 
-from ..database import row_to_param_vector, annotate_metadata
+from ..database import row_to_param_vector, annotate_metadata, \
+    filter_lowp_walkers
 from ..utils import print_progress
 
 default_filetypes = ('raw_model', 'convolved_model', 'composite_ivm',
@@ -15,7 +16,7 @@ default_filetypes = ('raw_model', 'convolved_model', 'composite_ivm',
 
 def save_posterior_images(model, database, output_name='out_{}',
                           mode='weighted', filetypes=default_filetypes,
-                          bad_px_value=0):
+                          bad_px_value=0, stats_min_percentile=10):
     """
     Writes out the posterior model images. Two modes are supported: Maximum a
     posteriori (maximum or MAP) and "weighted average" (weighted). Since
@@ -33,12 +34,15 @@ def save_posterior_images(model, database, output_name='out_{}',
     :param filetypes: list of filetypes to save out (see model_galaxy_mcmc
         documentation for a list of possible types
     :param bad_px_value: Value to replace bad pixels with
+    :param stats_min_percentile: filter out stuck walkers whose probabilities
+        are all below given percentile when reporting stats in header
+        (default: 10%)
     """
     header = model.obs_header
     if '{}' not in output_name:
         output_name += '_{}'
 
-    _add_stats_to_header(header, model, database)
+    _add_stats_to_header(header, model, database, stats_min_percentile)
 
     print('Saving posterior models')
     # Check to ensure we understand all the requested file types
@@ -96,7 +100,7 @@ def save_posterior_images(model, database, output_name='out_{}',
     return
 
 
-def _add_stats_to_header(header, model, database):
+def _add_stats_to_header(header, model, database, filter_percentile):
     """
     Collates statistics about the trace database, and adds them to the supplied
     FITS header
@@ -114,9 +118,12 @@ def _add_stats_to_header(header, model, database):
     stoch_col_names = model.param_names
     stoch_fits_abbrs = model.param_fits_abbrs
 
+    filtered_database = filter_lowp_walkers(
+        database, percentile=filter_percentile)
+
     for col_name, fits_abbr in zip(stoch_col_names, stoch_fits_abbrs):
-        mean_post = np.mean(database[col_name], axis=0)
-        std_post = np.std(database[col_name], axis=0)
+        mean_post = np.mean(filtered_database[col_name], axis=0)
+        std_post = np.std(filtered_database[col_name], axis=0)
         try:
             val = '{:0.4g} +/- {:0.4g}'.format(mean_post, std_post)
         except (ValueError, TypeError):
