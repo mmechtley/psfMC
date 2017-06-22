@@ -25,14 +25,17 @@ def save_database(sampler, model, db_name, meta_dict=None):
     data_cols = np.split(chain.reshape(flat_chain_shape), split_inds, axis=1)
 
     walker_col = np.repeat(np.arange(chain.shape[0], dtype=int), chain.shape[1])
-    stochastic_names += ['lnprobability', 'walker']
-    data_cols += [lnprobability.flat, walker_col]
+    sample_col = np.repeat(np.arange(chain.shape[1], dtype=int), chain.shape[0])
+    stochastic_names += ['lnprobability', 'walker', 'sample']
+    data_cols += [lnprobability.flat, walker_col, sample_col]
 
     db = Table(data_cols, names=stochastic_names)
     # TODO: Figure out how to save random state. Second table?
     if meta_dict is None:
         meta_dict = OrderedDict()
-    meta_dict['MAPROW'] = np.argmax(db['lnprobability'])
+    map_row = np.argmax(db['lnprobability'])
+    meta_dict['MAPWLKR'] = walker_col[map_row]
+    meta_dict['MAPSAMP'] = sample_col[map_row]
     meta_dict = annotate_metadata(meta_dict)
     db.meta.update(meta_dict)
 
@@ -96,7 +99,8 @@ def annotate_metadata(input_dict):
                 'MCWALKRS': 'number of walkers run',
                 'MCCONVRG': 'Has MCMC sampler converged?',
                 'MCACCEPT': 'Acceptance fraction (avg of all walkers)',
-                'MAPROW': 'Row index of maximum posterior model',
+                'MAPWLKR': 'Walker index of maximum posterior model',
+                'MAPSAMP': 'Sample index of maximum posterior model',
                 'PSFIMG': 'PSF image of maximum posterior model'}
     output_dict = input_dict.copy()
     for key in input_dict.keys():

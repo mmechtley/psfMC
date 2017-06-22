@@ -16,7 +16,7 @@ default_filetypes = ('raw_model', 'convolved_model', 'composite_ivm',
 
 def save_posterior_images(model, database, output_name='out_{}',
                           mode='weighted', filetypes=default_filetypes,
-                          bad_px_value=0, stats_min_percentile=10):
+                          bad_px_value=0, walker_min_percentile=10):
     """
     Writes out the posterior model images. Two modes are supported: Maximum a
     posteriori (maximum or MAP) and "weighted average" (weighted). Since
@@ -34,15 +34,16 @@ def save_posterior_images(model, database, output_name='out_{}',
     :param filetypes: list of filetypes to save out (see model_galaxy_mcmc
         documentation for a list of possible types
     :param bad_px_value: Value to replace bad pixels with
-    :param stats_min_percentile: filter out stuck walkers whose probabilities
-        are all below given percentile when reporting stats in header
-        (default: 10%)
+    :param walker_min_percentile: filter out stuck walkers whose sample
+        probabilities are all below given percentile (default: 10%)
     """
     header = model.obs_header
     if '{}' not in output_name:
         output_name += '_{}'
 
-    _add_stats_to_header(header, model, database, stats_min_percentile)
+    database = filter_lowp_walkers(database, percentile=walker_min_percentile)
+
+    _add_stats_to_header(header, model, database)
 
     print('Saving posterior models')
     # Check to ensure we understand all the requested file types
@@ -100,7 +101,7 @@ def save_posterior_images(model, database, output_name='out_{}',
     return
 
 
-def _add_stats_to_header(header, model, database, filter_percentile):
+def _add_stats_to_header(header, model, database):
     """
     Collates statistics about the trace database, and adds them to the supplied
     FITS header
@@ -118,12 +119,9 @@ def _add_stats_to_header(header, model, database, filter_percentile):
     stoch_col_names = model.param_names
     stoch_fits_abbrs = model.param_fits_abbrs
 
-    filtered_database = filter_lowp_walkers(
-        database, percentile=filter_percentile)
-
     for col_name, fits_abbr in zip(stoch_col_names, stoch_fits_abbrs):
-        mean_post = np.mean(filtered_database[col_name], axis=0)
-        std_post = np.std(filtered_database[col_name], axis=0)
+        mean_post = np.mean(database[col_name], axis=0)
+        std_post = np.std(database[col_name], axis=0)
         try:
             val = '{:0.4g} +/- {:0.4g}'.format(mean_post, std_post)
         except (ValueError, TypeError):
@@ -136,7 +134,8 @@ def _add_stats_to_header(header, model, database, filter_percentile):
     psf_selector = model.config.psf_selector
     if len(psf_selector.psf_list) > 1:
         psf_col = 'PSF_Index'
-        best_psf_index = database[psf_col][header['MAPROW']]
+        best_row = np.argmax(database['walker'])
+        best_psf_index = database[psf_col][best_row]
         psf_selector.set_stochastic_values(np.array([best_psf_index]))
     model_stats['PSFIMG'] = psf_selector.filename
 
