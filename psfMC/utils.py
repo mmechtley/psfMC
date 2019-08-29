@@ -26,8 +26,8 @@ def convolve(img, fourier_kernel):
     """
     FFT-based convolution, using the Convolution Theorem. This is about 100x
     faster than using scipy.ndimage.convolve, due to FFT. But it effectively
-    forces the boundary mode to be wrap. The kernel is supplied pre-computed.
-    For improved speed, supply power-of-two arrays
+    forces the boundary mode to be wrap. The kernel is supplied with its fft
+    pre-computed. For improved speed, supply power-of-two arrays
     """
     return np.fft.ifftshift(np.fft.irfft2(np.fft.rfft2(img) * fourier_kernel))
 
@@ -155,3 +155,17 @@ def calculate_psf_variability(psf_data, psf_vars, debug_psfs=False):
     # Add contribution of PSF mismatch to all individual variance maps
     psf_vars = [var + mismatch_var for var in psf_vars]
     return psf_data, psf_vars
+
+
+def mag_to_flux(mag, mag_zp):
+    """
+    Returns total flux of the integrated profile, units relative to mag_zp
+    """
+    return 10 ** (-0.4 * (mag - mag_zp))
+
+
+def print_progress(sample, max_samples, stage='Burning'):
+    next_pct = 100 * (sample + 1) // max_samples
+    curr_pct = 100 * sample // max_samples
+    if next_pct - curr_pct > 0:
+        print('{}: {:d}%'.format(stage, next_pct))

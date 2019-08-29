@@ -5,10 +5,11 @@ import subprocess
 from astropy.io import fits
 from math import fsum
 from scipy.ndimage import shift
-from psfMC.ModelComponents import Sersic, PSF
-from psfMC.array_utils import array_coords
 from timeit import timeit
 from string import ascii_uppercase
+
+from psfMC.ModelComponents import Sersic, PointSource
+from psfMC.utils import array_coords
 
 _sim_feedme = 'sim.feedme'
 _sersic_ref_file = 'gfsim_n{:0.1f}.fits.gz'
@@ -21,8 +22,8 @@ def _replace_galfit_param(name, value, object_num=1, fit=True):
     :param name: parameter name, without the following parenthesis
     :param value: new value for the parameter. Best provided as a string
     :param object_num: For object parameters, which object to change. Galfit
-                   numbering, whichs starts with 1. Non-object params (e.g. B)
-                   should use default object=1
+        numbering, whichs starts with 1. Non-object params (e.g. B) should use
+        default object=1
     :param fit: Whether to fit the parameter (True) or hold fixed (False)
     """
     name, value = str(name), str(value)
@@ -73,14 +74,14 @@ def test_sersic(index=4):
                  angle=gfhdr['1_PA'], angle_degrees=True)
     ser.add_to_array(mcmodel, mag_zp=gfhdr['MAGZPT'], coords=coords)
 
-    radii = np.sqrt(ser.coordinate_sq_radii(coords))
-    radii = radii.reshape(mcmodel.shape)
+    sq_radii, sq_dr = ser.coordinate_sq_radii(coords)
+    radii = np.sqrt(sq_radii.reshape(mcmodel.shape))
 
     print('Commanded magnitude: {:0.2f} n={:0.1f}'
           .format(gfhdr['1_MAG'], index))
     for model, name in [(gfmodel, 'Galfit'), (mcmodel, ' psfMC')]:
         inside = fsum(model[radii <= 1])
-        outside = fsum(model[radii >= 1])
+        outside = fsum(model[radii > 1])
         totalmag = -2.5*np.log10(fsum(model.flat)) + gfhdr['MAGZPT']
         print('{}: Inside: {:0.4f} Outside: {:0.4f} Mag: {:0.2f}'
               .format(name, inside, outside, totalmag))
@@ -99,9 +100,9 @@ def test_sersic(index=4):
         pp.contour(radii, levels=[1, ], colors='SeaGreen')
         pp.title(title)
 
-    pp.figtext(0.5, 1.0, r'Green: $\Sigma_e$ isophote, ' +
-                         'Black: 0% error contour, ' +
-                         'White: 1% error contour' +
+    pp.figtext(0.5, 1.0, r'Green: $\Sigma_e$ isophote, '
+                         'Black: 0% error contour, '
+                         'White: 1% error contour'
                          '\nn = {:0.1f}'.format(index),
                va='top', ha='center')
 
@@ -129,7 +130,7 @@ def test_psf():
     # must reverse for scipy.ndimage.shift, since arrays are row, col indexed
     refarr = shift(refarr, _psf_ref_shift[::-1]-1, order=1)
     testarr = np.zeros((5, 5))
-    psf = PSF(xy=_psf_ref_shift, mag=0, shift_method='bilinear')
+    psf = PointSource(xy=_psf_ref_shift, mag=0, shift_method='bilinear')
     psf.add_to_array(testarr, mag_zp=0)
     if not np.allclose(refarr, testarr):
         pp.subplot(121)

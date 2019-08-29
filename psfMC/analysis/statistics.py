@@ -1,5 +1,7 @@
 from __future__ import division, print_function
 import numpy as np
+from warnings import warn
+from emcee.autocorr import AutocorrError
 
 
 def _between_variance(traces):
@@ -85,47 +87,6 @@ def num_effective_samples(traces):
         return nsamples * nchains * pooled_var / between_var
 
 
-def max_posterior_sample(db, chains=None):
-    """
-    Maximum posterior sample is the sample that minimizes the model deviance
-    (i.e. has the highest posterior probability)
-    Returns the index of the chain the sample occurs in, and the index of the
-    sample within that chain
-    """
-    if chains is None:
-        chains = range(db.chains)
-    min_chain = -1
-    min_sample = -1
-    min_deviance = np.inf
-    for chain in chains:
-        dev_trace = db.trace('deviance', chain)[:]
-        chain_min_sample = np.argmin(dev_trace)
-        chain_min_deviance = dev_trace[chain_min_sample]
-        if chain_min_deviance < min_deviance:
-            min_deviance = chain_min_deviance
-            min_sample = chain_min_sample
-            min_chain = chain
-    return min_chain, min_sample
-
-
-def calculate_dic(db, chains=None, best_sample=None, best_chain=None):
-    """
-    Calculates the Deviance Information Criterion for the posterior, defined as
-    twice the expected deviance minus the deviance of the expectation value.
-    The expectation value of the posterior is estimated as the sample with the
-    lowest deviance.
-    """
-    # TODO: BPIC might be nice also, but more work to calculate
-    if chains is None:
-        chains = range(db.chains)
-    if best_chain is None or best_sample is None:
-        best_chain, best_sample = max_posterior_sample(db, chains=chains)
-    combined_dev = [db.trace('deviance', chain)[:] for chain in chains]
-    combined_dev = np.concatenate(combined_dev)
-    mean_dev = np.mean(combined_dev, axis=0)
-    return 2*mean_dev - db.trace('deviance', best_chain)[best_sample]
-
-
 def check_convergence_psrf(model, chains=None, stochastics=None, psrf_tol=0.05,
                            verbose=0):
     """
@@ -170,38 +131,25 @@ def check_convergence_psrf(model, chains=None, stochastics=None, psrf_tol=0.05,
     return all([is_converged(stoch) for stoch in stochastics])
 
 
-def chain_autocorr(chain1d, sigma=5):
+def check_convergence_autocorr(sampler, min_chain_to_tau_ratio=10, verbose=0):
     """
-    Calculates the normalized autocorrelation function & related statistics for
-    a 1-D chain. The method used for calculating the autocorrelation time (and
-    thus the number of effective samples) is an initial sequence estimator (see
-    Thompson 2010 arXiv:1011.0175v1)
-    :param chain1d: Trace to calculate autocorrelation for. Must be 1-D (so
-        split x,y components for example)
-    :param sigma: Significance level for calculating maximum significant lag
-        and effective sample number
-    :return: Tuple of (lags, normed correlation function, num. effective
-        samples, maximum significant lag)
+    Use integrated autocorrelation time to estimate whether the chain is
+    converged / whether samples are representative
+    :param sampler: emcee Sampler object
+    :param min_chain_to_tau_ratio: Factor by which the chains must be longer
+        than the longest autocorrelation time
+    :param verbose: Print parameter autocorrelation values for verbose > 0
     """
-    # detrend and calculate normalization constant
-    detrend = chain1d - np.mean(chain1d)
-    norm_constant = np.sum(detrend**2)
-    # Tested against pyplot.acorr with detrend=mlab.detrend_mean & normed=True
-    acorr = np.correlate(detrend, detrend, mode='full') / norm_constant
-    middle = (acorr.size - 1) // 2
-    lags = np.arange(acorr.size) - middle
+    # Use dirty imprecise estimation of autocorrelation time by specifying c=1
+    try:
+        acorr = sampler.get_autocorr_time(c=1)
+    except AutocorrError:
+        warn('emcee was unable to estimate the autocorrelation time, assuming '
+             'chain is not converged')
+        return False
+    if verbose > 0:
+        print('Autocorrelation times: {}'.format(acorr))
 
-    # Overall significance for autocorrelation is Z/sqrt(N)
-    acorr_signif = sigma / np.sqrt(chain1d.size)
-    # first index where conditional is false (0)
-    trunc = np.argmin(acorr[middle:] > acorr_signif)
-    # TODO: Instead use initial convex sequence/initial positive sequence est.
-    # adj_sums = acorr[middle:-1] + acorr[middle+1:]
-    # trunc = np.argmin(adj_sums < 0)
+    nsamples = sampler.chain.shape[1]
 
-    maxlag = lags[middle+trunc]
-    # sum of the significant normed autocorrelation lags, tau in the literature
-    tau = np.sum(acorr[middle-trunc+1:middle+trunc])
-    eff_samples = chain1d.size / tau
-
-    return lags, acorr, eff_samples, maxlag
+    return np.all(nsamples > min_chain_to_tau_ratio*acorr)

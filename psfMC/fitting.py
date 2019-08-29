@@ -1,111 +1,113 @@
 from __future__ import division, print_function
-from warnings import warn
 import os
-import pymc
-import pymc.database
-from pymc.StepMethods import AdaptiveMetropolis, DiscreteMetropolis
-from .models import multicomponent_model
-from .analysis import check_convergence_psrf, save_posterior_images
+from collections import OrderedDict
+from warnings import warn
+from emcee import EnsembleSampler
+from .utils import print_progress
+from .analysis import check_convergence_autocorr, save_posterior_images
 from .analysis.images import default_filetypes
+from .database import save_database, load_database
+from .models import MultiComponentModel
 
 
 def model_galaxy_mcmc(model_file, output_name=None,
                       write_fits=default_filetypes,
-                      chains=1, max_iterations=1,
-                      convergence_check=check_convergence_psrf,
-                      backend='pickle',
-                      **kwargs):
+                      iterations=0, burn=0,
+                      chains=None, max_iterations=1,
+                      convergence_check=check_convergence_autocorr):
     """
-    Model the light distribution of a galaxy or galaxies using multi-component
-    Markov Chain Monte Carlo parameter estimation.
+    Model the surface brightness distribution of a galaxy or galaxies using
+    multi-component Markov Chain Monte Carlo parameter estimation.
 
     :param model_file: Filename of the model definition file. This should be
         a series of components from psfMC.ModelComponents, with parameters
         supplied as either fixed values or stochastics from psfMC.distributions
     :param output_name: Base name for output files (no file extension). By
-        default, files are written out containing the raw model, convolved
-        model, combined IVM 1/(1/obsIVM + 1/modelIVM), residual of
-        observation - model, and the MCMC trace database.
+        default, files are written out containing the requested image types
+        (write_fits param) and the MCMC trace database. If None, use
+        out_<model_filename>
     :param write_fits: List of which fits file types to write. By default, raw
-        (unconvolved) model, convolved model, model IVM, and residual.
-    :param chains: Number of individual chains to run (resetting the sampler
-        to begin at a new random position between each chain)
+        (unconvolved) model, convolved model, model IVM, residual, and point
+        sources subtracted.
+    :param iterations: Number of retained MCMC samples
+    :param burn: Number of discarded (burn-in) MCMC samples
+    :param chains: Number of individual chains (walkers) to run. If None, the
+        minimum number recommended by emcee will be used. More is better.
     :param max_iterations: Maximum sampler iterations before convergence is
         enforced. Default is 1, which means sampler halts even if not converged.
-    :param convergence_check: Function taking an MCMC model and a list of chain
-        indexes as arguments, and returning True or False based on whether the
-        model has converged. Default function returns True when all traces have
-        potential scale reduction factor within 0.05 of 1.0. Sampling will be
-        repeated (increasing effective burn-in period) until convergence check
-        is met or until max_iterations iterations are performed
-    :param backend: PyMC database backend to use. pickle is default due to
-        universal support, but HDF5 (via pytables) is highly recommended
-    :param kwargs: Further keyword arguments are passed to pyMC.MCMC.sample, and
-        can be used to control number of MCMC samples, burn-in period, etc.
-        Useful parameters include iter=, burn=, tune_interval=, thin=, etc. See
-        pyMC documentation.
+    :param convergence_check: Function taking an emcee Sampler as argument, and
+        returning True or False based on whether the sampler has converged.
+        Default function returns True when the autocorrelation time of all
+        stochastic variables is < 10% of the total number of samples. Sampling
+        will be repeated (increasing the chain length) until convergence check
+        is met or until max_iterations iterations are performed.
     """
     if output_name is None:
         output_name = 'out_' + model_file.replace('.py', '')
     output_name += '_{}'
 
-    # TODO: Set these based on total number of unknown components?
-    kwargs.setdefault('iter', 6000)
-    kwargs.setdefault('burn', 3000)
+    mc_model = MultiComponentModel(components=model_file)
+
+    # If chains is not specified, use the minimum number recommended by emcee
+    if chains is None:
+        chains = 2 * mc_model.num_params + 2
+
+    # FIXME: can't use threads=n right now because model object can't be pickled
+    sampler = EnsembleSampler(nwalkers=chains, dim=mc_model.num_params,
+                              lnpostfn=mc_model.log_posterior,
+                              kwargs={'model': mc_model})
 
     # Open database if it exists, otherwise pass backend to create a new one
-    db_name = output_name.format('db')
-    if os.path.exists(db_name+'.'+backend):
-        back_module = getattr(pymc.database, backend)
-        db = back_module.load(db_name+'.'+backend)
-    else:
-        db = backend
+    db_name = output_name.format('db') + '.fits'
 
-    mc_model = multicomponent_model(components=model_file, db=db, name=db_name)
+    # TODO: Resume if database exists
+    if not os.path.exists(db_name):
+        param_vec = mc_model.init_params_from_priors(chains)
 
-    # TODO: Add support for resuming. For now, skip sampling if chains exist
-    if mc_model.db.chains == 0:
-        _set_step_methods(mc_model)
+        # Run burn-in and discard
+        for step, result in enumerate(
+                sampler.sample(param_vec, iterations=burn)):
+            # Set new initial sampler state
+            param_vec = result[0]
+            # No need to retain images from every step, so clear blobs
+            sampler.clear_blobs()
+            print_progress(step, burn, 'Burning')
 
-        for samp_iter in range(max_iterations):
-            # TODO: Is there a way to delete old chains?
-            for chain_num in range(chains):
-                # Seed new values for every independent chain on first iteration
-                # On subsequent iterations, load last sample from previous
-                if samp_iter == 0:
-                    mc_model.draw_from_prior()
-                else:
-                    mc_model.remember(chain=(samp_iter-1)*chain_num,
-                                      trace_index=-1)
-                mc_model.sample(**kwargs)
+        sampler.reset()
 
-            iter_chains = range(samp_iter*chains, (samp_iter+1)*chains)
-            if convergence_check(mc_model, chains=iter_chains):
+        converged = False
+        for sampling_iter in range(max_iterations):
+            # Now run real samples and retain
+            for step, result in enumerate(
+                    sampler.sample(param_vec, iterations=iterations)):
+                mc_model.accumulate_images(result[3])
+                # No need to retain images from every step, so clear blobs
+                sampler.clear_blobs()
+                print_progress(step, iterations, 'Sampling')
+
+            if convergence_check(sampler):
+                converged = True
                 break
             else:
-                warn('Not yet converged after {:d} iterations ({:d} chains)'
-                     .format(samp_iter+1, chains))
-        mc_model.db.commit()
+                warn('Not yet converged after {:d} iterations:'
+                     .format((sampling_iter + 1)*iterations))
+                convergence_check(sampler, verbose=1)
+
+        # Collect some metadata about the sampling process. These will be saved
+        # in the FITS headers of both the output database and the images
+        db_metadata = OrderedDict([
+            ('MCITER', sampler.chain.shape[1]),
+            ('MCBURN', burn),
+            ('MCCHAINS', chains),
+            ('MCCONVRG', converged),
+            ('MCACCEPT', sampler.acceptance_fraction.mean())
+        ])
+        database = save_database(sampler, mc_model, db_name,
+                                 meta_dict=db_metadata)
     else:
-        warn('Database already contains sampled chains, skipping sampling')
+        print('Database already contains sampled chains, skipping sampling')
+        database = load_database(db_name)
 
-    # Write model output files, using only the last "chains" chains.
-    post_chains = range(mc_model.db.chains - chains, mc_model.db.chains)
-    save_posterior_images(mc_model, output_name=output_name,
-                          filetypes=write_fits,
-                          chains=post_chains,
-                          convergence_check=convergence_check)
-    mc_model.db.close()
-
-
-def _set_step_methods(model):
-    """
-    Set special step methods (for xy positions and discrete variables)
-    :param model: multicomponent model
-    """
-    for stoch in model.step_method_dict:
-        if 'xy' in stoch.__name__:
-            model.use_step_method(AdaptiveMetropolis, stoch)
-        if stoch.__name__ == 'PSF_Index':
-            model.use_step_method(DiscreteMetropolis, stoch,
-                                  proposal_distribution='Prior')
+    # Write model output files
+    save_posterior_images(mc_model, database, output_name=output_name,
+                          filetypes=write_fits)
