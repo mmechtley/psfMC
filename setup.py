@@ -22,7 +22,7 @@ _version = _version_from_init()
 
 setup(name=_packages[0],
       version=_version,
-      author='Matt Mechtley',
+      author='Mira Mechtley',
       author_email='matt@cherem.org',
       url='https://github.com/mmechtley/psfMC',
       license='BSD 2-clause',
