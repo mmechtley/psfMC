@@ -97,7 +97,7 @@ def save_posterior_images(model, database, output_name='out_{}',
         header.set('OBJECT', value=ftype)
         fits.writeto(output_name.format(ftype) + '.fits',
                      output_data[ftype], header=header,
-                     clobber=True, output_verify='fix')
+                     overwrite=True, output_verify='fix')
     return
 
 

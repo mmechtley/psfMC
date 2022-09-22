@@ -58,9 +58,9 @@ generate these plots from a terminal.
 
 Dependencies
 ------------
-The software depends on the `numpy`, `scipy`, `emcee`, `astropy`, and `six` (for 
-Python 2 backward compatibility) modules. Additionally the `matplotlib` and 
-`corner` modules are required for posterior analysis plots.
+The software depends on the `numpy`, `scipy`, `emcee` (version 2.x), `astropy`, 
+and `six` (for Python 2 backward compatibility) modules. Additionally the 
+`matplotlib` and `corner` modules are required for posterior analysis plots.
 
 The `pyregion` module is optional but strongly recommended for ease of masking 
 out foreground or background objects unrelated to the quasar being modeled.
@@ -73,5 +73,5 @@ Installation
 ------------
 I only test/support Anaconda, use other Python distributions at your own risk.
 Note: everything else is included with the default Anaconda distribution.
-`conda install --channel astropy emcee pyregion corner`
+`conda install --channel astropy emcee=2.2.1 pyregion corner`
 `pip install git+https://github.com/mmechtley/psfMC.git`

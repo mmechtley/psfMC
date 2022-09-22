@@ -84,9 +84,7 @@ def get_sampler_state(database):
 
 
 def row_to_param_vector(table_row):
-    row_vec = table_row.as_void()
-    new_dtype = row_vec.dtype[0]
-    return np.frombuffer(row_vec.data, dtype=new_dtype)
+    return np.concatenate(table_row, dtype=np.float64)
 
 
 def annotate_metadata(input_dict):
